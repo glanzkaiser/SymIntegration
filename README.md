@@ -3,8 +3,8 @@
 SymIntegration is a C++ library that is branching out from SymbolicC++3.35.
 The main idea is to improve its symbolic integration codes. Our main focus is to make it able to compute:
 
-1. All kinds of standard integral form (trigonometry, inverse trigonometry, polynomial, transcedental, hyperbolic)
-2. The sum, product and divide combination of the standard function
+1. All kinds of standard integral form (trigonometry, inverse trigonometry, polynomial, transcendental, hyperbolic)
+2. The sum, product and divide combination of the standard functions
 3. To be able to compute improper integrals with cases (e.g. computing mean and variance for exponential distribution)
 
 ## About SymbolicC++
@@ -68,6 +68,6 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 
 We are using less, minimal amount of code to create the library, if you compare it with the original SymbolicC++ that has `.configure` and `Makefile` that will be spawn after you configure it, we don' t use any of that.
 
-Two simple commands with `g++` can already make a simple symbolic integration computation, with limitation still.
+Two simple commands with `g++` can already make a shared symbolic integration computation library, with limitation still.
 
 We are still working to make it can compute `sin(2x)` correctly then eventually to all the problems we want to tackle above.
