@@ -24,7 +24,7 @@ The code are only located in the `/src` directory that contains all the `.cpp` f
 
 You can open them one by one, read them and making sense of it based on the function that you are looking for.
 
-There are total of 27 `.cpp` files and 26 `h`. /header files. So it won't take a long time for someone to learn it.
+There are total of 27 `.cpp` files and 26 `.h` / header files. So it won't take a long time for someone to learn it.
 
 # Installation
 Assuming you are using Linux ( we are using GFreya OS based on LFS version 11.0 System V) then you should have no problem in following these methods.
@@ -42,7 +42,7 @@ Open terminal and from the current working directory / this repository main dire
 
 Then move / copy it into `/usr/lib/` since it is the default path for libraries for Linux OS.
 
-The size of libsymbolicc++.so is about 5 MB compared to libsymintegration that is only 1.1 MB.
+The size of libsymbolicc++.so is about 5 MB compared to libsymintegration.so that is only 1.1 MB.
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/1.png" width="83%">
 
