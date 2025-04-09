@@ -29,6 +29,17 @@ There are total of 27 `.cpp` files and 26 `.h` / header files. So it won't take 
 # Installation
 Assuming you are using Linux ( we are using GFreya OS based on LFS version 11.0 System V) then you should have no problem in following these methods.
 
+## Move all .h / Header Files to /usr/include
+
+Open terminal and from the current working directory / this repository main directory:
+
+```
+	cd include
+	cp -r * /usr/include
+```
+
+When we want to create the shared library it will look for this header files in the default path where the include files are usually located. In Linux OS `usr/include` is the basic / default path.
+
 ## Create the Shared Library
 We will create the shared library from all the `.cpp` files in `/src` directory.
 
