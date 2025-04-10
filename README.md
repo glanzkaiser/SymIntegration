@@ -20,7 +20,7 @@ scripts from the SymbolicC++ header files.
 
 # Learning the Code
 
-The code are only located in the `/src` directory that contains all the `.cpp` files, then inside the `/include/` we have header files and another folder `/include/symintegral/` is also a folder that contain header files too.
+The C++ codes are only located in the `/src` directory , it is designed to contain all the `.cpp` files, then inside the `/include/` we have header files and another folder `/include/symintegral/` is also a folder that contain header files too.
 
 You can open them one by one, read them and making sense of it based on the function that you are looking for.
 
