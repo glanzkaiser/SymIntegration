@@ -1,5 +1,4 @@
 /*
-    SymIntegration is branching from SymbolicC++
     SymbolicC++ : An object oriented computer algebra system written in C++
 
     Copyright (C) 2008 Yorick Hardy and Willi-Hans Steeb
@@ -18,12 +17,15 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
+// THANKS SENTINEL!!! and Freya too
 
-
-// g++ -o result integral.cpp -lsymintegration
+// g++ -o result integral.cpp -lsymintegrationc++
 
 #include <iostream>
-#include "symbolicc++.h"
+#include "symintegrationc++.h"
+
+#define π 3.1415926535897f
+
 using namespace std;
 
 int main(void)
@@ -42,10 +44,16 @@ int main(void)
 	y = integrate(y,x);
 	
 	cout << "integral of sin(x) = " << y << endl;
+	cout << "d_{x} (sin(2x)) = " << df(sin(2*x),x) << endl;
 	
 	y2 = integrate(y2,x);
 	
 	cout << "integral of sin(2x) = " << y2 << endl;
+	cout << "integral of sin(3x) = " << integrate(sin(3*x),x) << endl;
+	cout << "integral of sin(0.5x) = " << integrate(sin(0.5*x),x) << endl;
+	
+	cout << "integral of sin(π/2) = " << sin(0.5*π) << endl;
+	cout << "integral of sin(π/4) = " << sin(0.25*π) << endl;
 	
 	return 0; 
 }
