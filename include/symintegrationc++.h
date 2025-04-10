@@ -21,6 +21,6 @@
 #ifndef SYMBOLIC_CPLUSPLUS_REDIRECT
 #define SYMBOLIC_CPLUSPLUS_REDIRECT
 
-#include "symbolic/symbolicc++.h"
+#include "symintegral/symintegrationc++.h"
 
 #endif

@@ -19,7 +19,7 @@
 */
 
 
-// symbolicc++.h
+// symintegrationc++.h
 
 // normal include headers
 #include <iostream>
@@ -52,7 +52,7 @@
 //  Phase 2 ensures that every constructor and method
 //  has a forward declaration for use in phase 3.
 // 1. Forward declarations: class X;
-// 2. Declaraions:          class X { ... };
+// 2. Declarations:          class X { ... };
 // 3. Definitions:          X::X() ...
 
 // This overcomes mutual recursion in dependencies,
@@ -61,7 +61,7 @@
 
 // forward declarations of all classes first
 #define SYMBOLIC_FORWARD
-#include "symintegral/symbolicc++.h"
+#include "symintegral/symintegrationc++.h"
 #undef  SYMBOLIC_FORWARD
 
 typedef list<Equation> Equations;
@@ -69,7 +69,7 @@ typedef list<Equations> PatternMatches;
 
 // declarations of classes without definitions
 #define SYMBOLIC_DECLARE
-#include "symintegral/symbolicc++.h"
+#include "symintegral/symintegrationc++.h"
 #undef  SYMBOLIC_DECLARE
 
 // declarations for non-member functions
@@ -196,7 +196,7 @@ void pattern_match_OR(PatternMatches &, const PatternMatches &);
 
 // definitions for classes, member functions
 #define SYMBOLIC_DEFINE
-#include "symintegral/symbolicc++.h"
+#include "symintegral/symintegrationc++.h"
 
 
 

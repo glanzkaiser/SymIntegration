@@ -75,10 +75,37 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/4.png" width="83%">
 
+# Status
+
+:sunflower: = Done
+
+:writing_hand: = On Progress
+
+| Status | Name | Details |
+| -------------     | ------------- | ------------- | 
+|:sunflower:   | Compute integral of sine and cosine  					| Done
+|:writing_hand:| Compute integral for all trigonometric	       				| Not yet
+|:writing_hand:| Compute integral for all hyperbolic	        			| Not yet
+|:writing_hand:| Compute integral for product, divide and sum of basic functions	| Not yet
+|:writing_hand:| Compute integral for inverse trigonometric        			| Not yet
+|:writing_hand:| Compute integral with Integration by parts				| Not yet
+|:writing_hand:| Compute definite integral with improper integrals			| Not yet
+
 # Remark
 
 We are using less, minimal amount of code to create the library, if you compare it with the original SymbolicC++ that has `.configure` and `Makefile` that will be spawn after you configure it, we don' t use any of that.
 
 Two simple commands with `g++` can already make a shared symbolic integration computation library, with limitation still.
 
-We are still working to make it can compute `sin(2x)` correctly then eventually to all the problems we want to tackle above.
+We have found how to be able to compute `int (sin(2x))` correctly.
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/5.png" width="83%">
+
+By modifying the source code `src/functions.cpp` we can compute the integration for sine and cosine correctly.
+By April 10th, 2025: The implementation of sine and cosine have been modified.
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/6.png" width="83%">
+
+For comparison: The basic codes that we are using SymbolicC++, cannot compute the integral of sine and cosine correctly because they only write `return Integral(*this,s)`
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/7.png" width="83%">
+

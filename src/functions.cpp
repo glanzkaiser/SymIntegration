@@ -18,7 +18,7 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "symintegral/symbolicc++.h"
+#include "symintegral/symintegrationc++.h"
 
 
 #ifdef  SYMBOLIC_DEFINE
@@ -55,9 +55,9 @@ Symbolic Sin::df(const Symbolic &s) const
 Symbolic Sin::integrate(const Symbolic &s) const
 {
  const Symbolic &x = parameters.front();
- if(x == s) return -cos(parameters.front()*x) * (1/parameters.front());
+ if(x == s) return -cos(x) ;
  if(df(s) == 0) return *this * s;
- return Integral(*this,s);
+ return -cos(parameters.front()) * (1/ parameters.front().df(s) );
 }
 
 //////////////////////////////////////
@@ -91,7 +91,7 @@ Symbolic Cos::integrate(const Symbolic &s) const
  const Symbolic &x = parameters.front();
  if(x == s) return sin(x);
  if(df(s) == 0) return *this * s;
- return Integral(*this,s);
+ return sin(parameters.front()) * (1/ parameters.front().df(s) );;
 }
 
 //////////////////////////////////////
