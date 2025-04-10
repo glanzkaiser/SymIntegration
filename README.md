@@ -73,7 +73,7 @@ Open terminal and from the current working directory / this repository main dire
 
 If you prefer the old way then you can compile the old way / type `g++ -o main main.cpp -lsymintegration` instead of typing `make`.
 
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/4.png" width="83%">
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/5.png" width="83%">
 
 # Status
 
