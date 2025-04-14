@@ -109,3 +109,10 @@ By April 10th, 2025: The implementation of sine and cosine have been modified.
 For comparison: The basic codes that we are using SymbolicC++, cannot compute the integral of sine and cosine correctly because they only write `return Integral(*this,s)`
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/7.png" width="83%">
 
+By April 13th, 2025: The integral of `1/(ax+b)` can be computed nicely and fraction / decimal power computation e.g. `(-1)^(a/b)` can be computed too.
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/8.png" width="83%">
+
+The code for the decimal power computation is located here (the if statement with 3 conditions):
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/9.png" width="83%">
+
+

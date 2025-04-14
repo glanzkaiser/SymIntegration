@@ -19,8 +19,9 @@
 */
 
 #include "symintegral/symintegrationc++.h"
+#include <cmath>
 
-
+using namespace std;
 #ifdef  SYMBOLIC_DEFINE
 #ifndef SYMBOLIC_CPLUSPLUS_FUNCTIONS_DEFINE
 #define SYMBOLIC_CPLUSPLUS_FUNCTIONS_DEFINE
@@ -91,7 +92,7 @@ Symbolic Cos::integrate(const Symbolic &s) const
  const Symbolic &x = parameters.front();
  if(x == s) return sin(x);
  if(df(s) == 0) return *this * s;
- return sin(parameters.front()) * (1/ parameters.front().df(s) );;
+ return sin(parameters.front()) * (1/ parameters.front().df(s)) ;
 }
 
 //////////////////////////////////////
@@ -125,7 +126,7 @@ Symbolic Sinh::integrate(const Symbolic &s) const
  const Symbolic &x = parameters.front();
  if(x == s) return cosh(x);
  if(df(s) == 0) return *this * s;
- return Integral(*this,s);
+ return cosh(parameters.front()) * (1/ parameters.front().df(s)) ;
 }
 
 //////////////////////////////////////
@@ -159,7 +160,7 @@ Symbolic Cosh::integrate(const Symbolic &s) const
  const Symbolic &x = parameters.front();
  if(x == s) return sinh(x);
  if(df(s) == 0) return *this * s;
- return Integral(*this,s);
+ return sinh(parameters.front()) * (1/ parameters.front().df(s)) ;
 }
 
 //////////////////////////////////////
@@ -265,6 +266,7 @@ void Power::print(ostream &o) const
   if(parens2) o << ")";
 }
 
+
 Simplified Power::simplify() const
 {
  list<Symbolic>::iterator i, j;
@@ -274,6 +276,7 @@ Simplified Power::simplify() const
  if(n == 1) return b;
  if(b == 0) return Number<int>(0);
  if(b == 1) return Number<int>(1);
+
  if(b.type() == typeid(Power))
  {
   CastPtr<const Power> p = b;
@@ -328,9 +331,12 @@ Simplified Power::simplify() const
    bd = CastPtr<const Number<double> >(b)->n;
   else if(Number<void>(b).numerictype() == typeid(Rational<Number<void> >))
    bd = double(CastPtr<const Number<Rational<Number<void> > > >(b)->n);
+
   else return Power(b,n);
   if(bd >= 0.0 || int(nd) == nd)
    return Number<double>(pow(bd,nd));
+  if(bd == -1 && floor(nd) == nd && nd != 0.5) return Number<int>(1);
+  else if (bd == -1 && floor(nd) != nd && nd != 0.5) return Number<int>(-1);
  }
  return Power(b,n);
 }
@@ -431,6 +437,7 @@ Symbolic Power::integrate(const Symbolic &s) const
 {
  const Symbolic &a = parameters.front();
  const Symbolic &b = parameters.back();
+ if(b == -1) return ln(parameters.front()) * (1/ parameters.front().df(s));
  if(a == s && b.df(s) == 0)
  {
   if(b == -1) return ln(a);
@@ -439,7 +446,7 @@ Symbolic Power::integrate(const Symbolic &s) const
  if(a == SymbolicConstant::e && b == s)
   return *this;
  if(df(s) == 0) return *this * s;
- return Integral(*this,s);
+ return (a^(b+1)) / (b+1);
 }
 
 PatternMatches

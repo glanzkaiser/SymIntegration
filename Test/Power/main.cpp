@@ -1,4 +1,5 @@
 /*
+    SymIntegration is branching from SymbolicC++ 3.35
     SymbolicC++ : An object oriented computer algebra system written in C++
 
     Copyright (C) 2008 Yorick Hardy and Willi-Hans Steeb
@@ -23,37 +24,40 @@
 
 #include <iostream>
 #include "symintegrationc++.h"
+#include <bits/stdc++.h>
+#include <cmath>
 
 #define π 3.1415926535897f
 
 using namespace std;
 
+double division(double x, double y)
+{
+	return x/y;
+}
+
 int main(void)
 {
-	Symbolic x("x"), z("z"), y, y2;
-	//y = (x*x*x)+ (x*x);
-	y = sin(x);	
-	y2 = sin(2*x);	
-	cout << "y(x) = " << y << endl;
-	cout << "y (1) = " << y[x == 1] << endl;
+	Symbolic x("x"), z("z"),α("α"), β("β"), y, y2;
 	
-	cout << "f(x,z) = " << pow(x,z) << endl;
-	cout << "f(x,3) = " << pow(x,z)[z==3] << endl;
-	cout << "f(2,3) = " << pow(x,z)[x==2,z==3] << endl;
-	
+	y = 1/pow(x,z)[x==x-1,z==division(2,3)];
+	cout << "f(x) = " << y << endl;
 	y = integrate(y,x);
 	
-	cout << "integral of sin(x) = " << y << endl;
-	cout << "d_{x} (sin(2x)) = " << df(sin(2*x),x) << endl;
+	cout << "integral of f(x) = " << y << endl;
+	cout << "integral of f(x) from 0 to 1^{-} = " << y[x==1] - y[x==0] << endl;
+	cout << "integral of f(x) from 1^{+} to 3 = " << y[x==3] - y[x==1] << endl;
 	
-	y2 = integrate(y2,x);
+	cout << "integral of f(x) from 0 to 3 = " << (y[x==1] - y[x==0] ) + (y[x==3] - y[x==1]) << endl;
 	
-	cout << "integral of sin(2x) = " << y2 << endl;
-	cout << "integral of sin(3x) = " << integrate(sin(3*x),x) << endl;
-	cout << "integral of sin(0.5x) = " << integrate(sin(0.5*x),x) << endl;
+	cout << "pow(-1,4) = " << pow(x,z)[x==-1,z==4.0]<<endl;
+	cout << "pow(-1,4.1) = " << pow(x,z)[x==-1,z==4.1]<<endl;
+	cout << "pow(-1,0.5) = " << pow(x,z)[x==-1,z==0.5]<<endl;
+	cout << "2 * pow(-1,0.5) = " << 2*pow(x,z)[x==-1,z==0.5]<<endl;
+	cout << "floor(0.5) = " << floor(0.5) <<endl;
+	cout << "floor(2.1) = " << floor(2.1) <<endl;
 	
-	cout << "integral of sin(π/2) = " << sin(0.5*π) << endl;
-	cout << "integral of sin(π/4) = " << sin(0.25*π) << endl;
+	cout << "floor(-2.1) = " << floor(-2.1) <<endl;
 	
 	return 0; 
 }
