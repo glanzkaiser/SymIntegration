@@ -95,6 +95,76 @@ Symbolic Cos::integrate(const Symbolic &s) const
  return sin(parameters.front()) * (1/ parameters.front().df(s)) ;
 }
 
+
+//////////////////////////////////////
+// Implementation of Tan           //
+//////////////////////////////////////
+
+Tan::Tan(const Tan &s) : Symbol(s) {}
+
+Tan::Tan(const Symbolic &s) : Symbol(Symbol("tan")[s]) {}
+
+Simplified Tan::simplify() const
+{
+ const Symbolic &s = parameters.front().simplify();
+ if(s == 0) return Number<int>(1);
+ if(s.type() == typeid(Product))
+ {
+  CastPtr<const Product> p(s);
+  if(p->factors.front() == -1) return -Tan(-s);
+ }
+ if(s.type() == typeid(Numeric) &&
+    Number<void>(s).numerictype() == typeid(double))
+  return Number<double>(cos(CastPtr<const Number<double> >(s)->n));
+ return *this;
+}
+
+Symbolic Tan::df(const Symbolic &s) const
+{ return tan(parameters.front()) * tan(parameters.front()) * parameters.front().df(s) + parameters.front().df(s) ; }
+
+Symbolic Tan::integrate(const Symbolic &s) const
+{
+ const Symbolic &x = parameters.front();
+ if(x == s) return -ln(cos(x)) * (1 / parameters.front().df(s));
+ if(df(s) == 0) return *this * s;
+ return ln( tan(parameters.front()) * tan(parameters.front()) + 1) * ( 1 / (2*parameters.front().df(s)) ) ;
+}
+
+
+//////////////////////////////////////
+// Implementation of Cot           //
+//////////////////////////////////////
+
+Cot::Cot(const Cot &s) : Symbol(s) {}
+
+Cot::Cot(const Symbolic &s) : Symbol(Symbol("cot")[s]) {}
+
+Simplified Cot::simplify() const
+{
+ const Symbolic &s = parameters.front().simplify();
+ if(s == 0) return Number<int>(1);
+ if(s.type() == typeid(Product))
+ {
+  CastPtr<const Product> p(s);
+  if(p->factors.front() == -1) return -Cot(-s);
+ }
+ if(s.type() == typeid(Numeric) &&
+    Number<void>(s).numerictype() == typeid(double))
+  return Number<double>(cos(CastPtr<const Number<double> >(s)->n));
+ return *this;
+}
+
+Symbolic Cot::df(const Symbolic &s) const
+{ return -cot(parameters.front()) * cot(parameters.front()) * parameters.front().df(s) - parameters.front().df(s) ; }
+
+Symbolic Cot::integrate(const Symbolic &s) const
+{
+ const Symbolic &x = parameters.front();
+ if(x == s) return ln(sin(x)) * (1 / parameters.front().df(s));
+ if(df(s) == 0) return *this * s;
+ return -ln(tan(parameters.front()) * tan(parameters.front()) + 1) * ( 1 / (2*parameters.front().df(s)) ) + ln(tan(parameters.front())) * (1 / (parameters.front().df(s)) ) ;
+}
+
 //////////////////////////////////////
 // Implementation of Sinh           //
 //////////////////////////////////////
@@ -335,8 +405,8 @@ Simplified Power::simplify() const
   else return Power(b,n);
   if(bd >= 0.0 || int(nd) == nd)
    return Number<double>(pow(bd,nd));
-  if(bd == -1 && floor(nd) == nd && nd != 0.5) return Number<int>(1);
-  else if (bd == -1 && floor(nd) != nd && nd != 0.5) return Number<int>(-1);
+  if(bd == -1 && floor(nd) == nd && nd != 0.5 && nd != -0.5) return Number<int>(1);
+  else if (bd == -1 && floor(nd) != nd && nd != 0.5 && nd != -0.5) return Number<int>(-1);
  }
  return Power(b,n);
 }

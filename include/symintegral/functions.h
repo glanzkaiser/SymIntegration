@@ -32,6 +32,8 @@ using namespace std;
 
 class Sin;
 class Cos;
+class Tan;
+class Cot;
 class Sinh;
 class Cosh;
 class Log;
@@ -75,6 +77,30 @@ class Cos: public Symbol
 {
  public: Cos(const Cos&);
          Cos(const Symbolic&);
+
+         Simplified simplify() const;
+         Symbolic df(const Symbolic&) const;
+         Symbolic integrate(const Symbolic&) const;
+
+         Cloning *clone() const { return Cloning::clone(*this); }
+};
+
+class Tan: public Symbol
+{
+ public: Tan(const Tan&);
+         Tan(const Symbolic&);
+
+         Simplified simplify() const;
+         Symbolic df(const Symbolic&) const;
+         Symbolic integrate(const Symbolic&) const;
+
+         Cloning *clone() const { return Cloning::clone(*this); }
+};
+
+class Cot: public Symbol
+{
+ public: Cot(const Cot&);
+         Cot(const Symbolic&);
 
          Simplified simplify() const;
          Symbolic df(const Symbolic&) const;

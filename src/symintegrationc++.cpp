@@ -184,10 +184,12 @@ Symbolic cos(const Symbolic &s)
 { return Cos(s); }
 
 Symbolic tan(const Symbolic &s)
-{ return sin(s) / cos(s); }
+{ return Tan(s); }
+//{ return sin(s) / cos(s); }
 
 Symbolic cot(const Symbolic &s)
-{ return cos(s) / sin(s); }
+{ return Cot(s); }
+//{ return cos(s) / sin(s); }
 
 Symbolic sec(const Symbolic &s)
 { return 1 / cos(s); }

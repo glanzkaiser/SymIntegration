@@ -20,7 +20,7 @@
 */
 // THANKS SENTINEL!!! and Freya too
 
-// g++ -o result integral.cpp -lsymintegrationc++
+// g++ -o result main.cpp -lsymintegration
 
 #include <iostream>
 #include "symintegrationc++.h"

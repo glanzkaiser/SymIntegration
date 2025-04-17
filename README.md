@@ -18,6 +18,13 @@ be compiled as part of a library and so create the include / library
 infrastructure. The src and include directories are populated by
 scripts from the SymbolicC++ header files.
 
+# Available Features
+
+It is able to compute
+
+1. The integral of `sin(ax+b), cos(ax+b), tan(ax+b), cot(ax+b), sec(ax+b), csc(ax+b)` with `ax + b` is a polynomial of order 1.
+2. The integral of `1/(ax+b)`
+
 # Learning the Code
 
 The C++ codes are only located in the `/src` directory , it is designed to contain all the `.cpp` files, then inside the `/include/` we have header files and another folder `/include/symintegral/` is also a folder that contain header files too.
@@ -84,14 +91,14 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 | Status | Name | Details |
 | -------------     | ------------- | ------------- | 
 |:sunflower:   | Compute integral of sine and cosine  					| Done
-|:writing_hand:| Compute integral for all trigonometric	       				| Not yet
+|:sunflower:   | Compute integral for all trigonometric	       				| Done
 |:writing_hand:| Compute integral for all hyperbolic	        			| Not yet
 |:writing_hand:| Compute integral for product, divide and sum of basic functions	| Not yet
 |:writing_hand:| Compute integral for inverse trigonometric        			| Not yet
 |:writing_hand:| Compute integral with Integration by parts				| Not yet
 |:writing_hand:| Compute definite integral with improper integrals			| Not yet
 
-# Remark
+# Milestone
 
 We are using less, minimal amount of code to create the library, if you compare it with the original SymbolicC++ that has `.configure` and `Makefile` that will be spawn after you configure it, we don' t use any of that.
 
@@ -112,7 +119,24 @@ For comparison: The basic codes that we are using SymbolicC++, cannot compute th
 By April 13th, 2025: The integral of `1/(ax+b)` can be computed nicely and fraction / decimal power computation e.g. `(-1)^(a/b)` can be computed too.
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/8.png" width="83%">
 
-The code for the decimal power computation is located here (the if statement with 3 conditions):
+The code for the decimal power computation is located here (the if statement with 4 conditions):
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/9.png" width="83%">
 
+By April 17th, 2025: We add the implementation for `tan(x)` and `cot(x)` so it can compute the derivative and integral of all basic trigonometry functions (`sin(ax+b), cos(ax+b), tan(ax+b), cot(ax+b), sec(ax+b), csc(ax+b)`) for polynomial of order 1.
 
+The codes that we modified are located in: 
+
+* src/functions.cpp
+* src/symintegrationc++.cpp
+* include/symintegral/symintegrationc++.h
+* include/symintegral/functions.h (to add the Class of `Tan` and `Cot`)
+
+The test code can be located in the folder `Test/Trigonometry/main.cpp`
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/10.png" width="83%">
+
+Comparing the result with JULIA
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/11.png" width="83%">
+
+The results produce the same output number at the end
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/12.png" width="83%">

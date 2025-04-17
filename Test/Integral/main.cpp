@@ -20,7 +20,7 @@
 */
 // THANKS SENTINEL!!! and Freya too
 
-// g++ -o result integral.cpp -lsymintegrationc++
+// g++ -o result main.cpp -lsymintegration
 
 #include <iostream>
 #include "symintegrationc++.h"
@@ -53,8 +53,8 @@ int main(void)
 	cout << "integral of sin(3x) = " << integrate(sin(3*x),x) << endl;
 	cout << "integral of sin(0.5x) = " << integrate(sin(0.5*x),x) << endl;
 	
-	cout << "integral of sin(π/2) = " << sin(0.5*π) << endl;
-	cout << "integral of sin(π/4) = " << sin(0.25*π) << endl;
+	cout << "sin(π/2) = " << sin(0.5*π) << endl;
+	cout << "sin(π/4) = " << sin(0.25*π) << endl;
 	
 	cout << "\nintegral of sinh(3x) = " << integrate(sinh(3*x),x) << endl;
 	cout << "integral of cosh(3x) = " << integrate(cosh(3*x),x) << endl;
