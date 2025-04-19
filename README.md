@@ -146,27 +146,27 @@ By April 19th, 2025: We can now compute the integral and derivative of `asin(ax+
 
 These are the basic formula integration formula related to the inverse trigonometry
 
-$$
-\begin{align*}
-\int \frac{1}{\sqrt{1 - x^{2}}} dx = \sin^{-1} (x) + C, -1 < x < 1 \\\\
+```math
 
-\int - \frac{1}{\sqrt{1 - x^{2}}} dx = \cos^{-1} (x) + C, -1 < x < 1 \\\\
+\int \frac{1}{\sqrt{1 - x^{2}}} dx = \sin^{-1} (x) + C, -1 < x < 1 \\ \n
 
-\int \frac{1}{1 + x^{2}} dx = \tan^{-1} (x) + C \\\\
+\int - \frac{1}{\sqrt{1 - x^{2}}} dx = \cos^{-1} (x) + C, -1 < x < 1 \\ \n
+
+\int \frac{1}{1 + x^{2}} dx = \tan^{-1} (x) + C \\ \n
 
 \int \frac{1}{|x| \sqrt{x^{2} - 1}} dx = \sec^{-1} (x) + C, |x| > 1
-\end{align*} 
-$$
+ 
+```
 
 Remember that
 
-$$
-\begin{align*}
-\sin^{-1} (x) \neq \frac{1}{\sin (x)} \\\\
+```math
+
+\sin^{-1} (x) \neq \frac{1}{\sin (x)} \\ \n
 
 \sin^{-1} (x) = asin(x)
-\end{align*}
-$$
+
+```
 
 The codes that we modified are located in: 
 
