@@ -24,6 +24,7 @@ It is able to compute
 
 1. The integral of `sin(ax+b), cos(ax+b), tan(ax+b), cot(ax+b), sec(ax+b), csc(ax+b)` with `ax + b` is a polynomial of order 1.
 2. The integral of `1/(ax+b)`
+1. The integral and derivative of `asin(ax+b), acos(ax+b), atan(ax+b), acot(ax+b), asec(ax+b), acsc(ax+b)` with `ax + b` is a polynomial of order 1. Only `asec(ax+b), acsc(ax+b)` integration that have no analytic solution yet since it has cases output.
 
 # Learning the Code
 
@@ -140,3 +141,51 @@ Comparing the result with JULIA
 
 The results produce the same output number at the end
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/12.png" width="83%">
+
+By April 19th, 2025: We can now compute the integral and derivative of `asin(ax+b), acos(ax+b), atan(ax+b), acot(ax+b), asec(ax+b), acsc(ax+b)`, exception for the integration of `asec(ax+b), acsc(ax+b)` they still have no analytic solution yet.
+
+These are the basic formula integration formula related to the inverse trigonometry
+
+```math
+
+\int \frac{1}{\sqrt{1 - x^{2}}} dx = \sin^{-1} (x) + C, -1 < x < 1
+
+\int - \frac{1}{\sqrt{1 - x^{2}}} dx = \cos^{-1} (x) + C, -1 < x < 1
+
+\int \frac{1}{1 + x^{2}} dx = \tan^{-1} (x) + C
+
+\int \frac{1}{|x| \sqrt{x^{2} - 1}} dx = \sec^{-1} (x) + C, |x| > 1
+ 
+```
+
+Remember that
+
+```math
+
+\sin^{-1} (x) \neq \frac{1}{\sin (x)}
+
+\sin^{-1} (x) = asin(x)
+
+```
+
+The codes that we modified are located in: 
+
+* src/functions.cpp
+* src/symintegrationc++.cpp
+* include/symintegral/symintegrationc++.h
+* include/symintegral/functions.h (to add the Class of `Atan, Acot, Asin, Acos, Asec, Acsc, Asinh,` and `Acosh`)
+
+The test code can be located in the folder `Test/Inverse Trigonometry/main.cpp`
+
+Comparing the result with SymPy in JULIA:
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/13.png" width="83%">
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/14.png" width="83%">
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/15.png" width="83%">
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/16.png" width="83%">
+
+The analytic solution for integral of `asec(ax+b` from SymPy in JULIA:
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/17.png" width="83%">
+

@@ -180,28 +180,52 @@ int operator!=(double d,const Symbolic &s1)
 Symbolic sin(const Symbolic &s)
 { return Sin(s); }
 
+Symbolic asin(const Symbolic &s)
+{ return Asin(s); }
+
 Symbolic cos(const Symbolic &s)
 { return Cos(s); }
+
+Symbolic acos(const Symbolic &s)
+{ return Acos(s); }
 
 Symbolic tan(const Symbolic &s)
 { return Tan(s); }
 //{ return sin(s) / cos(s); }
 
+Symbolic atan(const Symbolic &s)
+{ return Atan(s); }
+
 Symbolic cot(const Symbolic &s)
 { return Cot(s); }
 //{ return cos(s) / sin(s); }
 
+Symbolic acot(const Symbolic &s)
+{ return Acot(s); }
+
 Symbolic sec(const Symbolic &s)
 { return 1 / cos(s); }
+
+Symbolic asec(const Symbolic &s)
+{ return Asec(s); }
 
 Symbolic csc(const Symbolic &s)
 { return 1 / sin(s); }
 
+Symbolic acsc(const Symbolic &s)
+{ return Acsc(s); }
+
 Symbolic sinh(const Symbolic &s)
 { return Sinh(s); }
 
+Symbolic asinh(const Symbolic &s)
+{ return Asinh(s); }
+
 Symbolic cosh(const Symbolic &s)
 { return Cosh(s); }
+
+Symbolic acosh(const Symbolic &s)
+{ return Acosh(s); }
 
 Symbolic ln(const Symbolic &s)
 { return Log(SymbolicConstant::e,s); }

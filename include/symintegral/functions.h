@@ -31,11 +31,19 @@ using namespace std;
 #define SYMBOLIC_CPLUSPLUS_FUNCTIONS_FORWARD
 
 class Sin;
+class Asin;
 class Cos;
+class Acos;
 class Tan;
+class Atan;
 class Cot;
+class Acot;
+class Asec;
+class Acsc;
 class Sinh;
+class Asinh;
 class Cosh;
+class Acosh;
 class Log;
 class Power;
 class Derivative;
@@ -73,10 +81,34 @@ class Sin: public Symbol
          Cloning *clone() const { return Cloning::clone(*this); }
 };
 
+class Asin: public Symbol
+{
+ public: Asin(const Asin&);
+         Asin(const Symbolic&);
+
+         Simplified simplify() const;
+         Symbolic df(const Symbolic&) const;
+         Symbolic integrate(const Symbolic&) const;
+
+         Cloning *clone() const { return Cloning::clone(*this); }
+};
+
 class Cos: public Symbol
 {
  public: Cos(const Cos&);
          Cos(const Symbolic&);
+
+         Simplified simplify() const;
+         Symbolic df(const Symbolic&) const;
+         Symbolic integrate(const Symbolic&) const;
+
+         Cloning *clone() const { return Cloning::clone(*this); }
+};
+
+class Acos: public Symbol
+{
+ public: Acos(const Acos&);
+         Acos(const Symbolic&);
 
          Simplified simplify() const;
          Symbolic df(const Symbolic&) const;
@@ -97,10 +129,58 @@ class Tan: public Symbol
          Cloning *clone() const { return Cloning::clone(*this); }
 };
 
+class Atan: public Symbol
+{
+ public: Atan(const Atan&);
+         Atan(const Symbolic&);
+
+         Simplified simplify() const;
+         Symbolic df(const Symbolic&) const;
+         Symbolic integrate(const Symbolic&) const;
+
+         Cloning *clone() const { return Cloning::clone(*this); }
+};
+
 class Cot: public Symbol
 {
  public: Cot(const Cot&);
          Cot(const Symbolic&);
+
+         Simplified simplify() const;
+         Symbolic df(const Symbolic&) const;
+         Symbolic integrate(const Symbolic&) const;
+
+         Cloning *clone() const { return Cloning::clone(*this); }
+};
+
+class Acot: public Symbol
+{
+ public: Acot(const Acot&);
+         Acot(const Symbolic&);
+
+         Simplified simplify() const;
+         Symbolic df(const Symbolic&) const;
+         Symbolic integrate(const Symbolic&) const;
+
+         Cloning *clone() const { return Cloning::clone(*this); }
+};
+
+class Asec: public Symbol
+{
+ public: Asec(const Asec&);
+         Asec(const Symbolic&);
+
+         Simplified simplify() const;
+         Symbolic df(const Symbolic&) const;
+         Symbolic integrate(const Symbolic&) const;
+
+         Cloning *clone() const { return Cloning::clone(*this); }
+};
+
+class Acsc: public Symbol
+{
+ public: Acsc(const Acsc&);
+         Acsc(const Symbolic&);
 
          Simplified simplify() const;
          Symbolic df(const Symbolic&) const;
@@ -121,10 +201,34 @@ class Sinh: public Symbol
          Cloning *clone() const { return Cloning::clone(*this); }
 };
 
+class Asinh: public Symbol
+{
+ public: Asinh(const Asinh&);
+         Asinh(const Symbolic&);
+
+         Simplified simplify() const;
+         Symbolic df(const Symbolic&) const;
+         Symbolic integrate(const Symbolic&) const;
+
+         Cloning *clone() const { return Cloning::clone(*this); }
+};
+
 class Cosh: public Symbol
 {
  public: Cosh(const Cosh&);
          Cosh(const Symbolic&);
+
+         Simplified simplify() const;
+         Symbolic df(const Symbolic&) const;
+         Symbolic integrate(const Symbolic&) const;
+
+         Cloning *clone() const { return Cloning::clone(*this); }
+};
+
+class Acosh: public Symbol
+{
+ public: Acosh(const Acosh&);
+         Acosh(const Symbolic&);
 
          Simplified simplify() const;
          Symbolic df(const Symbolic&) const;
