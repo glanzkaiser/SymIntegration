@@ -144,7 +144,7 @@ The results produce the same output number at the end
 
 By April 19th, 2025: We can now compute the integral and derivative of `asin(ax+b), acos(ax+b), atan(ax+b), acot(ax+b), asec(ax+b), acsc(ax+b)`, exception for the integration of `asec(ax+b), acsc(ax+b)` they still have no analytic solution yet.
 
-These are the basic formula integration formula related to the inverse trigonometry
+These are the basic integration formula related to the inverse trigonometry
 
 
 $$\int \frac{1}{\sqrt{1 - x^{2}}} dx = \sin^{-1} (x) + C, -1 < x < 1$$
