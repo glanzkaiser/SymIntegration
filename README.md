@@ -148,9 +148,9 @@ These are the basic formula integration formula related to the inverse trigonome
 
 ```math
 
-\int \frac{1}{\sqrt{1 - x^{2}}} dx = \sin^{-1} (x) + C, -1 < x < 1 \\ \n
+\int \frac{1}{\sqrt{1 - x^{2}}} dx = \sin^{-1} (x) + C, -1 < x < 1 \linebreak
 
-\int - \frac{1}{\sqrt{1 - x^{2}}} dx = \cos^{-1} (x) + C, -1 < x < 1 \\ \n
+\int - \frac{1}{\sqrt{1 - x^{2}}} dx = \cos^{-1} (x) + C, -1 < x < 1 \\ \linebreak
 
 \int \frac{1}{1 + x^{2}} dx = \tan^{-1} (x) + C \\ \n
 
