@@ -38,12 +38,18 @@ class Tan;
 class Atan;
 class Cot;
 class Acot;
+class Sec;
 class Asec;
+class Csc;
 class Acsc;
 class Sinh;
 class Asinh;
 class Cosh;
 class Acosh;
+class Tanh;
+class Coth;
+class Sech;
+class Csch;
 class Log;
 class Power;
 class Derivative;
@@ -165,6 +171,18 @@ class Acot: public Symbol
          Cloning *clone() const { return Cloning::clone(*this); }
 };
 
+class Sec: public Symbol
+{
+ public: Sec(const Sec&);
+         Sec(const Symbolic&);
+
+         Simplified simplify() const;
+         Symbolic df(const Symbolic&) const;
+         Symbolic integrate(const Symbolic&) const;
+
+         Cloning *clone() const { return Cloning::clone(*this); }
+};
+
 class Asec: public Symbol
 {
  public: Asec(const Asec&);
@@ -176,6 +194,19 @@ class Asec: public Symbol
 
          Cloning *clone() const { return Cloning::clone(*this); }
 };
+
+class Csc: public Symbol
+{
+ public: Csc(const Csc&);
+         Csc(const Symbolic&);
+
+         Simplified simplify() const;
+         Symbolic df(const Symbolic&) const;
+         Symbolic integrate(const Symbolic&) const;
+
+         Cloning *clone() const { return Cloning::clone(*this); }
+};
+
 
 class Acsc: public Symbol
 {
@@ -229,6 +260,54 @@ class Acosh: public Symbol
 {
  public: Acosh(const Acosh&);
          Acosh(const Symbolic&);
+
+         Simplified simplify() const;
+         Symbolic df(const Symbolic&) const;
+         Symbolic integrate(const Symbolic&) const;
+
+         Cloning *clone() const { return Cloning::clone(*this); }
+};
+
+class Tanh: public Symbol
+{
+ public: Tanh(const Tanh&);
+         Tanh(const Symbolic&);
+
+         Simplified simplify() const;
+         Symbolic df(const Symbolic&) const;
+         Symbolic integrate(const Symbolic&) const;
+
+         Cloning *clone() const { return Cloning::clone(*this); }
+};
+
+class Coth: public Symbol
+{
+ public: Coth(const Coth&);
+         Coth(const Symbolic&);
+
+         Simplified simplify() const;
+         Symbolic df(const Symbolic&) const;
+         Symbolic integrate(const Symbolic&) const;
+
+         Cloning *clone() const { return Cloning::clone(*this); }
+};
+
+class Sech: public Symbol
+{
+ public: Sech(const Sech&);
+         Sech(const Symbolic&);
+
+         Simplified simplify() const;
+         Symbolic df(const Symbolic&) const;
+         Symbolic integrate(const Symbolic&) const;
+
+         Cloning *clone() const { return Cloning::clone(*this); }
+};
+
+class Csch: public Symbol
+{
+ public: Csch(const Csch&);
+         Csch(const Symbolic&);
 
          Simplified simplify() const;
          Symbolic df(const Symbolic&) const;

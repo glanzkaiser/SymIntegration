@@ -24,7 +24,8 @@ It is able to compute
 
 1. The integral of `sin(ax+b), cos(ax+b), tan(ax+b), cot(ax+b), sec(ax+b), csc(ax+b)` with `ax + b` is a polynomial of order 1.
 2. The integral of `1/(ax+b)`
-1. The integral and derivative of `asin(ax+b), acos(ax+b), atan(ax+b), acot(ax+b), asec(ax+b), acsc(ax+b)` with `ax + b` is a polynomial of order 1. Only `asec(ax+b), acsc(ax+b)` integration that have no analytic solution yet since it has cases output.
+3. The integral and derivative of `asin(ax+b), acos(ax+b), atan(ax+b), acot(ax+b), asec(ax+b), acsc(ax+b)` with `ax + b` is a polynomial of order 1. Only `asec(ax+b), acsc(ax+b)` integration that have no analytic solution yet since it has cases output.
+4. The integral and derivative of all hyperbolic trigonometry functions`sinh(ax+b), cosh(ax+b), tanh(ax+b), coth(ax+b), sech(ax+b), csch(ax+b)`.
 
 # Learning the Code
 
@@ -93,9 +94,9 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 | -------------     | ------------- | ------------- | 
 |:sunflower:   | Compute integral of sine and cosine  					| Done
 |:sunflower:   | Compute integral for all trigonometric	       				| Done
-|:writing_hand:| Compute integral for all hyperbolic	        			| Not yet
+|:sunflower:   | Compute integral for all hyperbolic	        			| Done
 |:writing_hand:| Compute integral for product, divide and sum of basic functions	| Not yet
-|:writing_hand:| Compute integral for inverse trigonometric        			| Not yet
+|:sunflower:   | Compute integral for inverse trigonometric        			| Done
 |:writing_hand:| Compute integral with Integration by parts				| Not yet
 |:writing_hand:| Compute definite integral with improper integrals			| Not yet
 
@@ -182,4 +183,12 @@ Comparing the result with SymPy in JULIA:
 
 The analytic solution for integral of `asec(ax+b` from SymPy in JULIA:
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/17.png" width="83%">
+
+By April 22nd, 2025: We can now compute the integral and derivative of all hyperbolic trigonometry functions`sinh(ax+b), cosh(ax+b), tanh(ax+b), coth(ax+b), sech(ax+b), csch(ax+b)`. We can also compute the numerical result of all hyperbolic trignometry functions, e.g. `sech(2)`.
+
+We are taking note of the implementation for `cot, sec, csc, coth, sech, csch` they are all need to be divided to 2 cases for `integer` and `double` to be able to return numerical computation, e.g. `cot(2)`, because in `src/functions.cpp` for the implementation part `return Number<double>(cot(CastPtr<const Number<double> >(s)->n));` will return `segmentation fault`.
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/18.png" width="83%">
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/19.png" width="83%">
 

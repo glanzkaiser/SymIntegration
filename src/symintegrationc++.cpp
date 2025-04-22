@@ -204,13 +204,13 @@ Symbolic acot(const Symbolic &s)
 { return Acot(s); }
 
 Symbolic sec(const Symbolic &s)
-{ return 1 / cos(s); }
+{ return Sec(s); }
 
 Symbolic asec(const Symbolic &s)
 { return Asec(s); }
 
 Symbolic csc(const Symbolic &s)
-{ return 1 / sin(s); }
+{ return Csc(s); }
 
 Symbolic acsc(const Symbolic &s)
 { return Acsc(s); }
@@ -226,6 +226,18 @@ Symbolic cosh(const Symbolic &s)
 
 Symbolic acosh(const Symbolic &s)
 { return Acosh(s); }
+
+Symbolic tanh(const Symbolic &s)
+{ return Tanh(s); }
+
+Symbolic coth(const Symbolic &s)
+{ return Coth(s); }
+
+Symbolic sech(const Symbolic &s)
+{ return Sech(s); }
+
+Symbolic csch(const Symbolic &s)
+{ return Csch(s); }
 
 Symbolic ln(const Symbolic &s)
 { return Log(SymbolicConstant::e,s); }

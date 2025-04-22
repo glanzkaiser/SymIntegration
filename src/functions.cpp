@@ -35,14 +35,27 @@ Sin::Sin(const Sin &s) : Symbol(s) {}
 
 Sin::Sin(const Symbolic &s) : Symbol(Symbol("sin")[s]) {}
 
+Asin::Asin(const Asin &s) : Symbol(s) {}
+
+Asin::Asin(const Symbolic &s) : Symbol(Symbol("asin")[s]) {}
+
+Acos::Acos(const Acos &s) : Symbol(s) {}
+
+Acos::Acos(const Symbolic &s) : Symbol(Symbol("acos")[s]) {}
+
 Simplified Sin::simplify() const
 {
  const Symbolic &s = parameters.front().simplify();
+ const Symbolic &ac = Symbol(Symbol("acos")[s]) ;
+ //const Symbolic &x = parameters.front();
  if(s == 0) return Number<int>(0);
+ if(s == ac) return Number<int>(8);
+ //if(parameters.front() == Symbol("acos")[s])) return Number<int>(8);
  if(s.type() == typeid(Product))
  {
   CastPtr<const Product> p(s);
   if(p->factors.front() == -1) return -Sin(-s);
+ // if(p ->factors.front() == acos(s)) return sqrt(1-(parameters.front()*parameters.front()));
  }
  if(s.type() == typeid(Numeric) &&
     Number<void>(s).numerictype() == typeid(double))
@@ -65,9 +78,9 @@ Symbolic Sin::integrate(const Symbolic &s) const
 // Implementation of Asin            //
 //////////////////////////////////////
 
-Asin::Asin(const Asin &s) : Symbol(s) {}
+//Asin::Asin(const Asin &s) : Symbol(s) {}
 
-Asin::Asin(const Symbolic &s) : Symbol(Symbol("asin")[s]) {}
+//Asin::Asin(const Symbolic &s) : Symbol(Symbol("asin")[s]) {}
 
 Simplified Asin::simplify() const
 {
@@ -126,21 +139,21 @@ Symbolic Cos::integrate(const Symbolic &s) const
  const Symbolic &x = parameters.front();
  if(x == s) return sin(x);
  if(df(s) == 0) return *this * s;
- return sin(parameters.front()) * (1/ parameters.front().df(s)) ;
+ return sin(parameters.front()) * ( 1 / (parameters.front().df(s)) ) ;
 }
 
 //////////////////////////////////////
 // Implementation of Acos            //
 //////////////////////////////////////
 
-Acos::Acos(const Acos &s) : Symbol(s) {}
+//Acos::Acos(const Acos &s) : Symbol(s) {}
 
-Acos::Acos(const Symbolic &s) : Symbol(Symbol("acos")[s]) {}
+//Acos::Acos(const Symbolic &s) : Symbol(Symbol("acos")[s]) {}
 
 Simplified Acos::simplify() const
 {
  const Symbolic &s = parameters.front().simplify();
- if(s == 0) return Number<int>(0);
+ if(s == 0) return Number<double>(1.5707963267948966);
  if(s.type() == typeid(Product))
  {
   CastPtr<const Product> p(s);
@@ -175,7 +188,7 @@ Tan::Tan(const Symbolic &s) : Symbol(Symbol("tan")[s]) {}
 Simplified Tan::simplify() const
 {
  const Symbolic &s = parameters.front().simplify();
- if(s == 0) return Number<int>(1);
+ if(s == 0) return Number<int>(0);
  if(s.type() == typeid(Product))
  {
   CastPtr<const Product> p(s);
@@ -229,7 +242,7 @@ Symbolic Atan::integrate(const Symbolic &s) const
  const Symbolic &x = parameters.front();
  if(x == s) return x*atan(x) - 0.5*ln(1+x*x) ;
  if(df(s) == 0) return *this * s;
- return ( (x/parameters.front().df(s))*atan(parameters.front()) - ln(parameters.front()*parameters.front()+1) / (2*parameters.front().df(s)) + parameters.front().coeff(x,0)*(atan(parameters.front())) / (parameters.front().df(s))  );
+ return ( (x/parameters.front().df(s))*atan(parameters.front()) - ln(parameters.front()*parameters.front()+1) / (2*parameters.front().df(s)) + parameters.front().coeff(s,0)*(atan(parameters.front())) / (parameters.front().df(s))  );
 }
 
 
@@ -244,15 +257,20 @@ Cot::Cot(const Symbolic &s) : Symbol(Symbol("cot")[s]) {}
 Simplified Cot::simplify() const
 {
  const Symbolic &s = parameters.front().simplify();
- if(s == 0) return Number<int>(1);
+ if(s == 0) return Symbol(Symbol("Inf"));
  if(s.type() == typeid(Product))
  {
   CastPtr<const Product> p(s);
   if(p->factors.front() == -1) return -Cot(-s);
  }
- if(s.type() == typeid(Numeric) &&
-    Number<void>(s).numerictype() == typeid(double))
-  return Number<double>(cot(CastPtr<const Number<double> >(s)->n));
+ if(s.type() == typeid(Numeric) && Number<void>(s).numerictype() == typeid(double))
+ {
+	return Number<double>(1) / Number<double>(tan(CastPtr<const Number<double> >(s)->n));
+ }
+ if(s.type() == typeid(Numeric) && Number<void>(s).numerictype() == typeid(int))
+ {
+	return Number<double>(1) / Number<double>(tan(CastPtr<const Number<int> >(s)->n));
+ }
  return *this;
 }
 
@@ -278,7 +296,7 @@ Acot::Acot(const Symbolic &s) : Symbol(Symbol("acot")[s]) {}
 Simplified Acot::simplify() const
 {
  const Symbolic &s = parameters.front().simplify();
- if(s == 0) return Number<int>(0);
+ if(s == 0) return Number<double>(1.5707963267948966);
  if(s.type() == typeid(Product))
  {
   CastPtr<const Product> p(s);
@@ -298,7 +316,46 @@ Symbolic Acot::integrate(const Symbolic &s) const
  const Symbolic &x = parameters.front();
  if(x == s) return x*acot(x) + 0.5*ln(1+x*x) ;
  if(df(s) == 0) return *this * s;
- return ( (x/x.df(s)) * acot(parameters.front()) + ln(parameters.front()*parameters.front()+1) / (2*parameters.front().df(s)) + parameters.front().coeff(x,0)*(acot(parameters.front())) / (parameters.front().df(s))  );
+ return ( (x/x.df(s)) * acot(parameters.front()) + ln(parameters.front()*parameters.front()+1) / (2*parameters.front().df(s)) + parameters.front().coeff(s,0)*(acot(parameters.front())) / (parameters.front().df(s))  );
+}
+
+//////////////////////////////////////
+// Implementation of Sec            //
+//////////////////////////////////////
+
+Sec::Sec(const Sec &s) : Symbol(s) {}
+
+Sec::Sec(const Symbolic &s) : Symbol(Symbol("sec")[s]) {}
+
+Simplified Sec::simplify() const
+{
+ const Symbolic &s = parameters.front().simplify();
+ if(s == 0) return Number<int>(1);
+ if(s.type() == typeid(Product))
+ {
+  CastPtr<const Product> p(s);
+  if(p->factors.front() == -1) return Sec(-s);
+ }
+ if(s.type() == typeid(Numeric) && Number<void>(s).numerictype() == typeid(double))
+ {
+	return Number<double>(1) / Number<double>(cos(CastPtr<const Number<double> >(s)->n));
+ }
+ if(s.type() == typeid(Numeric) && Number<void>(s).numerictype() == typeid(int))
+ {
+	return Number<double>(1) / Number<double>(cos(CastPtr<const Number<int> >(s)->n));
+ }
+ return *this;
+}
+
+Symbolic Sec::df(const Symbolic &s) const
+{ return parameters.front().df(s) * tan(parameters.front()) * sec(parameters.front()); }
+
+Symbolic Sec::integrate(const Symbolic &s) const
+{
+ const Symbolic &x = parameters.front();
+ if(x == s) return -0.5*(ln(sin(x)-1)) + 0.5*(ln(sin(x)+1)) ;
+ if(df(s) == 0) return *this * s;
+ return ln(tan(parameters.front()) + sec(parameters.front()) ) * (1 / (parameters.front().df(s)) ) ;
 }
 
 //////////////////////////////////////
@@ -312,7 +369,7 @@ Asec::Asec(const Symbolic &s) : Symbol(Symbol("asec")[s]) {}
 Simplified Asec::simplify() const
 {
  const Symbolic &s = parameters.front().simplify();
- if(s == 0) return Number<int>(0);
+ if(s == 0) return Symbol(Symbol("Inf"));
  if(s.type() == typeid(Product))
  {
   CastPtr<const Product> p(s);
@@ -330,9 +387,58 @@ Symbolic Asec::df(const Symbolic &s) const
 Symbolic Asec::integrate(const Symbolic &s) const
 {
  const Symbolic &x = parameters.front();
- if(x == s) return x*asec(x) - acosh(x) ;
+ if(x == s) 
+ {
+	cout << "( for |x^2| > 1 )"<< endl ;
+	return x*asec(x) - acosh(x) ;
+ }
  if(df(s) == 0) return *this * s;
+ if(parameters.front().coeff(s,0)==0 && parameters.front().coeff(s,1) !=0)
+ {
+	cout << "( for |x^2| > 1/"<< parameters.front().coeff(s,1) * parameters.front().coeff(s,1) << " )"<< endl ;
+	return (x/x.df(s))*asec(parameters.front()) - acosh(parameters.front()) ;
+ }
  return Integral(*this,s);
+}
+
+
+//////////////////////////////////////
+// Implementation of Csc            //
+//////////////////////////////////////
+
+Csc::Csc(const Csc &s) : Symbol(s) {}
+
+Csc::Csc(const Symbolic &s) : Symbol(Symbol("csc")[s]) {}
+
+Simplified Csc::simplify() const
+{
+ const Symbolic &s = parameters.front().simplify();
+ if(s == 0) return Number<int>(1);
+ if(s.type() == typeid(Product))
+ {
+  CastPtr<const Product> p(s);
+  if(p->factors.front() == -1) return -Csc(-s);
+ }
+ if(s.type() == typeid(Numeric) && Number<void>(s).numerictype() == typeid(double))
+ {
+	return Number<double>(1) / Number<double>(sin(CastPtr<const Number<double> >(s)->n));
+ }
+ if(s.type() == typeid(Numeric) && Number<void>(s).numerictype() == typeid(int))
+ {
+	return Number<double>(1) / Number<double>(sin(CastPtr<const Number<int> >(s)->n));
+ }
+ return *this;
+}
+
+Symbolic Csc::df(const Symbolic &s) const
+{ return -parameters.front().df(s) * cot(parameters.front()) * csc(parameters.front()); }
+
+Symbolic Csc::integrate(const Symbolic &s) const
+{
+ const Symbolic &x = parameters.front();
+ if(x == s) return 0.5*(ln(cos(x)-1)) - 0.5*(ln(cos(x)+1)) ;
+ if(df(s) == 0) return *this * s;
+ return -ln(cot(parameters.front()) + csc(parameters.front()) ) * (1 / (parameters.front().df(s)) ) ;
 }
 
 //////////////////////////////////////
@@ -346,7 +452,7 @@ Acsc::Acsc(const Symbolic &s) : Symbol(Symbol("acsc")[s]) {}
 Simplified Acsc::simplify() const
 {
  const Symbolic &s = parameters.front().simplify();
- if(s == 0) return Number<int>(0);
+ if(s == 0) return Symbol(Symbol("Inf"));
  if(s.type() == typeid(Product))
  {
   CastPtr<const Product> p(s);
@@ -364,8 +470,17 @@ Symbolic Acsc::df(const Symbolic &s) const
 Symbolic Acsc::integrate(const Symbolic &s) const
 {
  const Symbolic &x = parameters.front();
- if(x == s) return x*acsc(x) + acosh(x) ;
+ if(x == s) 
+ {
+	cout << "( for |x^2| > 1 )"<< endl ;
+	return x*acsc(x) + acosh(x) ;
+ }
  if(df(s) == 0) return *this * s;
+ if(parameters.front().coeff(s,0)==0 && parameters.front().coeff(s,1) !=0)
+ {
+	cout << "( for |x^2| > 1/"<< parameters.front().coeff(s,1) * parameters.front().coeff(s,1) << " )"<< endl ;
+	return (x/x.df(s))*acsc(parameters.front()) + acosh(parameters.front()) ;
+ }
  return Integral(*this,s);
 }
 
@@ -385,6 +500,7 @@ Simplified Sinh::simplify() const
  {
   CastPtr<const Product> p(s);
   if(p->factors.front() == -1) return -Sinh(-s);
+  if(p->factors.front() == 1) return 0.5*(exp(s) - exp(-s));
  }
  if(s.type() == typeid(Numeric) &&
     Number<void>(s).numerictype() == typeid(double))
@@ -434,7 +550,7 @@ Symbolic Asinh::integrate(const Symbolic &s) const
  const Symbolic &x = parameters.front();
  if(x == s) return x*asinh(x) - sqrt(x*x+1);
  if(df(s) == 0) return *this * s;
- return ( x/x.df(s)) * asinh(parameters.front()) - (sqrt(parameters.front()*parameters.front() + 1)) / (parameters.front().df(s)) + (parameters.front().coeff(x,0) * asinh(parameters.front())) / (parameters.front().df(s))  ;
+ return ( x/x.df(s)) * asinh(parameters.front()) - (sqrt(parameters.front()*parameters.front() + 1)) / (parameters.front().df(s)) + (parameters.front().coeff(s,0) * asinh(parameters.front())) / (parameters.front().df(s))  ;
 }
 
 //////////////////////////////////////
@@ -453,6 +569,7 @@ Simplified Cosh::simplify() const
  {
   CastPtr<const Product> p(s);
   if(p->factors.front() == -1) return Cosh(-s);
+  if(p->factors.front() == 1) return 0.5*(exp(s) + exp(-s));
  }
  if(s.type() == typeid(Numeric) &&
     Number<void>(s).numerictype() == typeid(double))
@@ -483,7 +600,7 @@ Acosh::Acosh(const Symbolic &s) : Symbol(Symbol("acosh")[s]) {}
 Simplified Acosh::simplify() const
 {
  const Symbolic &s = parameters.front().simplify();
- if(s == 0) return Number<int>(1);
+ if(s == 0) return Symbol(Symbol("Undefined")[s]);
  if(s.type() == typeid(Product))
  {
   CastPtr<const Product> p(s);
@@ -504,6 +621,163 @@ Symbolic Acosh::integrate(const Symbolic &s) const
  if(x == s) return Integral(*this,s);
  if(df(s) == 0) return *this * s;
  return Integral(*this,s);
+}
+
+
+//////////////////////////////////////
+// Implementation of Tanh           //
+//////////////////////////////////////
+
+Tanh::Tanh(const Tanh &s) : Symbol(s) {}
+
+Tanh::Tanh(const Symbolic &s) : Symbol(Symbol("tanh")[s]) {}
+
+Simplified Tanh::simplify() const
+{
+ const Symbolic &s = parameters.front().simplify();
+ if(s == 0) return Number<int>(1);
+ if(s.type() == typeid(Product))
+ {
+  CastPtr<const Product> p(s);
+  if(p->factors.front() == -1) return -Tanh(-s);
+  if(p->factors.front() == 1) return (exp(s) - exp(-s))/(exp(s) + exp(-s));
+ }
+ if(s.type() == typeid(Numeric) &&
+    Number<void>(s).numerictype() == typeid(double))
+  return Number<double>(tanh(CastPtr<const Number<double> >(s)->n));
+ return *this;
+}
+
+Symbolic Tanh::df(const Symbolic &s) const
+{ return parameters.front().df(s) - parameters.front().df(s) * ( tanh(parameters.front()) * tanh(parameters.front()) ); }
+
+Symbolic Tanh::integrate(const Symbolic &s) const
+{
+ const Symbolic &x = parameters.front();
+ if(x == s) return x - ln(tanh(x) + 1);
+ if(df(s) == 0) return *this * s;
+ return ( x/x.df(s)) - ( ln(tanh(parameters.front()) + 1) ) * (1/ parameters.front().df(s)) ;
+}
+
+//////////////////////////////////////
+// Implementation of Coth           //
+//////////////////////////////////////
+
+Coth::Coth(const Coth &s) : Symbol(s) {}
+
+Coth::Coth(const Symbolic &s) : Symbol(Symbol("coth")[s]) {}
+
+Simplified Coth::simplify() const
+{
+ const Symbolic &s = parameters.front().simplify();
+ if(s == 0) return Number<int>(1);
+ if(s.type() == typeid(Product))
+ {
+  CastPtr<const Product> p(s);
+  if(p->factors.front() == -1) return -Coth(-s);
+  if(p->factors.front() == 1) return (exp(s) + exp(-s))/(exp(s) - exp(-s));
+ }
+ if(s.type() == typeid(Numeric) && Number<void>(s).numerictype() == typeid(double))
+ {
+	return Number<double>(1) / Number<double>(tanh(CastPtr<const Number<double> >(s)->n));
+ }
+ if(s.type() == typeid(Numeric) && Number<void>(s).numerictype() == typeid(int))
+ {
+	return Number<double>(1) / Number<double>(tanh(CastPtr<const Number<int> >(s)->n));
+ }
+ return *this;
+}
+
+Symbolic Coth::df(const Symbolic &s) const
+{ return - parameters.front().df(s) * (1 / ( sinh(parameters.front()) * sinh(parameters.front()) ) ); }
+
+Symbolic Coth::integrate(const Symbolic &s) const
+{
+ const Symbolic &x = parameters.front();
+ if(x == s) return x - ln(tanh(x) + 1) + ln(tanh(x));
+ if(df(s) == 0) return *this * s;
+ return ( x/x.df(s)) - ( ( ln(tanh(parameters.front()) + 1) ) * (1/ parameters.front().df(s)) ) + ( ( ln(tanh(parameters.front())) ) * (1/ parameters.front().df(s)) );
+}
+
+//////////////////////////////////////
+// Implementation of Sech           //
+//////////////////////////////////////
+
+Sech::Sech(const Sech &s) : Symbol(s) {}
+
+Sech::Sech(const Symbolic &s) : Symbol(Symbol("sech")[s]) {}
+
+Simplified Sech::simplify() const
+{
+ const Symbolic &s = parameters.front().simplify();
+ if(s == 0) return Number<int>(0);
+ if(s.type() == typeid(Product))
+ {
+  CastPtr<const Product> p(s);
+  if(p->factors.front() == -1) return Sech(-s);
+  if(p->factors.front() == 1) return 2 / (exp(s) + exp(-s));
+ }
+ if(s.type() == typeid(Numeric) && Number<void>(s).numerictype() == typeid(double))
+ {
+	return Number<double>(1) / Number<double>(cosh(CastPtr<const Number<double> >(s)->n));
+ }
+ if(s.type() == typeid(Numeric) && Number<void>(s).numerictype() == typeid(int))
+ {
+	return Number<double>(1) / Number<double>(cosh(CastPtr<const Number<int> >(s)->n));
+ }
+ return *this;
+}
+
+Symbolic Sech::df(const Symbolic &s) const
+{ return ( - parameters.front().df(s) ) * tanh(parameters.front()) * sech(parameters.front()); }
+
+Symbolic Sech::integrate(const Symbolic &s) const
+{
+ const Symbolic &x = parameters.front();
+ if(x == s) return 2 * atan(tanh(0.5*x));
+ if(df(s) == 0) return *this * s;
+ return 2 * (atan(tanh(0.5*(parameters.front()))))  * (1/ parameters.front().df(s)) ;
+}
+
+
+//////////////////////////////////////
+// Implementation of Csch           //
+//////////////////////////////////////
+
+Csch::Csch(const Csch &s) : Symbol(s) {}
+
+Csch::Csch(const Symbolic &s) : Symbol(Symbol("csch")[s]) {}
+
+Simplified Csch::simplify() const
+{
+ const Symbolic &s = parameters.front().simplify();
+ if(s == 0) return Number<int>(0);
+ if(s.type() == typeid(Product))
+ {
+  CastPtr<const Product> p(s);
+  if(p->factors.front() == -1) return -Csch(-s);
+  if(p->factors.front() == 1) return 2 / (exp(s) - exp(-s));
+ }
+ if(s.type() == typeid(Numeric) && Number<void>(s).numerictype() == typeid(double))
+ {
+	return Number<double>(1) / Number<double>(sinh(CastPtr<const Number<double> >(s)->n));
+ }
+ if(s.type() == typeid(Numeric) && Number<void>(s).numerictype() == typeid(int))
+ {
+	return Number<double>(1) / Number<double>(sinh(CastPtr<const Number<int> >(s)->n));
+ }
+ return *this;
+}
+
+Symbolic Csch::df(const Symbolic &s) const
+{ return ( - parameters.front().df(s) ) * coth(parameters.front()) * csch(parameters.front()); }
+
+Symbolic Csch::integrate(const Symbolic &s) const
+{
+ const Symbolic &x = parameters.front();
+ if(x == s) return 2 * atan(tanh(0.5*x));
+ if(df(s) == 0) return *this * s;
+ return (ln(tanh(0.5*(parameters.front()))))  * (1/ parameters.front().df(s)) ;
 }
 
 //////////////////////////////////////
