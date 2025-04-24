@@ -23,10 +23,10 @@ scripts from the SymbolicC++ header files.
 It is able to compute
 
 1. The integral of `sin(ax+b), cos(ax+b), tan(ax+b), cot(ax+b), sec(ax+b), csc(ax+b)` with `ax + b` is a polynomial of order 1.
-2. The integral of `1/(ax+b)`.
+2. The integral of $`\frac{1}{(ax+b)}`$.
 3. The integral and derivative of `asin(ax+b), acos(ax+b), atan(ax+b), acot(ax+b), asec(ax+b), acsc(ax+b)` with `ax + b` is a polynomial of order 1. Only `asec(ax+b), acsc(ax+b)` integration that have no analytic solution yet since it has cases output.
 4. The integral and derivative of all hyperbolic trigonometry functions`sinh(ax+b), cosh(ax+b), tanh(ax+b), coth(ax+b), sech(ax+b), csch(ax+b)`.
-5. The integral with the form of `x^{b} exp(a*x), x^{b} exp(x)` with integration by parts method.
+5. The integral with the form of $`x^{b} exp(a*x), x^{b} exp(x)`$ with integration by parts method.
 
 # Learning the Code
 
@@ -193,21 +193,21 @@ We are taking note of the implementation for `cot, sec, csc, coth, sech, csch` t
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/19.png" width="83%">
 
-By April 24th, 2025: We can now compute with integration by parts method for `x^{b} exp(a*x), x^{b} exp(x)`.
+By April 24th, 2025: We can now compute with integration by parts method for $`x^{b} exp(a*x), x^{b} exp(x)`$.
 
 We modify `src/integration.cpp` and `src/function.cpp` to be able to obtain the correct result for the integral problems above.
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/20.png" width="83%">
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/22.png" width="83%">
 
-Previously in SymbolicC++, the integration by parts for the form of `x^{b} exp(a*x), x^{b} exp(x)` have incorrect computation.
+Previously in SymbolicC++, the integration by parts for the form of $`x^{b} exp(a*x), x^{b} exp(x)`$ have incorrect computation.
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/25.png" width="83%">
 
-Based on SymPy that is called from JULIA for the form of `x^{b} exp(a*x), x^{b} exp(x)` we obtain
+Based on SymPy that is called from JULIA for the form of $`x^{b} exp(a*x), x^{b} exp(x)`$ we obtain
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/21.png" width="51%">
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/26.png" width="51%">
 
-Thus, after a bit of tinkering the code, we are able to fix the integration by parts for the form of `x^{b} exp(a*x), x^{b} exp(x)`
+Thus, after a bit of tinkering the code, we are able to fix the integration by parts for the form of $`x^{b} exp(a*x), x^{b} exp(x)`$
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/23.png" width="83%">
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/24.png" width="83%">
 
