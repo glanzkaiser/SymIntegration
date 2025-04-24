@@ -204,10 +204,11 @@ Previously in SymbolicC++, the integration by parts for the form of `x^{b} exp(a
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/25.png" width="83%">
 
 Based on SymPy that is called from JULIA for the form of `x^{b} exp(a*x), x^{b} exp(x)` we obtain
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/21.png" width="83%">
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/26.png" width="83%">
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/21.png" width="51%">
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/26.png" width="51%">
 
 Thus, after a bit of tinkering the code, we are able to fix the integration by parts for the form of `x^{b} exp(a*x), x^{b} exp(x)`
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/23.png" width="83%">
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/24.png" width="83%">
 
+The test code can be located in the folder `Test/Integration by Parts/main.cpp`
