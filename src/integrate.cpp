@@ -58,7 +58,7 @@ Symbolic integrate(const Symbolic &f,const Symbolic &x)
    }
   } catch(const SymbolicError &se) {}
 
- eq = ((x^b)*exp(x)).match(f, (a,b));
+ eq = ((x^b)*exp(x)).match(f, (a,b)); // case for x^b * exp(x)
  for(i=eq.begin(); i!=eq.end(); ++i)
   try {
    Symbolic bp = rhs(*i, b);
@@ -68,7 +68,7 @@ Symbolic integrate(const Symbolic &f,const Symbolic &x)
    {
     int n = CastPtr<const Number<int> >(bp)->n, sgn = 1;
     Symbolic integral, nf = 1;
-    for(; n>=0; nf*=n+1, --n, sgn=-sgn) integral += sgn*nf*(x^n)*exp(x);
+    for(; n>=0; nf*=n, --n, sgn=-sgn) integral += sgn*nf*(x^n)*exp(x);
     return integral;
    }
   } catch(const SymbolicError &se) {}
@@ -85,7 +85,7 @@ Symbolic integrate(const Symbolic &f,const Symbolic &x)
     {
      int n = CastPtr<const Number<int> >(bp)->n, sgn = 1;
      Symbolic integral, nf = 1/ap;
-     for(; n>=0; nf*=(n+1)/ap, --n, sgn=-sgn)
+     for(; n>=0; nf*=(n)/ap, --n, sgn=-sgn)
       integral += sgn*nf*(x^n)*exp(ap*x);
      return integral;
     }
@@ -104,7 +104,7 @@ Symbolic integrate(const Symbolic &f,const Symbolic &x)
     {
      int n = CastPtr<const Number<int> >(bp)->n, sgn = 1;
      Symbolic integral, nf = 1/ap;
-     for(; n>=0; nf*=(n+1)/ap, --n, sgn=-sgn)
+     for(; n>=0; nf*=(n)/ap, --n, sgn=-sgn)
       integral += sgn*nf*(x^n)*exp(ap*x);
      return rhs(*i, c)*integral;
     }

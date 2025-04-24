@@ -1054,6 +1054,7 @@ Symbolic Power::integrate(const Symbolic &s) const
 {
  const Symbolic &a = parameters.front();
  const Symbolic &b = parameters.back();
+
  if(b == -1) return ln(parameters.front()) * (1/ parameters.front().df(s));
  if(a == s && b.df(s) == 0)
  {
@@ -1062,8 +1063,10 @@ Symbolic Power::integrate(const Symbolic &s) const
  }
  if(a == SymbolicConstant::e && b == s)
   return *this;
+ if(a == SymbolicConstant::e && parameters.back().coeff(s,1) != 0 && parameters.back().coeff(s,0) != 0)
+  return exp(parameters.back()) * (1/ parameters.back().df(s)); 
  if(df(s) == 0) return *this * s;
- return (a^(b+1)) / (b+1);
+ return (a^(b+1)) / (b+1) ; 
 }
 
 PatternMatches
