@@ -1055,7 +1055,17 @@ Symbolic Power::integrate(const Symbolic &s) const
  const Symbolic &a = parameters.front();
  const Symbolic &b = parameters.back();
 
- if(b == -1) return ln(parameters.front()) * (1/ parameters.front().df(s));
+ if(b == -1 && parameters.front().coeff(s,2) == 0) return ln(parameters.front()) * (1/ parameters.front().df(s));
+ if(b == -1 && parameters.front().coeff(s,2) != 0 && parameters.front().coeff(s,1) == 0 && parameters.front().coeff(s,0) == 0 ) return -(1 / (s*parameters.front().coeff(s,2)) ) ;
+ if(b == -1 && parameters.front().coeff(s,2) != 0)
+ {
+  double a1 = parameters.front().coeff(s,2);
+  double b1 = parameters.front().coeff(s,1);
+  double c1 = parameters.front().coeff(s,0);
+  double D_inv = sqrt(-1/(4*a1*c1-b1*b1));
+  
+  return - D_inv * ln(s + (-4*a1*c1*D_inv + b1*b1*D_inv + b1)/(2*a1)) + D_inv * ln(s + (4*a1*c1*D_inv - b1*b1*D_inv + b1)/(2*a1)) ;
+ } 
  if(a == s && b.df(s) == 0)
  {
   if(b == -1) return ln(a);

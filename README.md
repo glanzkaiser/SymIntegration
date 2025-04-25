@@ -23,7 +23,7 @@ scripts from the SymbolicC++ header files.
 It is able to compute
 
 1. The integral of `sin(ax+b), cos(ax+b), tan(ax+b), cot(ax+b), sec(ax+b), csc(ax+b)` with `ax + b` is a polynomial of order 1.
-2. The integral of $`\frac{1}{(ax+b)}`$.
+2. The integral of $`\frac{1}{(ax+b)}`$, $`\frac{1}{ax^{2}+bx + c}`$
 3. The integral and derivative of `asin(ax+b), acos(ax+b), atan(ax+b), acot(ax+b), asec(ax+b), acsc(ax+b)` with `ax + b` is a polynomial of order 1. Only `asec(ax+b), acsc(ax+b)` integration that have no analytic solution yet since it has cases output.
 4. The integral and derivative of all hyperbolic trigonometry functions`sinh(ax+b), cosh(ax+b), tanh(ax+b), coth(ax+b), sech(ax+b), csch(ax+b)`.
 5. The integral with the form of $`x^{b} e^{ax}, x^{b} e^{x}`$ with integration by parts method.
@@ -214,3 +214,14 @@ Thus, after a bit of tinkering the code, we are able to fix the integration by p
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/24.png" width="83%">
 
 The test code can be located in the folder `Test/Integration by Parts/main.cpp`
+
+By April 25th, 2025: We can now compute the integral of the general form $`\frac{1}{ax^{2} + bx + c}`$.
+
+By modifying the `src/function.cpp`
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/27.png" width="60%">
+
+et voilà
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/28.png" width="60%">
+
+The test code can be located in the folder `Test/Integration of Polynomial Order 2 in Denominator/main.cpp`
+
