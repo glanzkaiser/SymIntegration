@@ -107,11 +107,12 @@ We are using less, minimal amount of code to create the library, if you compare 
 
 Two simple commands with `g++` can already make a shared symbolic integration computation library, with limitation still.
 
-We have found how to be able to compute `int (sin(2x))` correctly.
+We have found how to be able to compute $`\int sin(2x) dx`$ correctly.
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/5.png" width="60%">
 
 By modifying the source code `src/functions.cpp` we can compute the integration for sine and cosine correctly.
+
 By April 10th, 2025: The implementation of sine and cosine have been modified.
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/6.png" width="60%">
@@ -120,7 +121,7 @@ For comparison: The basic codes that we are using SymbolicC++, cannot compute th
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/7.png" width="60%">
 
-By April 13th, 2025: The integral of `1/(ax+b)` can be computed nicely and fraction / decimal power computation e.g. `(-1)^(a/b)` can be computed too.
+By April 13th, 2025: The integral of $`\frac{1}{ax+b}`$ can be computed nicely and fraction / decimal power computation e.g. `(-1)^(a/b)` can be computed too.
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/8.png" width="60%">
 
@@ -188,7 +189,7 @@ Comparing the result with SymPy in JULIA:
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/16.png" width="60%">
 
-The analytic solution for integral of `asec(ax+b` from SymPy in JULIA:
+The analytic solution for integral of `asec(ax+b)` from SymPy in JULIA:
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/17.png" width="60%">
 
 By April 22nd, 2025: We can now compute the integral and derivative of all hyperbolic trigonometry functions`sinh(ax+b), cosh(ax+b), tanh(ax+b), coth(ax+b), sech(ax+b), csch(ax+b)`. We can also compute the numerical result of all hyperbolic trignometry functions, e.g. `sech(2)`.
