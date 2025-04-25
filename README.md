@@ -109,21 +109,24 @@ Two simple commands with `g++` can already make a shared symbolic integration co
 
 We have found how to be able to compute `int (sin(2x))` correctly.
 
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/5.png" width="83%">
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/5.png" width="60%">
 
 By modifying the source code `src/functions.cpp` we can compute the integration for sine and cosine correctly.
 By April 10th, 2025: The implementation of sine and cosine have been modified.
 
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/6.png" width="83%">
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/6.png" width="60%">
 
 For comparison: The basic codes that we are using SymbolicC++, cannot compute the integral of sine and cosine correctly because they only write `return Integral(*this,s)`
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/7.png" width="83%">
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/7.png" width="60%">
 
 By April 13th, 2025: The integral of `1/(ax+b)` can be computed nicely and fraction / decimal power computation e.g. `(-1)^(a/b)` can be computed too.
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/8.png" width="83%">
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/8.png" width="60%">
 
 The code for the decimal power computation is located here (the if statement with 4 conditions):
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/9.png" width="83%">
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/9.png" width="60%">
 
 By April 17th, 2025: We add the implementation for `tan(x)` and `cot(x)` so it can compute the derivative and integral of all basic trigonometry functions (`sin(ax+b), cos(ax+b), tan(ax+b), cot(ax+b), sec(ax+b), csc(ax+b)`) for polynomial of order 1.
 
@@ -136,13 +139,15 @@ The codes that we modified are located in:
 
 The test code can be located in the folder `Test/Trigonometry/main.cpp`
 
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/10.png" width="83%">
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/10.png" width="60%">
 
 Comparing the result with JULIA
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/11.png" width="83%">
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/11.png" width="60%">
 
 The results produce the same output number at the end
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/12.png" width="83%">
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/12.png" width="60%">
 
 By April 19th, 2025: We can now compute the integral and derivative of `asin(ax+b), acos(ax+b), atan(ax+b), acot(ax+b), asec(ax+b), acsc(ax+b)`, exception for the integration of `asec(ax+b), acsc(ax+b)` they still have no analytic solution yet.
 
@@ -174,53 +179,58 @@ The codes that we modified are located in:
 The test code can be located in the folder `Test/Inverse Trigonometry/main.cpp`
 
 Comparing the result with SymPy in JULIA:
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/13.png" width="83%">
 
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/14.png" width="83%">
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/13.png" width="60%">
 
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/15.png" width="83%">
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/14.png" width="60%">
 
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/16.png" width="83%">
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/15.png" width="60%">
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/16.png" width="60%">
 
 The analytic solution for integral of `asec(ax+b` from SymPy in JULIA:
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/17.png" width="83%">
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/17.png" width="60%">
 
 By April 22nd, 2025: We can now compute the integral and derivative of all hyperbolic trigonometry functions`sinh(ax+b), cosh(ax+b), tanh(ax+b), coth(ax+b), sech(ax+b), csch(ax+b)`. We can also compute the numerical result of all hyperbolic trignometry functions, e.g. `sech(2)`.
 
 We are taking note of the implementation for `cot, sec, csc, coth, sech, csch` they are all need to be divided to 2 cases for `integer` and `double` to be able to return numerical computation, e.g. `cot(2)`, because in `src/functions.cpp` for the implementation part `return Number<double>(cot(CastPtr<const Number<double> >(s)->n));` will return `segmentation fault`.
 
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/18.png" width="83%">
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/18.png" width="60%">
 
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/19.png" width="83%">
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/19.png" width="60%">
 
 By April 24th, 2025: We can now compute with integration by parts method for $`x^{b} e^{ax}, x^{b} e^{x}`$.
 
 We modify `src/integration.cpp` and `src/function.cpp` to be able to obtain the correct result for the integral problems above.
 
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/20.png" width="83%">
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/20.png" width="60%">
 
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/22.png" width="83%">
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/22.png" width="60%">
 
 Previously in SymbolicC++, the integration by parts for the form of $`x^{b} e^{ax}, x^{b} e^{x}`$ have incorrect computation.
 
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/25.png" width="83%">
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/25.png" width="60%">
 
 Based on SymPy that is called from JULIA for the form of $`x^{b} e^{ax}, x^{b} e^{x}`$ we obtain
+
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/21.png" width="51%">
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/26.png" width="51%">
 
 Thus, after a bit of tinkering the code, we are able to fix the integration by parts for the form of $`x^{b} e^{ax}, x^{b} e^{x}`$
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/23.png" width="83%">
-<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/24.png" width="83%">
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/23.png" width="60%">
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/24.png" width="60%">
 
 The test code can be located in the folder `Test/Integration by Parts/main.cpp`
 
 By April 25th, 2025: We can now compute the integral of the general form $`\frac{1}{ax^{2} + bx + c}`$.
 
 By modifying the `src/function.cpp`
+
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/27.png" width="60%">
 
 et voilà
+
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/28.png" width="60%">
 
 The test code can be located in the folder `Test/Integration of Polynomial Order 2 in Denominator/main.cpp`
