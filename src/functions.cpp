@@ -49,7 +49,7 @@ Simplified Sin::simplify() const
  const Symbolic &ac = Symbol(Symbol("acos")[s]) ;
  //const Symbolic &x = parameters.front();
  if(s == 0) return Number<int>(0);
- if(s == ac) return Number<int>(8);
+ //if(s == ac) return Number<int>(8);
  //if(parameters.front() == Symbol("acos")[s])) return Number<int>(8);
  if(s.type() == typeid(Product))
  {
@@ -860,7 +860,7 @@ void Power::print(ostream &o) const
 
   int parens1 = parameters.front().type() == typeid(Symbol)
              || parameters.front().type() == typeid(Sin)
-             || parameters.front().type() == typeid(Cos)
+	     || parameters.front().type() == typeid(Cos)
              || parameters.front().type() == typeid(Sinh)
              || parameters.front().type() == typeid(Cosh)
              || parameters.front().type() == typeid(Log)
@@ -1054,7 +1054,20 @@ Symbolic Power::integrate(const Symbolic &s) const
 {
  const Symbolic &a = parameters.front();
  const Symbolic &b = parameters.back();
+ if(a.type() == typeid(Cos))
+ {
+	list<Equations> eq;
+	list<Equations>::iterator i;
+	UniqueSymbol c, d;
 
+	eq = (cos(c*s)).match(a, (c,d));
+	for(i=eq.begin(); i!=eq.end(); ++i)
+	try {
+	Symbolic ap = rhs(*i, c);
+	if(b.df(s) == 0) 
+	return (2*ap*s + sin(2*ap*s)) / (4*ap);
+	} catch(const SymbolicError &se) {}	
+ }
  if(b == -1 && parameters.front().coeff(s,2) == 0) return ln(parameters.front()) * (1/ parameters.front().df(s));
  if(b == -1 && parameters.front().coeff(s,2) != 0 && parameters.front().coeff(s,1) == 0 && parameters.front().coeff(s,0) == 0 ) return -(1 / (s*parameters.front().coeff(s,2)) ) ;
  if(b == -1 && parameters.front().coeff(s,2) != 0)
@@ -1066,7 +1079,7 @@ Symbolic Power::integrate(const Symbolic &s) const
   
   return - D_inv * ln(s + (-4*a1*c1*D_inv + b1*b1*D_inv + b1)/(2*a1)) + D_inv * ln(s + (4*a1*c1*D_inv - b1*b1*D_inv + b1)/(2*a1)) ;
  } 
- if(a == s && b.df(s) == 0)
+ if(a == s && b.df(s) == 0 )
  {
   if(b == -1) return ln(a);
   return (a^(b+1)) / (b+1);

@@ -73,6 +73,36 @@ Symbolic integrate(const Symbolic &f,const Symbolic &x)
    }
   } catch(const SymbolicError &se) {}
 
+ eq = ( cos(a*x)*sin(b*x) ).match(f, (a,b)); // case for cos(a*x) * sin(b*x)
+ for(i=eq.begin(); i!=eq.end(); ++i)
+  try {
+   Symbolic ap = rhs(*i, a), bp = rhs(*i, b);
+   if(df(rhs(*i, a), x) == 0)
+   {
+	if(ap == bp || bp == ap || bp == -ap || ap == -bp)
+	   {
+	    return (sin(bp*x)*sin(bp*x))/(2*bp) ;
+	    //return -(cos(bp*x)*cos(bp*x))/(2*bp) ;
+	   }
+	return (ap*sin(ap*x)*sin(bp*x))/(ap*ap - bp*bp) + (bp*cos(ap*x)*cos(bp*x))/(ap*ap - bp*bp) ;
+   }
+  } catch(const SymbolicError &se) {}
+
+ eq = ( cos(a*x)*cos(b*x) ).match(f, (a,b)); // case for cos(a*x) * cos(b*x)
+ for(i=eq.begin(); i!=eq.end(); ++i)
+  try {
+   Symbolic ap = rhs(*i, a), bp = rhs(*i, b);
+   if(df(rhs(*i, a), x) == 0)
+   {
+	if(ap == bp || bp == ap || bp == -ap || ap == -bp)
+	   {
+	    return (2*bp*x + sin(2*bp*x)) / (4*bp) ; //weirdly, it cannot be returned from here, but from 'Symbolic Power::integrate(const Symbolic &s) const' in functions.cpp instead
+	   }
+	return ap*sin(ap*x)*cos(bp*x)/(ap*ap - bp*bp) - bp*sin(bp*x)*cos(ap*x)/(ap*ap - bp*bp); 	
+	//return 0.5 * ( (1/(ap+bp)) * (sin((ap+bp)*x))  + (1/(ap-bp)) * (sin((ap-bp)*x)) );
+   }
+  } catch(const SymbolicError &se) {}
+
  eq = ((x^b)*exp(a*x)).match(f, (a,b));
  for(i=eq.begin(); i!=eq.end(); ++i)
   try {
