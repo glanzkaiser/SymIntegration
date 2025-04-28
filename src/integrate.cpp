@@ -103,6 +103,20 @@ Symbolic integrate(const Symbolic &f,const Symbolic &x)
    }
   } catch(const SymbolicError &se) {}
 
+ eq = ( sin(a*x)*sin(b*x) ).match(f, (a,b)); // case for sin(a*x) * sin(b*x)
+ for(i=eq.begin(); i!=eq.end(); ++i)
+  try {
+   Symbolic ap = rhs(*i, a), bp = rhs(*i, b);
+   if(df(rhs(*i, a), x) == 0)
+   {
+	if(ap == bp || bp == ap || bp == -ap || ap == -bp)
+	   {
+	    return 0.5*x - (sin(2*bp*x) / (4*bp)) ;
+	   }
+	return (bp*sin(ap*x)*cos(bp*x))/(ap*ap - bp*bp) - (ap*cos(ap*x)*sin(bp*x))/(ap*ap - bp*bp) ;
+   }
+  } catch(const SymbolicError &se) {}
+
  eq = ((x^b)*exp(a*x)).match(f, (a,b));
  for(i=eq.begin(); i!=eq.end(); ++i)
   try {

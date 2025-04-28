@@ -27,7 +27,7 @@ It is able to compute
 3. The integral and derivative of `asin(ax+b), acos(ax+b), atan(ax+b), acot(ax+b), asec(ax+b), acsc(ax+b)` with `ax + b` is a polynomial of order 1. Only `asec(ax+b), acsc(ax+b)` integration that have no analytic solution yet since it has cases output.
 4. The integral and derivative of all hyperbolic trigonometry functions`sinh(ax+b), cosh(ax+b), tanh(ax+b), coth(ax+b), sech(ax+b), csch(ax+b)`.
 5. The integral with the form of $`x^{b} e^{ax}, x^{b} e^{x}`$ with integration by parts method.
-6. The integral of $`\sin(ax) \cos(bx), \cos(ax) \cos (bx)`$
+6. The integral of $`\sin(ax) \cos(bx), \cos(ax) \cos (bx), \sin(ax) \sin (bx)`$
 
 # Learning the Code
 
@@ -237,9 +237,9 @@ et voilà
 
 The test code can be located in the folder `Test/Integration of Polynomial Order 2 in Denominator/main.cpp`
 
-By April 27th, 2025: We can now compute the integral of the general form $`\cos(ax) \sin (bx)`$ and $`\cos(ax) \cos (bx)`$.
+By April 28th, 2025: We can now compute the integral of the general form $`\cos(ax) \sin (bx), \sin(ax) \sin(bx)`$ and $`\cos(ax) \cos (bx)`$.
 
-By modifying the `src/integrate.cpp`, we can handle the $`\cos(mx) \sin (nx)`$ nicely, but there is a problem for $`\cos(ax) \cos (bx)`$ when $`a = b`$ or $`a = -b`$, so we deal with it in `src/functions.cpp` 
+By modifying the `src/integrate.cpp`, we can handle the $`\cos(mx) \sin (nx)`$ nicely, but there is a problem for $`\cos(ax) \cos (bx), \sin(ax) \sin(bx)`$ when $`a = b`$ or $`a = -b`$, so we deal with it in `src/functions.cpp` 
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/29.png" width="60%">
 

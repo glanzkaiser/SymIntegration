@@ -1064,8 +1064,22 @@ Symbolic Power::integrate(const Symbolic &s) const
 	for(i=eq.begin(); i!=eq.end(); ++i)
 	try {
 	Symbolic ap = rhs(*i, c);
-	if(b.df(s) == 0) 
+	if(b.df(s) == 0 && b==2) 
 	return (2*ap*s + sin(2*ap*s)) / (4*ap);
+	} catch(const SymbolicError &se) {}	
+ }
+ if(a.type() == typeid(Sin))
+ {
+	list<Equations> eq;
+	list<Equations>::iterator i;
+	UniqueSymbol c, d;
+
+	eq = (sin(c*s)).match(a, (c,d));
+	for(i=eq.begin(); i!=eq.end(); ++i)
+	try {
+	Symbolic ap = rhs(*i, c);
+	if(b.df(s) == 0 && b==2) 
+	return 0.5*s - ( sin(2*ap*s) / (4*ap) );
 	} catch(const SymbolicError &se) {}	
  }
  if(b == -1 && parameters.front().coeff(s,2) == 0) return ln(parameters.front()) * (1/ parameters.front().df(s));

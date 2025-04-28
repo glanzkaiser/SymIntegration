@@ -40,6 +40,11 @@ int main(void)
 	cout << "\nint cos(mx) * cos(nx) = " << integrate(cos(m*x)*cos(n*x),x) <<endl;
 	cout << "\nint cos(mx) * cos(mx) = " << integrate(cos(m*x)*cos(m*x),x) <<endl;
 	cout << "\nint cos(5x) * cos(3x) = " << integrate(cos(5*x)*cos(3*x),x) <<endl;
+	
+	cout << "\nint sin(mx) * sin(nx) = " << integrate(sin(m*x)*sin(n*x),x) <<endl;
+	cout << "\nint sin(mx) * sin(mx) = " << integrate(sin(m*x)*sin(m*x),x) <<endl;
+	cout << "\nint sin(5x) * sin(3x) = " << integrate(sin(5*x)*sin(3*x),x) <<endl;
+	
 	cout << "\nint 1 = " << integrate(1,x) <<endl;
 	cout << "int 2 = " << integrate(2,x) <<endl;
 	cout << "int x = " << integrate(x,x) <<endl;
