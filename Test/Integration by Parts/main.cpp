@@ -64,7 +64,7 @@ int main(void)
 	Varx = integrate(Varx,x);
 
 	cout << "\nVar(x) = int x^{2} f(x) = " << Varx << endl;
-	cout << "int_{0}^{∞} x^{2} f(x) = " << Varx[x==Inf] - y[x==0] <<endl;
+	cout << "int_{0}^{∞} x^{2} f(x) = " << Varx[x==INFINITY, λ==1] - y[x==0] <<endl;
 
 	cout << "\nint x^{-1} = " << integrate(1/x,x) <<endl;
 	cout << "\nint exp(3x+5) = " << integrate(exp(3*x+5),x) <<endl;

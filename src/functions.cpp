@@ -27,6 +27,40 @@ using namespace std;
 #define SYMBOLIC_CPLUSPLUS_FUNCTIONS_DEFINE
 #define SYMBOLIC_CPLUSPLUS_FUNCTIONS
 
+long long factorial(int n) {
+	if (n <= 1) 
+	{
+		return 1;
+	}
+	long long result = 1;
+	for (int i = 2; i <= n; ++i) 
+	{
+		result *= i;
+	}
+	return result;
+}
+
+long long combinations(int n, int r) {
+	if (r < 0 || r > n) 
+	{
+		return 0; // Invalid input
+	}
+	return factorial(n) / (factorial(r) * factorial(n - r));
+}
+
+Symbolic jacobipolynomials(int n, double a, double b, const Symbolic &s){
+	if (n < 0 ) 
+	{
+		return 0; // Invalid input
+	}
+	Symbolic result = 0;
+	for (int i = 0; i <= n; ++i) 
+	{
+		result += combinations(n,i) * (tgamma(a+b+n+i+1)/tgamma(a+i+1)) * ( (0.5*(s-1))^(i));
+	}
+	return (tgamma(a+n+1) / (factorial(n)*tgamma(a+b+n+1)) )*result;
+}
+
 //////////////////////////////////////
 // Implementation of Sin            //
 //////////////////////////////////////
@@ -1056,7 +1090,7 @@ Symbolic Power::integrate(const Symbolic &s) const
  const Symbolic &b = parameters.back();
  if(a.type() == typeid(Cos))
  {
-	list<Equations> eq;
+	list<Equations> eq, eq2;
 	list<Equations>::iterator i;
 	UniqueSymbol c, d;
 
@@ -1065,12 +1099,39 @@ Symbolic Power::integrate(const Symbolic &s) const
 	try {
 	Symbolic ap = rhs(*i, c);
 	if(b.df(s) == 0 && b==2) 
-	return (2*ap*s + sin(2*ap*s)) / (4*ap);
+	{
+		return (2*ap*s + sin(2*ap*s)) / (4*ap);
+	}
+	if(b.df(s) == 0 && b==-2) 
+	{
+		return sin(ap*s) / (ap*cos(ap*s)) ;
+	}
+	} catch(const SymbolicError &se) {}	
+	eq2 = (cos(s)).match(a, (c,d));
+	for(i=eq2.begin(); i!=eq2.end(); ++i)
+	try {
+	if(b.df(s) == 0 && b==2) 
+	{
+		return 0.5*s + 0.5*(sin(s) * cos(s));
+	}	
+	if(b.df(s) == 0 && b==-1) 
+	{
+		return -0.5*ln(sin(s)-1) + 0.5*( ln(sin(s) + 1) );
+	}
+	if(b.df(s) == 0 && b==-2) 
+	{
+		return sin(s) / cos(s);
+	}
+	if(b.df(s) == 0 && b!=0) 
+	{
+		double a_2f1 = b;
+		return a_2f1;
+	}
 	} catch(const SymbolicError &se) {}	
  }
  if(a.type() == typeid(Sin))
  {
-	list<Equations> eq;
+	list<Equations> eq, eq2;
 	list<Equations>::iterator i;
 	UniqueSymbol c, d;
 
@@ -1079,9 +1140,188 @@ Symbolic Power::integrate(const Symbolic &s) const
 	try {
 	Symbolic ap = rhs(*i, c);
 	if(b.df(s) == 0 && b==2) 
-	return 0.5*s - ( sin(2*ap*s) / (4*ap) );
+	{
+		return 0.5*s - ( sin(2*ap*s) / (4*ap) );
+	}
+	if(b.df(s) == 0 && b==-2) 
+	{
+		return - cos(ap*s) / (ap*sin(ap*s)) ;
+	}
+	} catch(const SymbolicError &se) {}	
+	eq2 = (sin(s)).match(a, (c,d));
+	for(i=eq2.begin(); i!=eq2.end(); ++i)
+	try {
+	if(b.df(s) == 0 && b==2) 
+	{
+		return 0.5*s - 0.5*(sin(s) * cos(s));
+	}
+	if(b.df(s) == 0 && b==-1) 
+	{
+		return 0.5*ln(cos(s)-1) - 0.5*( ln(cos(s) + 1) );
+	}
+	if(b.df(s) == 0 && b==-2) 
+	{
+		return -cos(s) / sin(s);
+	}
+	if(b.df(s) == 0 && b!=0) 
+	{
+		double a_2f1 = 0.5;
+		double b_2f1 = 0.5*(1-b);
+		double c_2f1 = 1.5;
+		Symbolic z_2f1 = cos(s)*cos(s);
+		double alpha_jacobi = -1 + c_2f1;
+		double beta_jacobi = a_2f1 + b_2f1 - c_2f1;
+		double n_jacobi = a_2f1;
+		Symbolic z_jacobi = 1 - 2*z_2f1;
+		return -cos(s) * ((sin(s))^(b+1)) *((sin(s)*sin(s))^(-0.5*b - 0.5)) * ( ( (tgamma(1-a_2f1)*tgamma(c_2f1) ) * jacobipolynomials(n_jacobi, alpha_jacobi, beta_jacobi, z_jacobi) ) / tgamma(-a_2f1+c_2f1) );
+	}
 	} catch(const SymbolicError &se) {}	
  }
+ if(a.type() == typeid(Tan))
+ {
+	list<Equations> eq, eq2;
+	list<Equations>::iterator i;
+	UniqueSymbol c, d;
+
+	eq = (tan(c*s)).match(a, (c,d));
+	for(i=eq.begin(); i!=eq.end(); ++i)
+	try {
+	Symbolic ap = rhs(*i, c);
+	if(b.df(s) == 0 && b==2) 
+	{
+		return (-ap*s + (sin(ap*s) / cos(ap*s))) / ap ;
+	}
+	if(b.df(s) == 0 && b==-2) 
+	{
+		return (-ap*s - (cos(ap*s) / sin(ap*s))) / ap ;
+	}
+	} catch(const SymbolicError &se) {}	
+	eq2 = (tan(s)).match(a, (c,d));
+	for(i=eq2.begin(); i!=eq2.end(); ++i)
+	try {
+	if(b.df(s) == 0 && b==2) 
+	{
+		return -s + (sin(s) / cos(s)) ;
+	}
+	if(b.df(s) == 0 && b==-1) 
+	{
+		return ln(sin(s));
+	}
+	if(b.df(s) == 0 && b==-2) 
+	{
+		return -s - (cos(s) / sin(s)) ;
+	}
+	} catch(const SymbolicError &se) {}	
+ }
+ if(a.type() == typeid(Cot))
+ {
+	list<Equations> eq, eq2;
+	list<Equations>::iterator i;
+	UniqueSymbol c, d;
+
+	eq = (cot(c*s)).match(a, (c,d));
+	for(i=eq.begin(); i!=eq.end(); ++i)
+	try {
+	Symbolic ap = rhs(*i, c);
+	if(b.df(s) == 0 && b==2) 
+	{
+		return (-ap*s - (cos(ap*s) / sin(ap*s))) / ap ;
+	}
+	if(b.df(s) == 0 && b==-2) 
+	{
+		return (-ap*s + (sin(ap*s) / cos(ap*s))) / ap ;
+	}
+	} catch(const SymbolicError &se) {}	
+	eq2 = (cot(s)).match(a, (c,d));
+	for(i=eq2.begin(); i!=eq2.end(); ++i)
+	try {
+	if(b.df(s) == 0 && b==2) 
+	{
+		return -s - (cos(s) / sin(s)) ;
+	}
+	if(b.df(s) == 0 && b==-1) 
+	{
+		return -ln(cos(s));
+	}
+	if(b.df(s) == 0 && b==-2) 
+	{
+		return -s + (sin(s) / cos(s)) ;
+	}
+	} catch(const SymbolicError &se) {}	
+ }
+ if(a.type() == typeid(Sec))
+ {
+	list<Equations> eq, eq2;
+	list<Equations>::iterator i;
+	UniqueSymbol c, d;
+
+	eq = (sec(c*s)).match(a, (c,d));
+	for(i=eq.begin(); i!=eq.end(); ++i)
+	try {
+	Symbolic ap = rhs(*i, c);
+	if(b.df(s) == 0 && b==2) 
+	{
+		return sin(ap*s) / (ap*cos(ap*s)) ;
+	}
+	if(b.df(s) == 0 && b==-2) 
+	{
+		return (0.5*ap*s + (0.5*( sin(ap*s) * cos(ap*s) ) ) ) / ap ;
+	}
+	} catch(const SymbolicError &se) {}	
+	eq2 = (sec(s)).match(a, (c,d));
+	for(i=eq2.begin(); i!=eq2.end(); ++i)
+	try {
+	if(b.df(s) == 0 && b==2) 
+	{
+		return sin(s) / cos(s) ;
+	}
+	if(b.df(s) == 0 && b==-1) 
+	{
+		return sin(s);
+	}
+	if(b.df(s) == 0 && b==-2) 
+	{
+		return 0.5*s + 0.5*(sin(s) * cos(s)) ;
+	}
+	} catch(const SymbolicError &se) {}	
+ }
+ if(a.type() == typeid(Csc))
+ {
+	list<Equations> eq, eq2;
+	list<Equations>::iterator i;
+	UniqueSymbol c, d;
+
+	eq = (csc(c*s)).match(a, (c,d));
+	for(i=eq.begin(); i!=eq.end(); ++i)
+	try {
+	Symbolic ap = rhs(*i, c);
+	if(b.df(s) == 0 && b==2) 
+	{
+		return -cos(ap*s) / (ap*sin(ap*s)) ;
+	}
+	if(b.df(s) == 0 && b==-2) 
+	{
+		return (0.5*ap*s - (0.5*( sin(ap*s) * cos(ap*s) ) ) ) / ap ;
+	}
+	} catch(const SymbolicError &se) {}	
+	eq2 = (csc(s)).match(a, (c,d));
+	for(i=eq2.begin(); i!=eq2.end(); ++i)
+	try {
+	if(b.df(s) == 0 && b==2) 
+	{
+		return -cos(s) / sin(s) ;
+	}
+	if(b.df(s) == 0 && b==-1) 
+	{
+		return -cos(s);
+	}
+	if(b.df(s) == 0 && b==-2) 
+	{
+		return 0.5*s - 0.5*(sin(s) * cos(s)) ;
+	}
+	} catch(const SymbolicError &se) {}	
+ }
+
  if(b == -1 && parameters.front().coeff(s,2) == 0) return ln(parameters.front()) * (1/ parameters.front().df(s));
  if(b == -1 && parameters.front().coeff(s,2) != 0 && parameters.front().coeff(s,1) == 0 && parameters.front().coeff(s,0) == 0 ) return -(1 / (s*parameters.front().coeff(s,2)) ) ;
  if(b == -1 && parameters.front().coeff(s,2) != 0)

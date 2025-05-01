@@ -100,7 +100,7 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Compute integral for product, divide and sum of basic functions	| Done
 |:sunflower:   | Compute integral for inverse trigonometric        			| Done
 |:sunflower:   | Compute integral with Integration by parts				| Done
-|:writing_hand:| Compute definite integral with improper integrals			| How to substitute `Inf` and evaluate it directly? e.g. $`e^{-Inf*x} = 0`$
+|:sunflower:   | Compute definite integral with improper integrals			| Done (write `INFINITY` to substitute `Inf`)
 
 # Milestone
 
@@ -248,3 +248,37 @@ By modifying the `src/integrate.cpp`, we can handle the $`\cos(mx) \sin (nx)`$ n
 The test code can be located in the folder `Test/Trigonometry Integration Level 2/main.cpp`
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/31.png" width="60%">
+
+By April 29th, 2025: We can now compute the integral of the form $`\cos(x) \cos(x), \sin(x) \sin(x), \tan(x) \tan(x), \cot(x) \cot(x), \sec(x) \sec(x), \csc(x) \csc(x)`$.
+
+By modifying the `src/function.cpp`
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/33.png" width="60%">
+
+The test code can be located in the folder `Test/Trigonometry Integration Level 1.5/main.cpp`
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/32.png" width="60%">
+
+By May 1st, 2025: We add a test example to compute Jacobi Polynomials that is using combinatorial and factorial.
+
+The test code can be located in the folder `Test/Compute Jacobi Polynomials/main.cpp`
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/34.png" width="60%">
+
+We also add a test example to compute integral of the form $`\int \sin^{n} (x) \ dx`$, we can try with any number of `n`.
+
+(this test example a very manual way to compute  $`\int \sin^{n} (x) \ dx`$, next we will add the implementation in the `src/function.cpp` so we can use the integrate formula directly)
+
+The test code can be located in the folder `Test/Compute Jacobi Polynomials/main.cpp`
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/34.png" width="60%">
+
+The formula is based on
+
+$$ \int \sin^{n} (x) \ dx = - \cos(x) \sin^{n+1} (x) (\sin^{2} (x))^{-n/2 - 1/2} {}_{2}F_{1} \left( \frac{1}{2}, \frac{1-n}{2} ; \frac{3}{2} ; \cos^{2} (x) \right) $$
+
+We obtain the formula from Wolfram Alpha (wolframalpha.com). It is nice knowing that the general indefinite integral for  $`\int \sin^{n} (x) \ dx`$ and other trigonometry like $`\cos, \tan, \cot, \sec, \csc`$ are using Hypergeometric function.
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/sin1.png" width="60%">
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/sin2.png" width="60%">
