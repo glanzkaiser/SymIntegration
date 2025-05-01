@@ -267,7 +267,7 @@ The test code can be located in the folder `Test/Compute Jacobi Polynomials/main
 
 We also add a test example to compute integral of the form $`\int \sin^{n} (x) \ dx`$, we can try with any number of `n`.
 
-(this test example a very manual way to compute  $`\int \sin^{n} (x) \ dx`$, next we will add the implementation in the `src/function.cpp` so we can use the integrate formula directly)
+(this test example is a very manual way to compute  $`\int \sin^{n} (x) \ dx`$, next we will add the implementation in the `src/function.cpp` so we can use the integrate formula directly)
 
 The test code can be located in the folder `Test/Compute Hypergeometric Function 2F1/main.cpp`
 
@@ -276,7 +276,7 @@ The test code can be located in the folder `Test/Compute Hypergeometric Function
 The formula is based on
 
 ```math
-\int \sin^{n} (x) \ dx = - \cos(x) \sin^{n+1} (x) (\sin^{2} (x))^{-n/2 - 1/2} {}_{2}F_{1} \left( \frac{1}{2}, \frac{1-n}{2} ; \frac{3}{2} ; \cos^{2} (x) \right)
+\int \sin^{n} (x) \ dx = - \cos(x) \sin^{n+1} (x) (\sin^{2} (x))^{-\frac{n}{2} - \frac{1}{2}} {}_{2}F_{1} \left( \frac{1}{2}, \frac{1-n}{2} ; \frac{3}{2} ; \cos^{2} (x) \right)
 ```
 
 We obtain the formula from Wolfram Alpha (wolframalpha.com). It is nice knowing that the general indefinite integral for  $`\int \sin^{n} (x) \ dx`$ and other trigonometry like $`\cos, \tan, \cot, \sec, \csc`$ are using Hypergeometric function.
