@@ -284,3 +284,5 @@ We obtain the formula from Wolfram Alpha (wolframalpha.com). It is nice knowing 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/sin1.png" width="60%">
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/sin2.png" width="60%">
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/hypergeometric1.png" width="60%">
