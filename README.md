@@ -203,7 +203,7 @@ We are taking note of the implementation for `cot, sec, csc, coth, sech, csch` t
 
 By April 24th, 2025: We can now compute with integration by parts method for $`x^{b} e^{ax}, x^{b} e^{x}`$.
 
-We modify `src/integration.cpp` and `src/function.cpp` to be able to obtain the correct result for the integral problems above.
+We modify `src/integration.cpp` and `src/functions.cpp` to be able to obtain the correct result for the integral problems above.
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/20.png" width="60%">
 
@@ -227,7 +227,7 @@ The test code can be located in the folder `Test/Integration by Parts/main.cpp`
 
 By April 25th, 2025: We can now compute the integral of the general form $`\frac{1}{ax^{2} + bx + c}`$.
 
-By modifying the `src/function.cpp`
+By modifying the `src/functions.cpp`
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/27.png" width="60%">
 
@@ -251,7 +251,7 @@ The test code can be located in the folder `Test/Trigonometry Integration Level 
 
 By April 29th, 2025: We can now compute the integral of the form $`\cos(x) \cos(x), \sin(x) \sin(x), \tan(x) \tan(x), \cot(x) \cot(x), \sec(x) \sec(x), \csc(x) \csc(x)`$.
 
-By modifying the `src/function.cpp`
+By modifying the `src/functions.cpp`
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/33.png" width="60%">
 
@@ -267,7 +267,7 @@ The test code can be located in the folder `Test/Compute Jacobi Polynomials/main
 
 We also add a test example to compute integral of the form $`\int \sin^{n} (x) \ dx`$, we can try with any number of `n`.
 
-(this test example is a very manual way to compute  $`\int \sin^{n} (x) \ dx`$, next we will add the implementation in the `src/function.cpp` so we can use the integrate formula directly)
+(this test example is a very manual way to compute  $`\int \sin^{n} (x) \ dx`$, next we will add the implementation in the `src/functions.cpp` so we can use the integrate formula directly)
 
 The test code can be located in the folder `Test/Compute Hypergeometric Function 2F1/main.cpp`
 
@@ -289,7 +289,7 @@ We obtain the formula from Wolfram Alpha (wolframalpha.com). It is nice knowing 
 
 By May 4th, 2025: We are abandoning the idea to use Hypergeometric function to compute the integral of basic trigonometric function to the power of $`n`$.
 
-We use the Reduction formula instead, it is a recursive method, and we are adding the formula in `src/function.cpp`
+We use the Reduction formula instead, it is a recursive method, and we are adding the formula in `src/functions.cpp`
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/36.png" width="60%">
 
