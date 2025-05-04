@@ -286,3 +286,15 @@ We obtain the formula from Wolfram Alpha (wolframalpha.com). It is nice knowing 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/sin2.png" width="60%">
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/hypergeometric1.png" width="60%">
+
+By May 4th, 2025: We are abandoning the idea to use Hypergeometric function to compute the integral of basic trigonometric function to the power of $`n`$.
+
+We use the Reduction formula instead, it is a recursive method, and we are adding the formula in `src/function.cpp`
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/36.png" width="60%">
+
+We have done for $`\int \sin^{n} (x) \ dx , \int \cos^{n} (x) \ dx `$ for both the case where $`n`$ is even and odd.
+
+For  $`\int \sec^{n} (x) \ dx , \int \csc^{n} (x) \ dx `$ for the case where $`n`$ is odd.
+
+We will finish the whole in a few days.

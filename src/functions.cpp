@@ -27,40 +27,6 @@ using namespace std;
 #define SYMBOLIC_CPLUSPLUS_FUNCTIONS_DEFINE
 #define SYMBOLIC_CPLUSPLUS_FUNCTIONS
 
-long long factorial(int n) {
-	if (n <= 1) 
-	{
-		return 1;
-	}
-	long long result = 1;
-	for (int i = 2; i <= n; ++i) 
-	{
-		result *= i;
-	}
-	return result;
-}
-
-long long combinations(int n, int r) {
-	if (r < 0 || r > n) 
-	{
-		return 0; // Invalid input
-	}
-	return factorial(n) / (factorial(r) * factorial(n - r));
-}
-
-Symbolic jacobipolynomials(int n, double a, double b, const Symbolic &s){
-	if (n < 0 ) 
-	{
-		return 0; // Invalid input
-	}
-	Symbolic result = 0;
-	for (int i = 0; i <= n; ++i) 
-	{
-		result += combinations(n,i) * (tgamma(a+b+n+i+1)/tgamma(a+i+1)) * ( (0.5*(s-1))^(i));
-	}
-	return (tgamma(a+n+1) / (factorial(n)*tgamma(a+b+n+1)) )*result;
-}
-
 //////////////////////////////////////
 // Implementation of Sin            //
 //////////////////////////////////////
@@ -1084,10 +1050,63 @@ Symbolic Power::df(const Symbolic &s) const
  return (ln(a)*b.df(s) + (b/a)*a.df(s)) * *this;
 }
 
+// Pochammer function
+Symbolic pochhammer(Symbolic x, int n) {
+	if (n < 0) 
+	{
+		throw invalid_argument("n must be non-negative");
+	}
+	if (n == 0) 
+	{
+		return 1.0;
+	}
+	Symbolic result = 1.0;
+	for (int i = 0; i < n; ++i) 
+	{
+		result *= (x + i);
+	}
+	return result;
+}
+
+// Hypergeometric 2F1 function
+Symbolic hypergeometric_2F1_direct(Symbolic a, Symbolic b, Symbolic c, const Symbolic &s, int max_iterations = 5) {
+	Symbolic sum = 1;
+	Symbolic term = 1;
+	for (int n = 1; n <= max_iterations; ++n) 
+	{
+		term *= (pochhammer(a, n) * pochhammer(b, n) * (s^(n))) / (pochhammer(c, n) * tgamma(n + 1));
+		sum += term;
+	}
+	return sum;
+}
+
+// Factorial and combinations
+Symbolic factorial(int n) {
+	if (n <= 1) 
+	{
+		return 1;
+	}
+	Symbolic result = 1;
+	for (int i = 2; i <= n; ++i) 
+	{
+		result *= i;
+	}
+	return result;
+}
+
+Symbolic combinations(int n, int r) {
+	if (r < 0 || r > n) 
+	{
+		return 0; // Invalid input
+	}
+	return factorial(n) / (factorial(r) * factorial(n - r));
+}
+
 Symbolic Power::integrate(const Symbolic &s) const
 {
  const Symbolic &a = parameters.front();
  const Symbolic &b = parameters.back();
+ int bpower = parameters.back().coeff(s,0);
  if(a.type() == typeid(Cos))
  {
 	list<Equations> eq, eq2;
@@ -1122,10 +1141,36 @@ Symbolic Power::integrate(const Symbolic &s) const
 	{
 		return sin(s) / cos(s);
 	}
-	if(b.df(s) == 0 && b!=0) 
+	if(b.df(s) == 0 && b!=0 && bpower % 2 != 0) // odd power case
 	{
-		double a_2f1 = b;
-		return a_2f1;
+		Symbolic sgn = 1;
+		Symbolic integral; 
+		int j =1;
+		int m = bpower-(0.5*(bpower+1));
+		for(int i = 1 ; i <= bpower ; i = i+2)
+		{
+			integral += sgn*combinations(m,j-1)*((sin(s))^(i))/(i);
+			sgn = -sgn;
+			j = j+1;
+		} 
+		return integral;
+	}
+	if(b.df(s) == 0 && b!=0 && bpower % 2 == 0) //  even power case
+	{
+		Symbolic c = 1;
+		Symbolic d = parameters.back().coeff(s,0);
+		Symbolic integral; 
+		for(int i = bpower ; i >= 2 ; i = i-2)
+		{
+			integral += c*sin(s)*((cos(s))^(i-1))/(d) ;
+			d = d*(i-2);
+			c = c*(i-1);
+			if (i==4)
+			{
+				integral += ( (c*s)/(d) );
+			}
+		} 
+		return integral;
 	}
 	} catch(const SymbolicError &se) {}	
  }
@@ -1163,17 +1208,48 @@ Symbolic Power::integrate(const Symbolic &s) const
 	{
 		return -cos(s) / sin(s);
 	}
+	// Too slow, we are not using hypergeometric function
+	/*
 	if(b.df(s) == 0 && b!=0) 
 	{
-		double a_2f1 = 0.5;
-		double b_2f1 = 0.5*(1-b);
-		double c_2f1 = 1.5;
-		Symbolic z_2f1 = cos(s)*cos(s);
-		double alpha_jacobi = -1 + c_2f1;
-		double beta_jacobi = a_2f1 + b_2f1 - c_2f1;
-		double n_jacobi = a_2f1;
-		Symbolic z_jacobi = 1 - 2*z_2f1;
-		return -cos(s) * ((sin(s))^(b+1)) *((sin(s)*sin(s))^(-0.5*b - 0.5)) * ( ( (tgamma(1-a_2f1)*tgamma(c_2f1) ) * jacobipolynomials(n_jacobi, alpha_jacobi, beta_jacobi, z_jacobi) ) / tgamma(-a_2f1+c_2f1) );
+		Symbolic y_sin = -(sin(s)^(b+1))*(cos(s))*((sin(s)^(2))^(-0.5*b-0.5));
+		Symbolic a_sin = 0.5;
+		Symbolic b_sin = 0.5*(1-b);
+		Symbolic c_sin = 1.5;
+		Symbolic z_sin = cos(s)*cos(s);
+		return y_sin*hypergeometric_2F1_direct(a_sin, b_sin, c_sin, z_sin) ;
+	}
+	*/
+	if(b.df(s) == 0 && b!=0 && bpower % 2 != 0) // odd power case
+	{
+		Symbolic sgn = -1;
+		Symbolic integral; 
+		int j =1;
+		int m = bpower-(0.5*(bpower+1));
+		for(int i = 1 ; i <= bpower ; i = i+2)
+		{
+			integral += sgn*combinations(m,j-1)*((cos(s))^(i))/(i);
+			sgn = -sgn;
+			j = j+1;
+		} 
+		return integral;
+	}
+	if(b.df(s) == 0 && b!=0 && bpower % 2 == 0) //  even power case
+	{
+		Symbolic c = 1;
+		Symbolic d = parameters.back().coeff(s,0);
+		Symbolic integral; 
+		for(int i = bpower ; i >= 2 ; i = i-2)
+		{
+			integral -= c*cos(s)*((sin(s))^(i-1))/(d) ;
+			d = d*(i-2);
+			c = c*(i-1);
+			if (i==4)
+			{
+				integral += ( (c*s)/(d) );
+			}
+		} 
+		return integral;
 	}
 	} catch(const SymbolicError &se) {}	
  }
@@ -1211,6 +1287,15 @@ Symbolic Power::integrate(const Symbolic &s) const
 	{
 		return -s - (cos(s) / sin(s)) ;
 	}
+	if(b.df(s) == 0 && b!=0) 
+	{
+		Symbolic y_tan = (tan(s)^(b+1)) / (b+1);
+		Symbolic a_tan = 1;
+		Symbolic b_tan = (1+b)*0.5;
+		Symbolic c_tan = (b+3)*0.5;
+		Symbolic z_tan = -tan(s)*tan(s);
+		return y_tan*hypergeometric_2F1_direct(a_tan, b_tan, c_tan, z_tan) ;
+	}
 	} catch(const SymbolicError &se) {}	
  }
  if(a.type() == typeid(Cot))
@@ -1246,6 +1331,15 @@ Symbolic Power::integrate(const Symbolic &s) const
 	if(b.df(s) == 0 && b==-2) 
 	{
 		return -s + (sin(s) / cos(s)) ;
+	}
+	if(b.df(s) == 0 && b!=0) 
+	{
+		Symbolic y_cot = -(cot(s)^(b+1)) / (b+1);
+		Symbolic a_cot = 1;
+		Symbolic b_cot = (1+b)*0.5;
+		Symbolic c_cot = (b+3)*0.5;
+		Symbolic z_cot = -cot(s)*cot(s);
+		return y_cot*hypergeometric_2F1_direct(a_cot, b_cot, c_cot, z_cot);
 	}
 	} catch(const SymbolicError &se) {}	
  }
@@ -1283,6 +1377,62 @@ Symbolic Power::integrate(const Symbolic &s) const
 	{
 		return 0.5*s + 0.5*(sin(s) * cos(s)) ;
 	}
+	if(b.df(s) == 0 && b!=0 && bpower % 2 != 0) // odd power case
+	{
+		int k = 1, l=2;
+		vector<int> v={1};
+		vector<int> mc={1}; // to store the middle coefficient
+		Symbolic sgn = -1;
+		Symbolic integral_numerator, integral_denominator; 
+		Symbolic d0 = 2, d1 = 2;
+		int j =1;
+		int m = bpower-(0.5*(bpower+1));
+		int last_coeff;
+		int first_coeff = 3;
+		
+		// For the coefficient at the numerator of sine with odd power
+		for(int i = 1 ; i < (bpower-1)/2  ; i = i+1)
+		{
+			if (i >= 2)
+			{ 
+				for(int ic = 1 ; ic < i  ; ic = ic+1)
+				{
+					mc[ic-1] = v[ic-1] + v[ic];
+				}
+			}
+			k = k*l;
+			last_coeff = v[j-1]; 
+			v[0] = v[0]*(first_coeff+2*(i-1)); 
+			v.assign({v[0]});			
+					
+			for(int ic = 1 ; ic < i  ; ic = ic+1)
+				{
+					v.push_back(mc[ic-1]*(first_coeff+2*(i-1)));	
+				}
+			d1 = d1*(2*i);
+			d0 = d0*(2+2*i);
+			v.push_back(last_coeff*(first_coeff+2*(i-1))+k);	
+			l = l+2;	
+			j = j+1;	
+		} 	
+		int j_num = 0 ;
+		for(int i = bpower-2 ; i >= 1 ; i = i-2)
+		{
+			integral_numerator += sgn*v[j_num]*((sin(s))^(i));
+			sgn = -sgn;
+			j_num = j_num+1;
+		} 
+		sgn = 1;
+		j = 1;
+		for(int i = bpower-1 ; i >= 0 ; i = i-2)
+		{
+			integral_denominator += sgn*d0*combinations(m,j-1)*((sin(s))^(i));
+			sgn = -sgn;
+			j = j+1;
+		} 
+		d1 = d1*(bpower-1);
+		return (-v[0]*ln(sin(s)-1))/(d1) + (v[0]*ln(sin(s)+1))/(d1) + (integral_numerator)/(integral_denominator);
+	}
 	} catch(const SymbolicError &se) {}	
  }
  if(a.type() == typeid(Csc))
@@ -1318,6 +1468,62 @@ Symbolic Power::integrate(const Symbolic &s) const
 	if(b.df(s) == 0 && b==-2) 
 	{
 		return 0.5*s - 0.5*(sin(s) * cos(s)) ;
+	}
+	if(b.df(s) == 0 && b!=0 && bpower % 2 != 0) // odd power case
+	{
+		int k = 1, l=2;
+		vector<int> v={1};
+		vector<int> mc={1}; // to store the middle coefficient
+		Symbolic sgn = -1;
+		Symbolic integral_numerator, integral_denominator; 
+		Symbolic d0 = 2, d1 = 2;
+		int j =1;
+		int m = bpower-(0.5*(bpower+1));
+		int last_coeff;
+		int first_coeff = 3;
+		
+		// For the coefficient at the numerator of sine with odd power
+		for(int i = 1 ; i < (bpower-1)/2  ; i = i+1)
+		{
+			if (i >= 2)
+			{ 
+				for(int ic = 1 ; ic < i  ; ic = ic+1)
+				{
+					mc[ic-1] = v[ic-1] + v[ic];
+				}
+			}
+			k = k*l;
+			last_coeff = v[j-1]; 
+			v[0] = v[0]*(first_coeff+2*(i-1)); 
+			v.assign({v[0]});			
+					
+			for(int ic = 1 ; ic < i  ; ic = ic+1)
+				{
+					v.push_back(mc[ic-1]*(first_coeff+2*(i-1)));	
+				}
+			d1 = d1*(2*i);
+			d0 = d0*(2+2*i);
+			v.push_back(last_coeff*(first_coeff+2*(i-1))+k);	
+			l = l+2;	
+			j = j+1;	
+		} 	
+		int j_num = 0 ;
+		for(int i = bpower-2 ; i >= 1 ; i = i-2)
+		{
+			integral_numerator += sgn*v[j_num]*((cos(s))^(i));
+			sgn = -sgn;
+			j_num = j_num+1;
+		} 
+		sgn = 1;
+		j = 1;
+		for(int i = bpower-1 ; i >= 0 ; i = i-2)
+		{
+			integral_denominator += sgn*d0*combinations(m,j-1)*((cos(s))^(i));
+			sgn = -sgn;
+			j = j+1;
+		} 
+		d1 = d1*(bpower-1);
+		return (v[0]*ln(cos(s)-1))/(d1) - (v[0]*ln(cos(s)+1))/(d1) - (integral_numerator)/(integral_denominator);
 	}
 	} catch(const SymbolicError &se) {}	
  }
