@@ -58,14 +58,15 @@ int main(void)
 	
 	Ex = integrate(Ex,x);
 	cout << "\nE(x) = int x f(x) = " << Ex << endl;
-	cout << "int_{0}^{∞} x f(x) = " << Ex[x==Inf] - y[x==0] <<endl;
+	cout << "int_{0}^{∞} x f(x) = " << Ex[x==Inf] - Ex[x==0] <<endl;
 
 	Varx = x*x*λ*exp(-λ*x);
 	Varx = integrate(Varx,x);
 
-	cout << "\nVar(x) = int x^{2} f(x) = " << Varx << endl;
-	cout << "int_{0}^{∞} x^{2} f(x) = " << Varx[x==INFINITY, λ==1] - y[x==0] <<endl;
-
+	cout << "\nint x^{2} f(x) = " << Varx << endl;
+	cout << "int_{0}^{∞} x^{2} f(x) = " << Varx[x==INFINITY, λ==1] - Varx[x==0] <<endl;
+	cout << "\nVar(x) = int x^{2} f(x) - μ^{2} = " << Varx[x==INFINITY, λ==1] - Varx[x==0] - (1/λ^(2)) << endl;
+	
 	cout << "\nint x^{-1} = " << integrate(1/x,x) <<endl;
 	cout << "\nint exp(3x+5) = " << integrate(exp(3*x+5),x) <<endl;
 	cout << "\nint exp(-3x+5) = " << integrate(exp(-3*x+5),x) <<endl;

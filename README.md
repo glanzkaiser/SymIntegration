@@ -139,7 +139,7 @@ The codes that we modified are located in:
 * include/symintegral/symintegrationc++.h
 * include/symintegral/functions.h (to add the Class of `Tan` and `Cot`)
 
-The test code can be located in the folder `Test/Trigonometry/main.cpp`
+The test code can be located in the folder `Examples/Trigonometry/main.cpp`
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/10.png" width="60%">
 
@@ -178,7 +178,7 @@ The codes that we modified are located in:
 * include/symintegral/symintegrationc++.h
 * include/symintegral/functions.h (to add the Class of `Atan, Acot, Asin, Acos, Asec, Acsc, Asinh,` and `Acosh`)
 
-The test code can be located in the folder `Test/Inverse Trigonometry/main.cpp`
+The test code can be located in the folder `Examples/Inverse Trigonometry/main.cpp`
 
 Comparing the result with SymPy in JULIA:
 
@@ -223,7 +223,7 @@ Thus, after a bit of tinkering the code, we are able to fix the integration by p
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/23.png" width="60%">
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/24.png" width="60%">
 
-The test code can be located in the folder `Test/Integration by Parts/main.cpp`
+The test code can be located in the folder `Examples/Integration by Parts/main.cpp`
 
 By April 25th, 2025: We can now compute the integral of the general form $`\frac{1}{ax^{2} + bx + c}`$.
 
@@ -235,7 +235,7 @@ et voilà
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/28.png" width="60%">
 
-The test code can be located in the folder `Test/Integration of Polynomial Order 2 in Denominator/main.cpp`
+The test code can be located in the folder `Examples/Integration of Polynomial Order 2 in Denominator/main.cpp`
 
 By April 28th, 2025: We can now compute the integral of the general form $`\cos(ax) \sin (bx), \sin(ax) \sin(bx)`$ and $`\cos(ax) \cos (bx)`$.
 
@@ -245,7 +245,7 @@ By modifying the `src/integrate.cpp`, we can handle the $`\cos(mx) \sin (nx)`$ n
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/30.png" width="60%">
 
-The test code can be located in the folder `Test/Trigonometry Integration Level 2/main.cpp`
+The test code can be located in the folder `Examples/Trigonometry Integration Level 2/main.cpp`
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/31.png" width="60%">
 
@@ -255,13 +255,13 @@ By modifying the `src/functions.cpp`
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/33.png" width="60%">
 
-The test code can be located in the folder `Test/Trigonometry Integration Level 1.5/main.cpp`
+The test code can be located in the folder `Examples/Trigonometry Integration Level 1.5/main.cpp`
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/32.png" width="60%">
 
 By May 1st, 2025: We add a test example to compute Jacobi Polynomials that is using combinatorial and factorial.
 
-The test code can be located in the folder `Test/Compute Jacobi Polynomials/main.cpp`
+The test code can be located in the folder `Examples/Compute Jacobi Polynomials/main.cpp`
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/34.png" width="60%">
 
@@ -269,7 +269,7 @@ We also add a test example to compute integral of the form $`\int \sin^{n} (x) \
 
 (this test example is a very manual way to compute  $`\int \sin^{n} (x) \ dx`$, next we will add the implementation in the `src/functions.cpp` so we can use the integrate formula directly)
 
-The test code can be located in the folder `Test/Compute Hypergeometric Function 2F1/main.cpp`
+The test code can be located in the folder `Examples/Compute Hypergeometric Function 2F1/main.cpp`
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/35.png" width="60%">
 

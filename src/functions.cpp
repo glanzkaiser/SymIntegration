@@ -1287,14 +1287,158 @@ Symbolic Power::integrate(const Symbolic &s) const
 	{
 		return -s - (cos(s) / sin(s)) ;
 	}
-	if(b.df(s) == 0 && b!=0) 
+	if(b.df(s) == 0 && b!=0 && bpower % 2 != 0) //  odd power case
 	{
-		Symbolic y_tan = (tan(s)^(b+1)) / (b+1);
-		Symbolic a_tan = 1;
-		Symbolic b_tan = (1+b)*0.5;
-		Symbolic c_tan = (b+3)*0.5;
-		Symbolic z_tan = -tan(s)*tan(s);
-		return y_tan*hypergeometric_2F1_direct(a_tan, b_tan, c_tan, z_tan) ;
+		Symbolic integral;
+		Symbolic integral_front;
+		Symbolic sgn = 1;
+		vector<int> v={1};
+		vector<int> v_temp={1};
+		vector<int> mc={1}; // to store the middle coefficient
+		vector<int> mc_temp={1}; // to store the temporary / new middle coefficient
+		int d0 = 2;
+		int k = 1, l=2;
+		// For the coefficient at the numerator 
+		for(int i = 1 ; i <= (bpower-1)/2  ; i = i+1)
+		{
+			if (i == 1)
+			{
+				v[0] = 1; 
+				v.assign({v[0]});
+			}	
+
+			if (i ==2)
+			{		
+				mc[0]=1;
+				mc.assign({mc[0]});
+				v_temp[0] = v[0]*(i-1); 
+				v_temp.assign({v_temp[0]});
+							
+				for(int j = 1 ; j < i  ; j = j+1)
+				{
+					v_temp.push_back(v[j-1]*((2*i)-j) + v_temp[0]*mc[j-1] );	
+				}
+				v[0] = v_temp[0];
+				v.assign({v[0]});
+				for(int j = 1 ; j < i  ; j = j+1)
+				{
+					v.push_back(v_temp[j]);	
+				}
+			}
+			if (i == 3)
+			{ 
+				mc[0] = mc[0] + 1; // 
+				mc.assign({mc[0]});	
+
+				v_temp[0] = v[0]*(i-1); 
+				v_temp.assign({v_temp[0]});
+				for(int j = 1 ; j < i-1  ; j = j+1)
+				{
+					v_temp.push_back(v[j-1]*((2*i)-j) + v_temp[0]*mc[j-1] );	
+				}
+				v_temp.push_back((v[i-2]*(i+1) ) + (v_temp[0]) );
+				// Assign the temporary vector to vector v for future use
+				v[0] = v_temp[0];
+				v.assign({v[0]});
+				for(int j = 1 ; j < i  ; j = j+1)
+				{
+					v.push_back(v_temp[j]);	
+				}					
+			}
+			if (i == 4)
+			{ 
+				mc[0] = mc[0] + 1;	
+				mc.assign({mc[0]});
+				mc.push_back(mc[0]);
+				
+				v_temp[0] = v[0]*(i-1); 
+				v_temp.assign({v_temp[0]});
+				for(int j = 1 ; j < i-1  ; j = j+1)
+				{
+					v_temp.push_back(v[j-1]*((2*i)-j) + v_temp[0]*mc[j-1] );	
+				}
+				v_temp.push_back((v[i-2]*(i+1) ) + (v_temp[0]) );
+				// Assign the temporary vector to vector v for future use
+				v[0] = v_temp[0];
+				v.assign({v[0]});
+				for(int j = 1 ; j < i  ; j = j+1)
+				{
+					v.push_back(v_temp[j]);	
+				}					
+			}
+			if (i >= 5)
+			{ 
+				mc_temp[0] = mc[0]+1;
+				mc_temp.assign({mc_temp[0]});
+				for(int ic = 1 ; ic < l  ; ic = ic+1)
+				{
+					mc_temp[ic] = mc[ic-1] + mc[ic];
+				}
+				mc[l] = (mc_temp[0]);
+				mc[l+1] = (mc_temp[0]);
+
+				mc[0]=mc_temp[0];	
+				mc.assign({mc[0]});
+
+				for(int ic = 1 ; ic < l ; ic = ic+1)
+				{
+					mc.push_back(mc_temp[ic]);
+				}
+				mc.push_back(mc_temp[0]);
+				mc.push_back(0);
+
+				v_temp[0] = v[0]*(i-1); 
+				v_temp.assign({v_temp[0]});
+				for(int j = 1 ; j < i-1  ; j = j+1)
+				{
+					v_temp.push_back(v[j-1]*((2*i)-j) + v_temp[0]*mc[j-1] );	
+				}
+				v_temp.push_back((v[i-2]*(i+1) ) + (v_temp[0]) );
+				// Assign the temporary vector to vector v for future use
+				v[0] = v_temp[0];
+				v.assign({v[0]});
+				for(int j = 1 ; j < i  ; j = j+1)
+				{
+					v.push_back(v_temp[j]);	
+				}
+
+				l = l+1;
+			}
+
+			d0 = d0*k;
+			k = k+1;	
+		} 	
+		for(int i = 1 ; i <= (bpower-1)/2  ; i = i+1)
+		{			
+			integral += sgn*v[i-1]*(cos(s)^(2*(i-1)));
+			sgn=-sgn;
+			
+		} 	
+		
+		for(int i = 1 ; i <= (bpower-1)/2  ; i = i+1)
+		{	
+			integral_front = sgn;			
+			sgn = -sgn;
+		} 	
+		return integral_front*ln(cos(s)) + (integral)/(d0*(cos(s)^(bpower-1))) ;
+	}
+	if(b.df(s) == 0 && b!=0 && bpower % 2 == 0) //  even power case
+	{
+		Symbolic integral;
+		Symbolic integral_front;
+		Symbolic sgn = -1;
+		for(int i = 2 ; i <= (bpower)  ; i = i+2)
+		{	
+			integral = (-1)*integral;			
+			integral += (sin(s)^(i-1)) / ((i-1)*(cos(s)^(i-1)));
+		} 	
+		
+		for(int i = 1 ; i <= (bpower)/2  ; i = i+1)
+		{	
+			integral_front = sgn;			
+			sgn = -sgn;
+		} 	
+		return integral_front*s + integral;
 	}
 	} catch(const SymbolicError &se) {}	
  }
@@ -1332,14 +1476,158 @@ Symbolic Power::integrate(const Symbolic &s) const
 	{
 		return -s + (sin(s) / cos(s)) ;
 	}
-	if(b.df(s) == 0 && b!=0) 
+	if(b.df(s) == 0 && b!=0 && bpower % 2 != 0) //  odd power case
 	{
-		Symbolic y_cot = -(cot(s)^(b+1)) / (b+1);
-		Symbolic a_cot = 1;
-		Symbolic b_cot = (1+b)*0.5;
-		Symbolic c_cot = (b+3)*0.5;
-		Symbolic z_cot = -cot(s)*cot(s);
-		return y_cot*hypergeometric_2F1_direct(a_cot, b_cot, c_cot, z_cot);
+		Symbolic integral;
+		Symbolic integral_front;
+		Symbolic sgn = -1;
+		vector<int> v={1};
+		vector<int> v_temp={1};
+		vector<int> mc={1}; // to store the middle coefficient
+		vector<int> mc_temp={1}; // to store the temporary / new middle coefficient
+		int d0 = 2;
+		int k = 1, l=2;
+		// For the coefficient at the numerator 
+		for(int i = 1 ; i <= (bpower-1)/2  ; i = i+1)
+		{
+			if (i == 1)
+			{
+				v[0] = 1; 
+				v.assign({v[0]});
+			}	
+
+			if (i ==2)
+			{		
+				mc[0]=1;
+				mc.assign({mc[0]});
+				v_temp[0] = v[0]*(i-1); 
+				v_temp.assign({v_temp[0]});
+							
+				for(int j = 1 ; j < i  ; j = j+1)
+				{
+					v_temp.push_back(v[j-1]*((2*i)-j) + v_temp[0]*mc[j-1] );	
+				}
+				v[0] = v_temp[0];
+				v.assign({v[0]});
+				for(int j = 1 ; j < i  ; j = j+1)
+				{
+					v.push_back(v_temp[j]);	
+				}
+			}
+			if (i == 3)
+			{ 
+				mc[0] = mc[0] + 1; // 
+				mc.assign({mc[0]});	
+
+				v_temp[0] = v[0]*(i-1); 
+				v_temp.assign({v_temp[0]});
+				for(int j = 1 ; j < i-1  ; j = j+1)
+				{
+					v_temp.push_back(v[j-1]*((2*i)-j) + v_temp[0]*mc[j-1] );	
+				}
+				v_temp.push_back((v[i-2]*(i+1) ) + (v_temp[0]) );
+				// Assign the temporary vector to vector v for future use
+				v[0] = v_temp[0];
+				v.assign({v[0]});
+				for(int j = 1 ; j < i  ; j = j+1)
+				{
+					v.push_back(v_temp[j]);	
+				}					
+			}
+			if (i == 4)
+			{ 
+				mc[0] = mc[0] + 1;	
+				mc.assign({mc[0]});
+				mc.push_back(mc[0]);
+				
+				v_temp[0] = v[0]*(i-1); 
+				v_temp.assign({v_temp[0]});
+				for(int j = 1 ; j < i-1  ; j = j+1)
+				{
+					v_temp.push_back(v[j-1]*((2*i)-j) + v_temp[0]*mc[j-1] );	
+				}
+				v_temp.push_back((v[i-2]*(i+1) ) + (v_temp[0]) );
+				// Assign the temporary vector to vector v for future use
+				v[0] = v_temp[0];
+				v.assign({v[0]});
+				for(int j = 1 ; j < i  ; j = j+1)
+				{
+					v.push_back(v_temp[j]);	
+				}					
+			}
+			if (i >= 5)
+			{ 
+				mc_temp[0] = mc[0]+1;
+				mc_temp.assign({mc_temp[0]});
+				for(int ic = 1 ; ic < l  ; ic = ic+1)
+				{
+					mc_temp[ic] = mc[ic-1] + mc[ic];
+				}
+				mc[l] = (mc_temp[0]);
+				mc[l+1] = (mc_temp[0]);
+
+				mc[0]=mc_temp[0];	
+				mc.assign({mc[0]});
+
+				for(int ic = 1 ; ic < l ; ic = ic+1)
+				{
+					mc.push_back(mc_temp[ic]);
+				}
+				mc.push_back(mc_temp[0]);
+				mc.push_back(0);
+
+				v_temp[0] = v[0]*(i-1); 
+				v_temp.assign({v_temp[0]});
+				for(int j = 1 ; j < i-1  ; j = j+1)
+				{
+					v_temp.push_back(v[j-1]*((2*i)-j) + v_temp[0]*mc[j-1] );	
+				}
+				v_temp.push_back((v[i-2]*(i+1) ) + (v_temp[0]) );
+				// Assign the temporary vector to vector v for future use
+				v[0] = v_temp[0];
+				v.assign({v[0]});
+				for(int j = 1 ; j < i  ; j = j+1)
+				{
+					v.push_back(v_temp[j]);	
+				}
+
+				l = l+1;
+			}
+
+			d0 = d0*k;
+			k = k+1;	
+		} 	
+		for(int i = 1 ; i <= (bpower-1)/2  ; i = i+1)
+		{			
+			integral += sgn*v[i-1]*(sin(s)^(2*(i-1)));
+			sgn=-sgn;
+			
+		} 	
+		
+		for(int i = 1 ; i <= (bpower-1)/2  ; i = i+1)
+		{	
+			integral_front = sgn;			
+			sgn = -sgn;
+		} 	
+		return integral_front*ln(sin(s)) + (integral)/(d0*(sin(s)^(bpower-1))) ;
+	}
+	if(b.df(s) == 0 && b!=0 && bpower % 2 == 0) //  even power case
+	{
+		Symbolic integral;
+		Symbolic integral_front;
+		Symbolic sgn = -1;
+		for(int i = 2 ; i <= (bpower)  ; i = i+2)
+		{	
+			integral = (-1)*integral;			
+			integral += - (cos(s)^(i-1)) / ((i-1)*(sin(s)^(i-1)));
+		} 	
+		
+		for(int i = 1 ; i <= (bpower)/2  ; i = i+1)
+		{	
+			integral_front = sgn;			
+			sgn = -sgn;
+		} 	
+		return integral_front*s + integral;
 	}
 	} catch(const SymbolicError &se) {}	
  }
@@ -1433,6 +1721,48 @@ Symbolic Power::integrate(const Symbolic &s) const
 		d1 = d1*(bpower-1);
 		return (-v[0]*ln(sin(s)-1))/(d1) + (v[0]*ln(sin(s)+1))/(d1) + (integral_numerator)/(integral_denominator);
 	}
+	if(b.df(s) == 0 && b!=0 && bpower % 2 == 0) //  even power case
+	{
+		int v[999];
+		v[0] = 1;		 
+		Symbolic integral; 
+		Symbolic d0 = 1;	
+		int k = 1, l = 2, c=1;
+		for(int i = 1 ; i < bpower  ; i = i+2) // to compute the denominator
+		{
+			d0 *= i;		
+		}
+		for(int i = 1 ; i < bpower  - 1; i = i+2)
+		{
+			c = v[0];
+			int arrsec[999]; // make the size of the array as big as possible
+			
+			for(int j = 0 ; j < i-1  ; j = j+1)
+			{	
+				arrsec[j] = v[j]; 
+			}			
+			int d;
+			for(int j = 1 ; j < i  ; j = j+1)
+			{		
+				d = arrsec[j-1];	
+				v[j] = d*l;		
+			}
+			
+			v[0] = c*k;
+			v[1] = c*l;
+			
+			k= k + 2;
+			l = l + 2;
+		} 	
+			
+		int j_d = 1 ;
+		for(int i = 1 ; i < (0.5*bpower)+1; i = i+1)
+		{
+			integral += ( v[i-1] * sin(s) ) / ( d0*(cos(s)^(bpower-j_d)) ) ;
+			j_d = j_d+2;
+		} 
+		return integral;
+	}
 	} catch(const SymbolicError &se) {}	
  }
  if(a.type() == typeid(Csc))
@@ -1524,6 +1854,48 @@ Symbolic Power::integrate(const Symbolic &s) const
 		} 
 		d1 = d1*(bpower-1);
 		return (v[0]*ln(cos(s)-1))/(d1) - (v[0]*ln(cos(s)+1))/(d1) - (integral_numerator)/(integral_denominator);
+	}
+	if(b.df(s) == 0 && b!=0 && bpower % 2 == 0) //  even power case
+	{
+		int v[999];
+		v[0] = 1;		 
+		Symbolic integral; 
+		Symbolic d0 = 1;	
+		int k = 1, l = 2, c=1;
+		for(int i = 1 ; i < bpower  ; i = i+2) // to compute the denominator
+		{
+			d0 *= i;		
+		}
+		for(int i = 1 ; i < bpower  - 1; i = i+2)
+		{
+			c = v[0];
+			int arrsec[999]; // make the size of the array as big as possible
+			
+			for(int j = 0 ; j < i-1  ; j = j+1)
+			{	
+				arrsec[j] = v[j]; 
+			}			
+			int d;
+			for(int j = 1 ; j < i  ; j = j+1)
+			{		
+				d = arrsec[j-1];	
+				v[j] = d*l;		
+			}
+			
+			v[0] = c*k;
+			v[1] = c*l;
+			
+			k= k + 2;
+			l = l + 2;
+		} 	
+			
+		int j_d = 1 ;
+		for(int i = 1 ; i < (0.5*bpower)+1; i = i+1)
+		{
+			integral -= ( v[i-1] * cos(s) ) / ( d0*(sin(s)^(bpower-j_d)) ) ;
+			j_d = j_d+2;
+		} 
+		return integral;
 	}
 	} catch(const SymbolicError &se) {}	
  }
