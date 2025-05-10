@@ -7,6 +7,11 @@ The main idea is to improve its symbolic integration codes. Our main focus is to
 2. The sum, product and divide combination of the standard functions
 3. To be able to compute improper integrals with cases (e.g. computing mean and variance for exponential distribution)
 
+# Manual / Documentation
+
+<a href="https://github.com/glanzkaiser/SymIntegration/blob/main/SymIntegration.pdf">SymIntegration Manual</a>
+
+
 ## About SymbolicC++
 SymbolicC++ was originally written as a collection of header files
 for C++. Many of the functions and classes provided are template
@@ -77,7 +82,7 @@ The size of libsymbolicc++.so is about 5 MB compared to libsymintegration.so tha
 Open terminal and from the current working directory / this repository main directory:
 
 ```
-	cd Test
+	cd Examples/Integral
 	make
 	./main
 ```
