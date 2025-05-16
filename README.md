@@ -303,3 +303,5 @@ We have done for $`\int \sin^{n} (x) \ dx , \int \cos^{n} (x) \ dx `$ for both t
 For  $`\int \sec^{n} (x) \ dx , \int \csc^{n} (x) \ dx `$ for the case where $`n`$ is odd.
 
 We will finish the whole in a few days.
+
+By May 4th, 2025: We have finished to add all the formulas to compute $`\int \sin^{n} (x) \ dx , \int \cos^{n} (x) \ dx, \int \tan^{n} (x) \ dx, \int \cot^{n} (x) \ dx, \int \sec^{n} (x) \ dx, \int \csc^{n} (x) \ dx`$
