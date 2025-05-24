@@ -54,91 +54,54 @@ Symbolic combinations(int n, int r) {
 int main(void)
 {
 		Symbolic x("x");
-		int bpower = 9; // for cos
-		int bpower2 = 4; // for sin
-		Symbolic sgn = 1;
 		Symbolic integral;
-		int m = bpower + bpower2;
-		int n = 0.5*(bpower-1);
-		int n2 = 0.5*(bpower2-1);
+		Symbolic sgn = 1;
+		int bpower = 8; // slow when try power of 177, SymPy is fast, we need to fix it ASAP
+		int bpower2 = 8;
 		int j = 0;
-		if(bpower > bpower2)
+		int n = (bpower-1)/2;
+		// For the coefficient at the numerator of sine with odd power
+		if(bpower % 2 != 0) // for odd power
 		{
-			if(bpower2 % 2 == 0) // even case
+			if((bpower+1)/2 % 2 == 0) // if the (power+1)/2 is even 
 			{
-				if((bpower+1)/2 % 2 == 0)
-				{
-					sgn = -1;
-				}
-				else if((bpower+1)/2 % 2 != 0)
-				{
-					sgn = 1;
-				}
-			for(int i = m ; i >= bpower2  ; i = i-2)
-			{
-				integral += sgn*combinations(n,j)*((sin(x)^i)/(i));
-				sgn = -sgn;
-				j = j+1;
-			} 
+				sgn = -1;
 			}
-			j = 0;
-			if(bpower2 % 2 != 0) // odd case
+			else if((bpower+1)/2 % 2 != 0)//  if the (power+1)/2 is odd 
 			{
-				if((bpower2+1)/2 % 2 == 0)
-				{
-					sgn = 1;
-				}
-				else if((bpower2+1)/2 % 2 != 0)
-				{
-					sgn = -1;
-				}
-			for(int i = m ; i >= bpower2  ; i = i-2)
+				sgn = 1;
+			}
+			for(int i = 1 ; i <= (bpower+1)/2  ; i = i+1)
 			{
-				integral += sgn*combinations(n2,j)*((cos(x)^i)/(i));
+				integral += sgn*combinations(n,i-1)*((sin(x)^((2*bpower) - j))/((2*bpower) - j));
 				sgn = -sgn;
-				j = j+1;
+				j = j+2;	
 			} 	
-			}
 		}
-		else if(bpower <= bpower2)
+		int  k =1;
+		int c = 1;
+		int l = 1;
+		j = 1;
+		Symbolic d0 = (pow(2,bpower)) * (2*bpower) ;
+		if(bpower % 2 == 0) // for even power
 		{
-			if(bpower2 % 2 == 0) // even case
+			for(int i = 1 ; i <= (bpower)/2  ; i = i+1)
 			{
-				if((bpower+1)/2 % 2 == 0)
-				{
-					sgn = -1;
-				}
-				else if((bpower+1)/2 % 2 != 0)
-				{
-					sgn = 1;
-				}
-			for(int i = m ; i >= bpower2  ; i = i-2)
-			{
-				integral += sgn*combinations(n,j)*((sin(x)^i)/(i));
-				sgn = -sgn;
-				j = j+1;
-			} 
-			}
-			j = 0;
-			if(bpower2 % 2 != 0) // odd case
-			{
-				if((bpower+1)/2 % 2 == 0)
-				{
-					sgn = -1;
-				}
-				else if((bpower+1)/2 % 2 != 0)
-				{
-					sgn = 1;
-				}
-			for(int i = m ; i >= bpower2  ; i = i-2)
-			{
-				integral += sgn*combinations(n,j)*((sin(x)^i)/(i));
-				sgn = -sgn;
-				j = j+1;
+				d0 = d0*l;
+				integral -= ( c*cos(2*x)* ((sin(2*x)^((bpower) - k))) )/(d0);				
+				l = bpower - j -1;
+				c = c*(bpower - k);
+				k = k+2;	
+				j = j+2;
+				cout << "c = "<< c << endl;	
+				cout << "k = "<< k << endl;
+				cout << "l = "<< l << endl;	
+				cout << "d0 = "<< d0 << endl;
 			} 	
-			}
+				integral = integral + (2*c*x)/(d0) ;
+				
 		}
-		cout << "integral  = "<< integral << endl;	
+		cout << "integral = "<< integral << endl;	
 
 	return 0; 
 }

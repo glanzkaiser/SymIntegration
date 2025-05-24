@@ -33,6 +33,7 @@ It is able to compute
 4. The integral and derivative of all hyperbolic trigonometry functions`sinh(ax+b), cosh(ax+b), tanh(ax+b), coth(ax+b), sech(ax+b), csch(ax+b)`.
 5. The integral with the form of $`x^{b} e^{ax}, x^{b} e^{x}`$ with integration by parts method.
 6. The integral of $`\sin(ax) \cos(bx), \cos(ax) \cos (bx), \sin(ax) \sin (bx)`$
+7. The integral of $`\int \sin^{n} (x) \ dx , \int \cos^{n} (x) \ dx, \int \tan^{n} (x) \ dx, \int \sec^{n} (x) \ dx, \int \csc^{n} (x) \ dx `$, but the speed to show the whole symbolic integral is slow compared to SymPy, needs to be fixed.
 
 # Learning the Code
 
@@ -305,3 +306,21 @@ For  $`\int \sec^{n} (x) \ dx , \int \csc^{n} (x) \ dx `$ for the case where $`n
 We will finish the whole in a few days.
 
 By May 9th, 2025: We have finished to add all the formulas to compute $`\int \sin^{n} (x) \ dx , \int \cos^{n} (x) \ dx, \int \tan^{n} (x) \ dx, \int \cot^{n} (x) \ dx, \int \sec^{n} (x) \ dx, \int \csc^{n} (x) \ dx`$
+
+By May 24th, 2025: We have finished to make the C++ codes to compute $`\int \sin^{n} (x) \cos^{m} (x)\ dx `$ for all possible cases of $`n`$ and $`m`$.
+
+The test code can be located in the folder `Examples/Test SymIntegration Trigonometry Integration Level 4 Sin^n Cos^m Even Manual n>m/main.cpp`
+
+The test code can be located in the folder `Examples/Test SymIntegration Trigonometry Integration Level 4 Sin^n Cos^m Even Manual n<m/main.cpp`
+
+The test code can be located in the folder `Examples/Test SymIntegration Trigonometry Integration Level 4 Sin^n Cos^m for n = m/main.cpp`
+
+The test code can be located in the folder `Examples/Test SymIntegration Trigonometry Integration Level 4 Sin^n Cos^m Odd Manual/main.cpp`
+
+We haven't put it in `src/functions` yet.
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/37.png" width="60%">
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/38.png" width="60%">
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/39.png" width="60%">
