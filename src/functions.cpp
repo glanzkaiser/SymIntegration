@@ -207,6 +207,8 @@ Symbolic Tan::integrate(const Symbolic &s) const
 {
  const Symbolic &x = parameters.front();
  if(x == s) return -ln(cos(x)) * (1 / parameters.front().df(s));
+ if(parameters.front().coeff(s,1) != 0 && parameters.front().coeff(s,0) ==0) return -( ln(cos((parameters.front().coeff(s,1))*s)) ) * (1 / (parameters.front().coeff(s,1)) ) ;
+
  if(df(s) == 0) return *this * s;
  return ln( tan(parameters.front()) * tan(parameters.front()) + 1) * ( 1 / (2*parameters.front().df(s)) ) ;
 }
@@ -281,6 +283,8 @@ Symbolic Cot::integrate(const Symbolic &s) const
 {
  const Symbolic &x = parameters.front();
  if(x == s) return ln(sin(x)) * (1 / parameters.front().df(s));
+ if(parameters.front().coeff(s,1) != 0 && parameters.front().coeff(s,0) ==0) return ( ln(sin((parameters.front().coeff(s,1))*s)) ) * (1 / (parameters.front().coeff(s,1)) ) ;
+
  if(df(s) == 0) return *this * s;
  return -ln(tan(parameters.front()) * tan(parameters.front()) + 1) * ( 1 / (2*parameters.front().df(s)) ) + ln(tan(parameters.front())) * (1 / (parameters.front().df(s)) ) ;
 }
@@ -354,6 +358,7 @@ Symbolic Sec::integrate(const Symbolic &s) const
 {
  const Symbolic &x = parameters.front();
  if(x == s) return -0.5*(ln(sin(x)-1)) + 0.5*(ln(sin(x)+1)) ;
+ if(parameters.front().coeff(s,1) != 0 && parameters.front().coeff(s,0) ==0) return (-0.5*(ln(sin((parameters.front().coeff(s,1))*s)-1)) + 0.5*(ln(sin((parameters.front().coeff(s,1))*s)+1)) ) * (1 / (parameters.front().df(s)) ) ;
  if(df(s) == 0) return *this * s;
  return ln(tan(parameters.front()) + sec(parameters.front()) ) * (1 / (parameters.front().df(s)) ) ;
 }
@@ -437,6 +442,7 @@ Symbolic Csc::integrate(const Symbolic &s) const
 {
  const Symbolic &x = parameters.front();
  if(x == s) return 0.5*(ln(cos(x)-1)) - 0.5*(ln(cos(x)+1)) ;
+ if(parameters.front().coeff(s,1) != 0 && parameters.front().coeff(s,0) ==0) return (0.5*(ln(cos((parameters.front().coeff(s,1))*s)-1)) - 0.5*(ln(cos((parameters.front().coeff(s,1))*s)+1)) ) * (1 / (parameters.front().df(s)) ) ;
  if(df(s) == 0) return *this * s;
  return -ln(cot(parameters.front()) + csc(parameters.front()) ) * (1 / (parameters.front().df(s)) ) ;
 }
@@ -1176,7 +1182,7 @@ Symbolic Power::integrate(const Symbolic &s) const
  }
  if(a.type() == typeid(Sin))
  {
-	list<Equations> eq, eq2;
+	list<Equations> eq, eq2, eq3;
 	list<Equations>::iterator i;
 	UniqueSymbol c, d;
 
@@ -1251,6 +1257,20 @@ Symbolic Power::integrate(const Symbolic &s) const
 		} 
 		return integral;
 	}
+	// NOT YET
+	/*eq3 = ( (sin(s)^c) * (cos(s)^d) ).match(f, (c,d)); // case for cos(x)^n * sin(x)^m
+	for(i=eq3.begin(); i!=eq3.end(); ++i)
+	try {
+	Symbolic m = rhs(*i, c), n = rhs(*i, d);
+	if(df(rhs(*i, a), s) == 0)
+	{
+	if(ap == bp || bp == ap || bp == -ap || ap == -bp)
+	{
+	    return ;
+	}
+	return ;
+	}*/
+
 	} catch(const SymbolicError &se) {}	
  }
  if(a.type() == typeid(Tan))
@@ -1812,7 +1832,7 @@ Symbolic Power::integrate(const Symbolic &s) const
 		int last_coeff;
 		int first_coeff = 3;
 		
-		// For the coefficient at the numerator of sine with odd power
+		// For the coefficient at the numerator of cosine with odd power
 		for(int i = 1 ; i < (bpower-1)/2  ; i = i+1)
 		{
 			if (i >= 2)
