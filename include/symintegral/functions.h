@@ -51,6 +51,7 @@ class Coth;
 class Sech;
 class Csch;
 class Log;
+class Erf;
 class Power;
 class Derivative;
 class Integral;
@@ -308,6 +309,18 @@ class Csch: public Symbol
 {
  public: Csch(const Csch&);
          Csch(const Symbolic&);
+
+         Simplified simplify() const;
+         Symbolic df(const Symbolic&) const;
+         Symbolic integrate(const Symbolic&) const;
+
+         Cloning *clone() const { return Cloning::clone(*this); }
+};
+
+class Erf: public Symbol
+{
+ public: Erf(const Erf&);
+         Erf(const Symbolic&);
 
          Simplified simplify() const;
          Symbolic df(const Symbolic&) const;

@@ -26,16 +26,25 @@
 #ifndef SYMBOLIC_CPLUSPLUS_INTEGRATE_DEFINE
 #define SYMBOLIC_CPLUSPLUS_INTEGRATE_DEFINE
 
+#define PI 3.1415926535897f
+
 Symbolic integrate(const Symbolic &f,const Symbolic &x)
 {
  list<Equations> eq;
  list<Equations>::iterator i;
  UniqueSymbol a, b, c;
-
+ Symbolic π("π");
  eq = (exp(a*x)).match(f, (a,b));
  for(i=eq.begin(); i!=eq.end(); ++i)
   try {
    if(df(rhs(*i, a), x) == 0) return f/rhs(*i, a);
+  } catch(const SymbolicError &se) {}
+
+ eq = (exp(a*x*x)).match(f, (a,b)); // to handle integral of e^{ax^2}
+ for(i=eq.begin(); i!=eq.end(); ++i)
+  try {
+   Symbolic ap = rhs(*i, a);
+   if(df(rhs(*i, a), x) == 0) return (sqrt(π)*erf(x*sqrt(-ap)) ) / (2*sqrt(-ap)) ;
   } catch(const SymbolicError &se) {}
 
  eq = (b*exp(a*x)).match(f, (a,b));
@@ -84,6 +93,10 @@ Symbolic integrate(const Symbolic &f,const Symbolic &x)
 	    return (sin(bp*x)*sin(bp*x))/(2*bp) ;
 	    //return -(cos(bp*x)*cos(bp*x))/(2*bp) ;
 	   }
+	if(ap == bp && ap ==1)
+	  {
+	  return 0.5*sin(x)*sin(x);
+	  }
 	return (ap*sin(ap*x)*sin(bp*x))/(ap*ap - bp*bp) + (bp*cos(ap*x)*cos(bp*x))/(ap*ap - bp*bp) ;
    }
   } catch(const SymbolicError &se) {}

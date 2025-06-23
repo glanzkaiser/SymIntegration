@@ -370,7 +370,10 @@ Sum::match_parts(const Symbolic &s, const list<Symbolic> &p) const
  // remove empty sum
  for(j=matchpart.begin();j!=matchpart.end();++j)
   if(j->summands.size() == 0) break;
- if(j != matchpart.end()); matchpart.erase(j);
+ if(j != matchpart.end())
+	{ 
+	matchpart.erase(j);
+	}
 
  for(j=matchpart.begin();j!=matchpart.end();++j)
  {

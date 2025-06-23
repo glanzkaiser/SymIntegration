@@ -42,6 +42,7 @@
 #include "symintegral/constants.h"
 #include "symintegral/integrate.h"
 #include "symintegral/solve.h"
+#include "symintegral/dsolve.h"
 
 #ifndef SYMBOLIC_CPLUSPLUS
 #define SYMBOLIC_CPLUSPLUS
@@ -154,6 +155,7 @@ Symbolic operator^(const Symbolic &,int);
 Symbolic operator^(int,const Symbolic &);
 Symbolic operator^(const Symbolic &,double);
 Symbolic operator^(double,const Symbolic &);
+Symbolic erf(const Symbolic &);
 Symbolic exp(const Symbolic &);
 Symbolic sqrt(const Symbolic &);
 Symbolic factorial(const Symbolic &);

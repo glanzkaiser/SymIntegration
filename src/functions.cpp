@@ -787,6 +787,32 @@ Symbolic Csch::integrate(const Symbolic &s) const
 }
 
 //////////////////////////////////////
+// Implementation of Erf           //
+//////////////////////////////////////
+
+Erf::Erf(const Erf &s) : Symbol(s) {}
+
+Erf::Erf(const Symbolic &s) : Symbol(Symbol("erf")[s]) {}
+
+Simplified Erf::simplify() const
+{
+ const Symbolic &s = parameters.front().simplify();
+ if(s == 0) return Number<int>(0);
+ return *this;
+}
+
+Symbolic Erf::df(const Symbolic &s) const
+{ return Derivative(*this,s); }
+
+Symbolic Erf::integrate(const Symbolic &s) const
+{
+ const Symbolic &x = parameters.front();
+ if(x == s) return Integral(*this,s);
+ if(df(s) == 0) return Integral(*this,s);
+ return Integral(*this,s);
+}
+
+//////////////////////////////////////
 // Implementation of Log            //
 //////////////////////////////////////
 
@@ -1113,6 +1139,37 @@ Symbolic Power::integrate(const Symbolic &s) const
  const Symbolic &a = parameters.front();
  const Symbolic &b = parameters.back();
  int bpower = parameters.back().coeff(s,0);
+ if(a == 1 - cos(s))
+ {
+	list<Equations> eq, eq2;
+	list<Equations>::iterator i;
+	UniqueSymbol c, d;
+
+	eq = (1-cos(s)).match(a, (c,d));
+	for(i=eq.begin(); i!=eq.end(); ++i)
+	try {
+	if(b.df(s) == 0 && b==-1) 
+	{
+		return (-1)*(tan(0.5*s));
+	}
+	if(b.df(s) == 0 && b==-2) 
+	{
+		return (-1)*(2*tan(0.5*s)) + (-1)*(tan(0.5*s)^(3));
+	}
+	} catch(const SymbolicError &se) {}	
+ }
+ if(a == (sin(s)^(-bpower+1))*(1-cos(s)) ) // for sin(x) * (1-cos(x))^(-b)
+ {
+	if(b.df(s) == 0 && b ==-1) 
+	{
+		return ln(cos(s)-1);
+	}
+	if(b.df(s) == 0 && b !=-1 && bpower < 0) 
+	{
+		return cos(s)/(bpower*((1-cos(s))^(bpower)) - ((1-cos(s))^(bpower))) - 1/(bpower*((1-cos(s))^(bpower)) - ((1-cos(s))^(bpower)));
+	}
+		
+ }
  if(a.type() == typeid(Cos))
  {
 	list<Equations> eq, eq2;
@@ -1132,6 +1189,7 @@ Symbolic Power::integrate(const Symbolic &s) const
 		return sin(ap*s) / (ap*cos(ap*s)) ;
 	}
 	} catch(const SymbolicError &se) {}	
+	
 	eq2 = (cos(s)).match(a, (c,d));
 	for(i=eq2.begin(); i!=eq2.end(); ++i)
 	try {

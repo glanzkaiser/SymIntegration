@@ -34,6 +34,7 @@ It is able to compute
 5. The integral with the form of $`x^{b} e^{ax}, x^{b} e^{x}`$ with integration by parts method.
 6. The integral of $`\sin(ax) \cos(bx), \cos(ax) \cos (bx), \sin(ax) \sin (bx)`$
 7. The integral of $`\int \sin^{n} (x) \ dx , \int \cos^{n} (x) \ dx, \int \tan^{n} (x) \ dx, \int \sec^{n} (x) \ dx, \int \csc^{n} (x) \ dx `$, but the speed to show the whole symbolic integral is slow compared to SymPy, needs to be fixed.
+8. The solution ($`y(t)`$) of first order linear ordinary differential equation of type $`ay' + ty = b`$.
 
 # Learning the Code
 
@@ -107,6 +108,7 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Compute integral for inverse trigonometric        			| Done
 |:sunflower:   | Compute integral with Integration by parts				| Done
 |:sunflower:   | Compute definite integral with improper integrals			| Done (write `INFINITY` to substitute `Inf`)
+|:sunflower:   | Compute the solution of first order linear ODE of type $`ay' + ty = b`$| Done
 
 # Milestone
 
@@ -324,3 +326,5 @@ We haven't put it in `src/functions` yet.
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/38.png" width="60%">
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/39.png" width="60%">
+
+By June 23rd, 2025: SymIntegration is able to compute the solution ($`y(t)`$) of first order linear ordinary differential equation of type $`ay' + ty = b`$.

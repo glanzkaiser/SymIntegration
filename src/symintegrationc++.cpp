@@ -263,6 +263,9 @@ Symbolic operator^(const Symbolic &s,double d)
 Symbolic operator^(double d,const Symbolic &s)
 { return Power(Symbolic(d),s); }
 
+Symbolic erf(const Symbolic &s)
+{ return Erf(s); }
+
 Symbolic exp(const Symbolic &s)
 { return SymbolicConstant::e ^ s; }
 
