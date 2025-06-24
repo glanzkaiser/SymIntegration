@@ -19,7 +19,7 @@
 */
 
 
-// solve.h
+// dsolve.h
 
 #ifndef SYMINTEGRATION_CPLUSPLUS_DSOLVE
 

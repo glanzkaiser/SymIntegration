@@ -38,15 +38,23 @@ double division(double x, double y)
 
 int main(void)
 {
-	Symbolic x("x"), y("y"),fx, gx, t("t");
+	Symbolic t("t"), y("y"),yt;
 	
-	fx = -(0.5*x)*y+1;
-	cout << "f(x) = " << fx << endl;
-		
+	// 2y' + ty = 2
+	yt = -(0.5*t)*y+1;
+	cout << "f(t,y) = " << yt << endl;
 	
-	cout << "DSolve for f(x,y). \n" <<endl;
-	cout << "y(x) = " << dsolve( (-0.5*x)*y+1,y,x) <<endl;
+	cout << "\nDSolve for 2y' + ty = 2\n" <<endl;
+	cout << "y(t) = " << dsolve( yt,y,t) <<endl;
 	
+	cout << "\nDSolve for ty' + 2y = 4t^2\n" <<endl;
+	cout << "y(t) = " << dsolve( (-2/t)*y+4*t,y,t) <<endl;	
 	
+	cout << "\nDSolve for y' + 0.5y = 0.5*exp(t/3)\n" <<endl;
+	cout << "y(t) = " << dsolve( -0.5*y + 0.5*exp(division(1,3)*t),y,t) <<endl;	
+	
+	cout << "\nDSolve for y' - 2y = 4-t\n" <<endl;
+	cout << "y(t) = " << dsolve( 2*y + 4-t,y,t) <<endl;	
+
 	return 0; 
 }

@@ -58,7 +58,7 @@ Open terminal and from the current working directory / this repository main dire
 
 When we want to create the shared library it will look for this header files in the default path where the include files are usually located. In Linux OS `usr/include` is the basic / default path.
 
-## Create the Shared Library
+## Create the Shared Library (Manual Way)
 We will create the shared library from all the `.cpp` files in `/src` directory.
 
 Open terminal and from the current working directory / this repository main directory:
@@ -78,6 +78,24 @@ The size of libsymbolicc++.so is about 5 MB compared to libsymintegration.so tha
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/2.png" width="83%">
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/3.png" width="83%">
+
+## Create the Shared Library (with Makefile)
+
+We have provide a Makefile that can be used to make the library faster, because if you only making change at, e.g. `src/integrate.cpp`, then instead of creating the object files for all the `.cpp` files it will only create a new object file for the newly modified `src/integrate.cpp` file.
+
+The downside is, the size of the library is now 3.6 MB, maybe it is because we add `-Wall -Wformat` in the CXX flags.
+
+To create the SymIntegration shared library, open terminal and from the current working directory / this repository main directory:
+
+```
+	cd src
+	make
+```
+Then move the newly build `libsymintegration.so` to `/usr/lib`, assuming your libraries default location is there.
+ 
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/41.png" width="51%">
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/42.png" width="51%">
 
 # Test Example
 
@@ -108,7 +126,7 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Compute integral for inverse trigonometric        			| Done
 |:sunflower:   | Compute integral with Integration by parts				| Done
 |:sunflower:   | Compute definite integral with improper integrals			| Done (write `INFINITY` to substitute `Inf`)
-|:sunflower:   | Compute the solution of first order linear ODE of type $`ay' + ty = b`$| Done
+|:sunflower:   | Compute the solution of first order linear ODE of several types	| Done
 
 # Milestone
 

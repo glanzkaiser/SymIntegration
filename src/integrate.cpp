@@ -40,6 +40,20 @@ Symbolic integrate(const Symbolic &f,const Symbolic &x)
    if(df(rhs(*i, a), x) == 0) return f/rhs(*i, a);
   } catch(const SymbolicError &se) {}
 
+ eq = (exp(a*ln(x))).match(f, (a,b)); // to handle integral of e^{a * ln(x)} but it doesn't work still symbolic error
+ for(i=eq.begin(); i!=eq.end(); ++i)
+  try {
+   Symbolic ap = rhs(*i, a), bp = rhs(*i, b);
+   if(df(rhs(*i, a), x) == 0) return ( x^(ap+1) ) / (ap+1) ;
+  } catch(const SymbolicError &se) {}
+
+ eq = (a*exp(b*ln(x))*c*x).match(f, (a,b,c)); // to handle integral of a*e^{b * ln(x)}*c*x
+ for(i=eq.begin(); i!=eq.end(); ++i)
+  try {
+   Symbolic ap = rhs(*i, a), bp = rhs(*i, b), cp = rhs(*i, c);
+   if(df(rhs(*i, a), x) == 0) return (ap*cp*(x^(bp+2)) ) / (bp+2) ;
+  } catch(const SymbolicError &se) {}
+
  eq = (exp(a*x*x)).match(f, (a,b)); // to handle integral of e^{ax^2}
  for(i=eq.begin(); i!=eq.end(); ++i)
   try {
