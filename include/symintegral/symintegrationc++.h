@@ -36,11 +36,11 @@
 #include "symintegral/product.h"   //   Product  : CloningSymbolicInterface
 #include "symintegral/sum.h"       //   Sum      : CloningSymbolicInterface
 #include "symintegral/symbol.h"    //   Symbol   : CloningSymbolicInterface
+#include "symintegral/integrate.h"
 #include "symintegral/functions.h" //     Sin    : Symbol ...
 #include "symintegral/symmatrix.h" //   SymbolicMatrix : CloningSymbolicInterface
 #include "symintegral/symerror.h"  //   SymbolicError  : CloningSymbolicInterface
 #include "symintegral/constants.h"
-#include "symintegral/integrate.h"
 #include "symintegral/solve.h"
 #include "symintegral/dsolve.h"
 

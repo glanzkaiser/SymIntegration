@@ -28,13 +28,13 @@ scripts from the SymbolicC++ header files.
 It is able to compute
 
 1. The integral of `sin(ax+b), cos(ax+b), tan(ax+b), cot(ax+b), sec(ax+b), csc(ax+b)` with `ax + b` is a polynomial of order 1.
-2. The integral of $`\frac{1}{(ax+b)}`$, $`\frac{1}{ax^{2}+bx + c}`$
+2. The integral of $`\frac{1}{(ax+b)}`$, $`\frac{1}{ax^{2}+bx + c}`$, $`\frac{a_{1}x^2 + b_{1} x + c_{1}}{ax^{2}+bx + c}`$, $`\frac{a_{1}x + b_{1}}{ax^{2}+bx + c}`$
 3. The integral and derivative of `asin(ax+b), acos(ax+b), atan(ax+b), acot(ax+b), asec(ax+b), acsc(ax+b)` with `ax + b` is a polynomial of order 1. Only `asec(ax+b), acsc(ax+b)` integration that have no analytic solution yet since it has cases output.
 4. The integral and derivative of all hyperbolic trigonometry functions`sinh(ax+b), cosh(ax+b), tanh(ax+b), coth(ax+b), sech(ax+b), csch(ax+b)`.
 5. The integral with the form of $`x^{b} e^{ax}, x^{b} e^{x}`$ with integration by parts method.
 6. The integral of $`\sin(ax) \cos(bx), \cos(ax) \cos (bx), \sin(ax) \sin (bx)`$
 7. The integral of $`\int \sin^{n} (x) \ dx , \int \cos^{n} (x) \ dx, \int \tan^{n} (x) \ dx, \int \sec^{n} (x) \ dx, \int \csc^{n} (x) \ dx `$, but the speed to show the whole symbolic integral is slow compared to SymPy, needs to be fixed.
-8. The solution ($`y(t)`$) of first order linear ordinary differential equation of type $`ay' + ty = b`$.
+8. The solution ($`y(t)`$) of first order linear ordinary differential equation of type $`ay' + ty = b`$, separable equation of type $`\frac{dy}{dx} = \frac{f(x)}{g(y)}`$, and separable equation with homogeneous ratio equations of type $`\frac{dy}{dx} = \frac{f(x,y)}{g(x,y)}`$.
 
 # Learning the Code
 

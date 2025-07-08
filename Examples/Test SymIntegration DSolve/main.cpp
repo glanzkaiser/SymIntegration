@@ -56,5 +56,11 @@ int main(void)
 	cout << "\nDSolve for y' - 2y = 4-t\n" <<endl;
 	cout << "y(t) = " << dsolve( 2*y + 4-t,y,t) <<endl;	
 
+	cout << "\nDSolve for dy/dx = (x^2) / (1-y^2) \n" <<endl;
+	cout << "f(x,y) = " << dsolveseparable(1-(y^2), (x^2),y,x) <<endl;	
+		
+	cout << "\nDSolve for dy/dx = (y-4x) / (x-y) \n" <<endl;
+	cout << "f(x,y) = " << dsolveseparable(x-y, y-4*x,y,x) <<endl;	
+
 	return 0; 
 }

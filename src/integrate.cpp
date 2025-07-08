@@ -32,7 +32,7 @@ Symbolic integrate(const Symbolic &f,const Symbolic &x)
 {
  list<Equations> eq;
  list<Equations>::iterator i;
- UniqueSymbol a, b, c;
+ UniqueSymbol a, b, c, d, e,a1,a2,a3,a4,a5;
  Symbolic π("π");
  eq = (exp(a*x)).match(f, (a,b));
  for(i=eq.begin(); i!=eq.end(); ++i)
@@ -215,6 +215,217 @@ Symbolic integrate(const Symbolic &f,const Symbolic &x)
   } catch(const SymbolicError &se) {}
 
  return f.integrate(x);
+}
+
+Symbolic fractionintegrate(const Symbolic &fnum, const Symbolic &fdenom, const Symbolic &x)
+{
+  list<Equations> eq;
+  list<Equations>::iterator i;
+  UniqueSymbol anum, bnum, cnum;
+  Symbolic integral_sol;
+  double anump, bnump, cnump, ap, bp, cp;
+  ap = fdenom.coeff(x,2);
+  bp = fdenom.coeff(x,1);
+  cp = fdenom.coeff(x,0); 
+
+  if (fnum.coeff(x,2)!=0 && fnum.coeff(x,1)!=0 && fnum.coeff(x,0)!=0 && fdenom.coeff(x,2)!=0 && fdenom.coeff(x,1)!=0 && fdenom.coeff(x,0)!=0 ) // for (a1x^2 + b1x + c1)/(ax^2+bx+c)
+  {
+	eq = ( (anum*x*x+bnum*x+cnum)).match(fnum, (anum,bnum,cnum)); 
+ 	for(i=eq.begin(); i!=eq.end(); ++i) 
+ 	try {
+ 	Symbolic a1 = rhs(*i, anum), b1 = rhs(*i, bnum), c1 = rhs(*i, cnum); 
+ 	anump= a1;
+ 	bnump= b1;
+ 	cnump = c1;
+ 	} catch(const SymbolicError &se) {}
+
+	double D = sqrt(bp*bp-(4*ap*cp))*(2*ap*ap*cnump-2*ap*anump*cp-ap*bp*bnump+anump*bp*bp)/(2*ap*ap*(4*ap*cp-(bp*bp))) ;
+ 
+	integral_sol = ((ap*bnump-anump*bp)/(2*ap*ap) - D)*ln(x+(4*ap*ap*cp*((ap*bnump-anump*bp)/(2*ap*ap) - D) - ap*bp*bp*((ap*bnump-anump*bp)/(2*ap*ap) - D) + ap*bp*cnump-2*ap*bnump*cp+anump*bp*cp) / (2*ap*ap*cnump-2*ap*anump*cp-ap*bp*bnump+anump*bp*bp)) + ((ap*bnump-anump*bp)/(2*ap*ap) + D)*ln(x+(4*ap*ap*cp*((ap*bnump-anump*bp)/(2*ap*ap) + D) - ap*bp*bp*((ap*bnump-anump*bp)/(2*ap*ap) + D) + ap*bp*cnump-2*ap*bnump*cp+anump*bp*cp) / (2*ap*ap*cnump-2*ap*anump*cp-ap*bp*bnump+anump*bp*bp)) + (anump*x)/ap;   
+  }
+
+  if (fnum.coeff(x,2)==0 && fnum.coeff(x,1)!=0 && fnum.coeff(x,0)!=0 && fdenom.coeff(x,2)!=0 && fdenom.coeff(x,1)!=0 && fdenom.coeff(x,0)!=0 ) // for (a1x+b1)/(ax^2+bx+c)
+  {
+	eq = ( (bnum*x+cnum)).match(fnum, (bnum,cnum)); 
+ 	for(i=eq.begin(); i!=eq.end(); ++i) 
+ 	try {
+ 	Symbolic a1 = rhs(*i, bnum), b1 = rhs(*i, cnum); 
+ 	bnump= a1;
+ 	cnump = b1;
+ 	} catch(const SymbolicError &se) {}
+
+	double D = (2*ap*cnump - bnump*bp)*sqrt(-4*ap*cp+(bp*bp))/(2*ap*(4*ap*cp-(bp*bp)));
+	double denom1 = 2*ap*cnump - bnump*bp;	
+ 
+	integral_sol = ((bnump/(2*ap)) - D)*ln(x + (4*ap*cp*((bnump/(2*ap))-D) - 2*bnump*cp -(bp*bp)*(bnump/(2*ap) - D) + bp*cnump)/(denom1)) + ((bnump/(2*ap)) + D)*ln(x + (4*ap*cp*((bnump/(2*ap))+D) - 2*bnump*cp -(bp*bp)*(bnump/(2*ap) + D) + bp*cnump)/(denom1)) ;   
+  }
+  
+  if (fnum.coeff(x,2)==0 && fnum.coeff(x,1)!=0 && fnum.coeff(x,0)==0 && fdenom.coeff(x,2)!=0 && fdenom.coeff(x,1)!=0 && fdenom.coeff(x,0)!=0 ) // for (a1x)/(ax^2+bx+c)
+  {
+	eq = ( (bnum*x)).match(fnum, (bnum,cnum)); 
+ 	for(i=eq.begin(); i!=eq.end(); ++i) 
+ 	try {
+ 	Symbolic a1 = rhs(*i, bnum); 
+ 	bnump= a1;
+ 	} catch(const SymbolicError &se) {}
+
+	double D = (bp*sqrt(bp*bp-4*ap*cp))/(2*ap*(4*ap*cp-(bp*bp))) ;
+	integral_sol = bnump*( (-D + (1/(2*ap)))*ln(x+(-4*ap*cp*(-D + 1/(2*ap)) +bp*bp*(-D+ 1/(2*ap)) + 2*cp)/(bp)) + (D + (1/(2*ap)))*ln(x+(-4*ap*cp*(D + 1/(2*ap)) +bp*bp*(D+ 1/(2*ap)) + 2*cp)/(bp)) );
+  }
+  
+  if (fnum.coeff(x,2)==0 && fnum.coeff(x,1)!=0 && fnum.coeff(x,0)!=0 && fdenom.coeff(x,2)!=0 && fdenom.coeff(x,1)==0 && fdenom.coeff(x,0)!=0 ) // for (a1x + b1)/(ax^2+c)
+  {
+	eq = ( (bnum*x+cnum)).match(fnum, (bnum,cnum)); 
+ 	for(i=eq.begin(); i!=eq.end(); ++i) 
+ 	try {
+ 	Symbolic a1 = rhs(*i, bnum), b1 = rhs(*i, cnum); 
+ 	bnump= a1;
+ 	cnump = b1; 
+ 	} catch(const SymbolicError &se) {}
+
+	double D = cnump*sqrt(-ap*ap*ap*cp)/(2*ap*ap*cp);
+	integral_sol = (bnump/(2*ap) - D)*ln(x+(2*ap*cp*(bnump/(2*ap) - D) - bnump*cp)/(ap*cnump)) + (bnump/(2*ap) + D)*ln(x+(2*ap*cp*(bnump/(2*ap) + D) - bnump*cp)/(ap*cnump));
+  }
+
+  if (fnum.coeff(x,2)==0 && fnum.coeff(x,1)!=0 && fnum.coeff(x,0)==0 && fdenom.coeff(x,2)!=0 && fdenom.coeff(x,1)==0 && fdenom.coeff(x,0)!=0 ) // for (a1x)/(ax^2+c)
+  {
+	eq = ( (bnum*x)).match(fnum, (bnum,cnum)); 
+ 	for(i=eq.begin(); i!=eq.end(); ++i) 
+ 	try {
+ 	Symbolic a1 = rhs(*i, bnum); 
+ 	bnump= a1;
+ 	} catch(const SymbolicError &se) {}
+
+	integral_sol = bnump*( ln(ap*x*x+cp)/(2*ap) );
+  }
+
+  if (fnum.coeff(x,2)==0 && fnum.coeff(x,1)!=0 && fnum.coeff(x,0)!=0 && fdenom.coeff(x,2)!=0 && fdenom.coeff(x,1)!=0 && fdenom.coeff(x,0)==0 ) // for (a1x + b1)/(ax^2+bx)
+  {
+	eq = ( (bnum*x+cnum)).match(fnum, (bnum,cnum)); 
+ 	for(i=eq.begin(); i!=eq.end(); ++i) 
+ 	try {
+ 	Symbolic a1 = rhs(*i, bnum), b1 = rhs(*i, cnum); 
+ 	bnump= a1;
+ 	cnump = b1; 
+ 	} catch(const SymbolicError &se) {}
+
+	double D = (bp*cnump+(bp*(ap*cnump-bnump*bp))/(ap))/(2*ap*cnump-bnump*bp);
+	integral_sol = cnump*ln(x)/bp - ((ap*cnump-bnump*bp)*ln(x+D))/(ap*bp);
+  }
+
+  if (fnum.coeff(x,2)==0 && fnum.coeff(x,1)!=0 && fnum.coeff(x,0)==0 && fdenom.coeff(x,2)!=0 && fdenom.coeff(x,1)!=0 && fdenom.coeff(x,0)==0 ) // for (a1x)/(ax^2+bx)
+  {
+	eq = ( (bnum*x)).match(fnum, (bnum,cnum)); 
+ 	for(i=eq.begin(); i!=eq.end(); ++i) 
+ 	try {
+ 	Symbolic a1 = rhs(*i, bnum); 
+ 	bnump= a1;
+ 	} catch(const SymbolicError &se) {}
+
+	integral_sol = bnump*( ln(ap*x+bp)/(ap) );
+  }
+
+  if (fnum.coeff(x,2)==0 && fnum.coeff(x,1)!=0 && fnum.coeff(x,0)!=0 && fdenom.coeff(x,2)==0 && fdenom.coeff(x,1)!=0 && fdenom.coeff(x,0)!=0 ) // for (a1x + b1)/(bx+c)
+  {
+	eq = ( (bnum*x+cnum)).match(fnum, (bnum,cnum)); 
+ 	for(i=eq.begin(); i!=eq.end(); ++i) 
+ 	try {
+ 	Symbolic a1 = rhs(*i, bnum), b1 = rhs(*i, cnum); 
+ 	bnump= a1;
+ 	cnump = b1; 
+ 	} catch(const SymbolicError &se) {}
+
+	integral_sol = (bnump*x/bp) - ((bnump*cp-bp*cnump)*ln(bp*x+cp))/(bp*bp);
+  }
+
+  if (fnum.coeff(x,2)==0 && fnum.coeff(x,1)!=0 && fnum.coeff(x,0)==0 && fdenom.coeff(x,2)==0 && fdenom.coeff(x,1)!=0 && fdenom.coeff(x,0)!=0 ) // for (a1x)/(bx+c)
+  {
+	eq = ( (bnum*x)).match(fnum, (bnum,cnum)); 
+ 	for(i=eq.begin(); i!=eq.end(); ++i) 
+ 	try {
+ 	Symbolic a1 = rhs(*i, bnum); 
+ 	bnump= a1;
+ 	} catch(const SymbolicError &se) {}
+
+	integral_sol = bnump*(x/bp - cp*ln(bp*x+cp)/(bp*bp) );
+  }
+
+  if (fnum.coeff(x,2)==0 && fnum.coeff(x,1)!=0 && fnum.coeff(x,0)!=0 && fdenom.coeff(x,2)!=0 && fdenom.coeff(x,1)==0 && fdenom.coeff(x,0)==0 ) // for (a1x+b1)/(ax^2)
+  {
+	eq = ( (bnum*x)).match(fnum, (bnum,cnum)); 
+ 	for(i=eq.begin(); i!=eq.end(); ++i) 
+ 	try {
+ 	Symbolic a1 = rhs(*i, bnum), b1 = rhs(*i, cnum); 
+ 	bnump= a1;
+	cnump = b1; 
+ 	} catch(const SymbolicError &se) {}
+
+	integral_sol = (bnump*ln(x) - (cnump)/(x))/(ap);
+  }
+
+  if (fnum.coeff(x,2)==0 && fnum.coeff(x,1)!=0 && fnum.coeff(x,0)==0 && fdenom.coeff(x,2)!=0 && fdenom.coeff(x,1)==0 && fdenom.coeff(x,0)==0 ) // for (a1x)/(ax^2)
+  {
+	eq = ( (bnum*x)).match(fnum, (bnum,cnum)); 
+ 	for(i=eq.begin(); i!=eq.end(); ++i) 
+ 	try {
+ 	Symbolic a1 = rhs(*i, bnum); 
+ 	bnump= a1;
+ 	} catch(const SymbolicError &se) {}
+
+	integral_sol = bnump*ln(x)/ap;
+  }
+
+  if (fnum.coeff(x,2)==0 && fnum.coeff(x,1)!=0 && fnum.coeff(x,0)!=0 && fdenom.coeff(x,2)==0 && fdenom.coeff(x,1)!=0 && fdenom.coeff(x,0)==0 ) // for (a1x+b1)/(bx)
+  {
+	eq = ( (bnum*x)).match(fnum, (bnum,cnum)); 
+ 	for(i=eq.begin(); i!=eq.end(); ++i) 
+ 	try {
+ 	Symbolic a1 = rhs(*i, bnum), b1 = rhs(*i, cnum); 
+ 	bnump= a1;
+	cnump = b1; 
+ 	} catch(const SymbolicError &se) {}
+
+	integral_sol = (bnump*x +cnump*ln(x))/(bp);
+  }
+
+  if (fnum.coeff(x,2)==0 && fnum.coeff(x,1)!=0 && fnum.coeff(x,0)==0 && fdenom.coeff(x,2)==0 && fdenom.coeff(x,1)!=0 && fdenom.coeff(x,0)==0 ) // for (a1x)/(bx)
+  {
+	eq = ( (bnum*x)).match(fnum, (bnum,cnum)); 
+ 	for(i=eq.begin(); i!=eq.end(); ++i) 
+ 	try {
+ 	Symbolic a1 = rhs(*i, bnum); 
+ 	bnump= a1;
+ 	} catch(const SymbolicError &se) {}
+
+	integral_sol = bnump*x/bp;
+  }
+
+  if (fnum.coeff(x,2)==0 && fnum.coeff(x,1)!=0 && fnum.coeff(x,0)!=0 && fdenom.coeff(x,2)==0 && fdenom.coeff(x,1)==0 && fdenom.coeff(x,0)!=0 ) // for (a1x+b1)/(c)
+  {
+	eq = ( (bnum*x)).match(fnum, (bnum,cnum)); 
+ 	for(i=eq.begin(); i!=eq.end(); ++i) 
+ 	try {
+ 	Symbolic a1 = rhs(*i, bnum), b1 = rhs(*i, cnum); 
+ 	bnump= a1;
+	cnump = b1; 
+ 	} catch(const SymbolicError &se) {}
+
+	integral_sol = bnump*x*x/(2*cp) + cnump*x/cp;
+  }
+
+  if (fnum.coeff(x,2)==0 && fnum.coeff(x,1)!=0 && fnum.coeff(x,0)==0 && fdenom.coeff(x,2)==0 && fdenom.coeff(x,1)==0 && fdenom.coeff(x,0)!=0 ) // for (a1x)/(c)
+  {
+	eq = ( (bnum*x)).match(fnum, (bnum,cnum)); 
+ 	for(i=eq.begin(); i!=eq.end(); ++i) 
+ 	try {
+ 	Symbolic a1 = rhs(*i, bnum); 
+ 	bnump= a1;
+ 	} catch(const SymbolicError &se) {}
+
+	integral_sol = bnump*x*x/(2*cp);
+  }
+
+ return integral_sol;
 }
 
 Symbolic integrate(const Symbolic &f,const Symbolic &x,
