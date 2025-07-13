@@ -30,6 +30,7 @@
 #define π 3.1415926535897f
 
 using namespace std;
+using namespace SymbolicConstant;
 
 double division(double x, double y)
 {
@@ -38,7 +39,7 @@ double division(double x, double y)
 
 int main(void)
 {
-	Symbolic t("t"), y("y"),yt;
+	Symbolic Q("Q"),r("r"),t("t"), x("x"), y("y"),yt, C("C"), S("S");
 	
 	// 2y' + ty = 2
 	yt = -(0.5*t)*y+1;
@@ -56,11 +57,11 @@ int main(void)
 	cout << "\nDSolve for y' - 2y = 4-t\n" <<endl;
 	cout << "y(t) = " << dsolve( 2*y + 4-t,y,t) <<endl;	
 
-	cout << "\nDSolve for dy/dx = (x^2) / (1-y^2) \n" <<endl;
-	cout << "f(x,y) = " << dsolveseparable(1-(y^2), (x^2),y,x) <<endl;	
-		
-	cout << "\nDSolve for dy/dx = (y-4x) / (x-y) \n" <<endl;
-	cout << "f(x,y) = " << dsolveseparable(x-y, y-4*x,y,x) <<endl;	
+	cout << "\nDSolve for Q' = r/4 - rQ/100\n" <<endl;
+	cout << "Q(t) = " << dsolve( r/4 - r*y/100,y,t,r) <<endl;	
+
+	cout << "\nDSolve for S' = rS \n" <<endl;
+	cout << "S(t) = " << dsolve( r*S,S,t,r) <<endl;	
 
 	return 0; 
 }

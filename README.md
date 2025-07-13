@@ -345,4 +345,8 @@ We haven't put it in `src/functions` yet.
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/39.png" width="60%">
 
-By June 23rd, 2025: SymIntegration is able to compute the solution ($`y(t)`$) of first order linear ordinary differential equation of type $`ay' + ty = b`$.
+By June 23rd, 2025: SymIntegration is able to compute the solution ($`y(t)`$) of first order linear ordinary differential equation of type $`ay' + ty = b`$ with method of integration and separable equation.
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/44.png" width="60%">
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/43.png" width="60%">

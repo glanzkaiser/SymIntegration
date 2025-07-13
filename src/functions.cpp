@@ -1979,10 +1979,12 @@ Symbolic Power::integrate(const Symbolic &s) const
  }
 
  if(b == -1 && parameters.front().coeff(s,2) == 0) return ln(parameters.front()) * (1/ parameters.front().df(s));
+ if(b == -1 && parameters.front().coeff(s,2) == 1 && parameters.front().coeff(s,1) == 0 && parameters.front().coeff(s,0) == 1 ) return atan(s) ;
+ if(b == -1 && parameters.front().coeff(s,2) == 1 && parameters.front().coeff(s,1) == 0 && parameters.front().coeff(s,0) != 0 &&  parameters.front().coeff(s,0) != 1 ) return -(sqrt(-1/(parameters.front().coeff(s,0)))*ln(-parameters.front().coeff(s,0)*sqrt(-1/(parameters.front().coeff(s,0))) + s))/(2) + (sqrt(-1/(parameters.front().coeff(s,0)))*ln(parameters.front().coeff(s,0)*sqrt(-1/(parameters.front().coeff(s,0))) + s))/(2);
+ if(b == -1 && parameters.front().coeff(s,2) != 1 && parameters.front().coeff(s,2) != 0 && parameters.front().coeff(s,1) == 0 && parameters.front().coeff(s,0) != 0 &&  parameters.front().coeff(s,0) == 1 ) return -(sqrt(-1/(parameters.front().coeff(s,2)))*ln(s - sqrt(-1/(parameters.front().coeff(s,2)))))/(2) + (sqrt(-1/(parameters.front().coeff(s,2)))*ln(s + sqrt(-1/(parameters.front().coeff(s,2)))))/(2);
+ if(b == -1 && parameters.front().coeff(s,2) != 1 && parameters.front().coeff(s,2) != 0 && parameters.front().coeff(s,1) == 0 && parameters.front().coeff(s,0) != 0 &&  parameters.front().coeff(s,0) != 1 ) return -(sqrt(-1/(parameters.front().coeff(s,2)*parameters.front().coeff(s,0)))*ln(s - parameters.front().coeff(s,0)*sqrt(-1/(parameters.front().coeff(s,2)*parameters.front().coeff(s,0)))))/(2) + (sqrt(-1/(parameters.front().coeff(s,2)*parameters.front().coeff(s,0)))*ln(s + parameters.front().coeff(s,0)*sqrt(-1/(parameters.front().coeff(s,2)*parameters.front().coeff(s,0)))))/(2);
+ 
  if(b == -1 && parameters.front().coeff(s,2) != 0 && parameters.front().coeff(s,1) == 0 && parameters.front().coeff(s,0) == 0 ) return -(1 / (s*parameters.front().coeff(s,2)) ) ;
- //double p2 = parameters.front().coeff(s,2);
- //double p1 = parameters.front().coeff(s,1);
- //double p0 = parameters.front().coeff(s,0);
  if(b == -1 && parameters.front().coeff(s,2) != 0 )
  {
   double a1 = parameters.front().coeff(s,2);
@@ -1992,92 +1994,6 @@ Symbolic Power::integrate(const Symbolic &s) const
   
   return - D_inv * ln(s + (-4*a1*c1*D_inv + b1*b1*D_inv + b1)/(2*a1)) + D_inv * ln(s + (4*a1*c1*D_inv - b1*b1*D_inv + b1)/(2*a1)) ;
  } 
- /*if(b == -1 && parameters.front().coeff(s,2) != 0 && p2 > 0 && p1 < 0 && p0 < 0)
- {
-  double a1 = parameters.front().coeff(s,2);
-  double b1 = parameters.front().coeff(s,1);
-  double c1 = parameters.front().coeff(s,0);
-  double D_inv = sqrt(1/(4*a1*c1+b1*b1));
-  
-  return D_inv * ln(s + (-4*a1*c1*D_inv - b1*b1*D_inv - b1)/(2*a1)) - D_inv * ln(s + (4*a1*c1*D_inv + b1*b1*D_inv - b1)/(2*a1)) ;
- }
- if(b == -1 && parameters.front().coeff(s,2) != 0 && p2 > 0 && p1 > 0 && p0 < 0)
- {
-  double a1 = parameters.front().coeff(s,2);
-  double b1 = parameters.front().coeff(s,1);
-  double c1 = parameters.front().coeff(s,0);
-  double D_inv = sqrt(1/(4*a1*c1+b1*b1));
-  
-  return D_inv * ln(s + (-4*a1*c1*D_inv - b1*b1*D_inv + b1)/(2*a1)) - D_inv * ln(s + (4*a1*c1*D_inv + b1*b1*D_inv + b1)/(2*a1)) ;
- }
- if(b == -1 && parameters.front().coeff(s,2) != 0 && p2 > 0 && p1 < 0 && p0 > 0)
- {
-  double a1 = parameters.front().coeff(s,2);
-  double b1 = parameters.front().coeff(s,1);
-  double c1 = parameters.front().coeff(s,0);
-  double D_inv = sqrt(-1/(4*a1*c1-b1*b1));
-  
-  return - D_inv * ln(s + (-4*a1*c1*D_inv + b1*b1*D_inv - b1)/(2*a1)) + D_inv * ln(s + (4*a1*c1*D_inv - b1*b1*D_inv - b1)/(2*a1)) ;
- } 
- if(b == -1 && parameters.front().coeff(s,2) != 0 && p2 < 0 && p1 < 0 && p0 < 0)
- {
-  double a1 = parameters.front().coeff(s,2);
-  double b1 = parameters.front().coeff(s,1);
-  double c1 = parameters.front().coeff(s,0);
-  double D_inv = sqrt(-1/(4*a1*c1-b1*b1));
-  
-  return D_inv * ln(s + (-4*a1*c1*D_inv + b1*b1*D_inv + b1)/(2*a1)) - D_inv * ln(s + (4*a1*c1*D_inv - b1*b1*D_inv + b1)/(2*a1)) ;
- }
- if(b == -1 && parameters.front().coeff(s,2) != 0 && p2 < 0 && p1 > 0 && p0 > 0)
- {
-  double a1 = parameters.front().coeff(s,2);
-  double b1 = parameters.front().coeff(s,1);
-  double c1 = parameters.front().coeff(s,0);
-  double D_inv = sqrt(1/(4*a1*c1+b1*b1));
-  
-  return - D_inv * ln(s + (-4*a1*c1*D_inv - b1*b1*D_inv - b1)/(2*a1)) + D_inv * ln(s + (4*a1*c1*D_inv + b1*b1*D_inv - b1)/(2*a1)) ;
- }
- if(b == -1 && parameters.front().coeff(s,2) != 0 && p2 < 0 && p1 > 0 && p0 < 0)
- {
-  double a1 = parameters.front().coeff(s,2);
-  double b1 = parameters.front().coeff(s,1);
-  double c1 = parameters.front().coeff(s,0);
-  double D_inv = sqrt(-1/(4*a1*c1-b1*b1));
-  
-  return D_inv * ln(s + (-4*a1*c1*D_inv + b1*b1*D_inv - b1)/(2*a1)) - D_inv * ln(s + (4*a1*c1*D_inv - b1*b1*D_inv - b1)/(2*a1)) ;
- }
- if(b == -1 && parameters.front().coeff(s,2) != 0 && p2 < 0 && p1 < 0 && p0 > 0)
- {
-  double a1 = parameters.front().coeff(s,2);
-  double b1 = parameters.front().coeff(s,1);
-  double c1 = parameters.front().coeff(s,0);
-  double D_inv = sqrt(1/(4*a1*c1+b1*b1));
-  
-  return - D_inv * ln(s + (-4*a1*c1*D_inv - b1*b1*D_inv + b1)/(2*a1)) + D_inv * ln(s + (4*a1*c1*D_inv + b1*b1*D_inv + b1)/(2*a1)) ;
- }
- // this should be working, but not..
- if(a == (s^2)*( (parameters.front().coeff(s,2)*s*s) + (parameters.front().coeff(s,1)*s) + (parameters.front().coeff(s,0)) ) )
- {
-	list<Equations> eq;
-	list<Equations>::iterator i;
-	UniqueSymbol c, d;
-
-	eq = ((1/s)*( (parameters.front().coeff(s,2)*s*s) + (parameters.front().coeff(s,1)*s) + (parameters.front().coeff(s,0)) )).match(a, (c,d));
-	for(i=eq.begin(); i!=eq.end(); ++i)
-	try {
-	double a1 = parameters.front().coeff(s,2);
-  	double b1 = parameters.front().coeff(s,1);
-  	double c1 = parameters.front().coeff(s,0);
-  	double D_inv = sqrt(-4*a1*c1+b1*b1);
-	double D = 2*a1*(4*a1*c1 - b1*b1);
-	if(b.df(s) == 0 && b==-1) 
-	{
-		return (- (b1*D_inv)/(D) + (1/(2*a1)))*ln(s + (-4*a1*c1*(- (b1*D_inv)/(D) + (1/(2*a1))) + b1*b1*(- (b1*D_inv)/(D) + (1/(2*a1))) + 2*c1)/(b1)) + ( (b1*D_inv)/(D) + (1/(2*a1)))*ln(s + (-4*a1*c1*( (b1*D_inv)/(D) + (1/(2*a1))) + b1*b1*((b1*D_inv)/(D) + (1/(2*a1))) + 2*c1)/(b1)) ;
-	}
-	} catch(const SymbolicError &se) {}	
-		
- }*/
-
  if(a == s && b.df(s) == 0 )
  {
   if(b == -1) return ln(a);

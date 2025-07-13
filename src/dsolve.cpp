@@ -11,12 +11,12 @@
 Symbolic dsolve(const Symbolic &fx, const Symbolic &y, const Symbolic &x)
 {
 	Symbolic dsol, mu, C("C");
- 
+ 	
 	if(fx != 0)
  	{
 		list<Equations> eq;
 		list<Equations>::iterator i;
-		UniqueSymbol a, b, c, d, a1, a2, a3, a4, a5, a6;
+		UniqueSymbol a, b, c, d, r;
 		// Case 1 : ay' + ty = b
 		eq = (a*x*y + d).match(fx, (a,d));
 		for(i=eq.begin(); i!=eq.end(); ++i)
@@ -77,37 +77,55 @@ Symbolic dsolve(const Symbolic &fx, const Symbolic &y, const Symbolic &x)
 		} catch(const SymbolicError &se) {}
 		}
 
-		// Case 5 : dy/dx = f(x)/g(y) Separable equations	polynomial with the highest order 2
-		eq = ( a1*x*(a2*y^(-1))).match(fx, (a1,a2)); // cannot be matched to x*y^(-1)
+	}
+	return dsol;
+}
+
+Symbolic dsolve(const Symbolic &fx, const Symbolic &y, const Symbolic &x, const Symbolic &z)
+{
+	Symbolic dsol, mu, gs,  C("C");
+ 	
+	if(fx != 0)
+ 	{
+		list<Equations> eq;
+		list<Equations>::iterator i;
+		UniqueSymbol a, b, c, d;
+		// Will work for this model: y' + ry/b = r/c	/ y' = r/b - ry/c 	
+		mu = exp(-fx.coeff(y*z,1)*x*z);
+		gs = z*(fx.coeff(z,1)).coeff(y,0);
+		dsol = (integrate(mu*(gs),x))/(mu) + (C)/(mu);
+		
+		/* // Case 1 : y' + ry/b = r/c	/ y' = r/b - ry/c 	Useless this cannot be matched. Still keep it for now maybe will be of use one day.
+		eq = (b*z - c*z*y).match(fx, (a,b,c));
 		for(i=eq.begin(); i!=eq.end(); ++i)
 		{
 		try {
-		Symbolic ap = rhs(*i,a1),  bp = rhs(*i,a2);
-		dsol = integrate(bp*y^(-1),y) - integrate(ap*x,x) - C;
-		if(df(rhs(*i, a1), x) == 0) 
-		{
-		return dsol ;
-		}
+		Symbolic ap = rhs(*i,a), bp = rhs(*i, b), cp = rhs(*i,c);
+		mu = exp(cp*z*x);
+		dsol = (integrate(mu*(bp*z),x))/(mu) + (C)/(mu);
+		
+		return dsol;
+		
 		} catch(const SymbolicError &se) {}
-		}
+		}*/
 	}
 	return dsol;
 }
 
 Symbolic dsolveseparable(const Symbolic &fdy, const Symbolic &fdx, const Symbolic &y, const Symbolic &x)
 {
-	Symbolic dsol, dsol_y, dsol_x, C("C"), v;
+	Symbolic dsol, dsol_y, dsol_x, C("C");
  	
 	if(fdx == 0 && fdy !=0)
  	{
 		dsol = C;
 	}
-	if(fdx != 0 && fdy != 0 && fdy.coeff(x,1) == 0 && fdx.coeff(y,1) == 0)
+	else if(fdx != 0 && fdy != 0 && fdy.coeff(x,1) == 0 && fdx.coeff(y,1) == 0)
  	{
 		dsol = integrate(fdy,y) - integrate(fdx,x)  - C; 		
 		
 	}
-	else if(fdy.coeff(x,1) !=0 && fdx.coeff(y,1) !=0)
+	else if(fdy.coeff(x,1) !=0 && fdx.coeff(y,1) !=0 && fdy.coeff(x,2) ==0 && fdx.coeff(y,2) ==0 )
 	{
 		dsol_y = fdy/x;
 		dsol_x = fdx/x ;		
@@ -117,7 +135,27 @@ Symbolic dsolveseparable(const Symbolic &fdy, const Symbolic &fdx, const Symboli
 		//dsol = 1/dsol;
 		dsol_y = dsol_y[y*(x^-1)==x];
 		dsol_x = dsol_x[y*(x^-1)==x] - x*dsol_y[y*(x^-1)==x];
-		dsol = fractionintegrate(dsol_y,dsol_x,x)[x==y*(x^-1)] - ln(x);
+		dsol = fractionintegrate(dsol_y,dsol_x,x)[x==y*(x^-1)] - ln(x) - C;
+		
+	}
+	else if(fdy.coeff(x,2) !=0 && fdx.coeff(y,2) !=0 )
+	{
+		dsol_y = fdy/(x*x);
+		dsol_x = fdx/(x*x) ;		
+		dsol = dsol_x / dsol_y;
+		dsol_y = dsol_y[y*(x^-1)==x];
+		dsol_x = dsol_x[y*(x^-1)==x, (y^2)*(x^-2)==(x^2)] - x*dsol_y[y*(x^-1)==x, (y^2)*(x^-2)==(x^2)];
+		dsol = fractionintegrate(dsol_y,dsol_x,x)[x==y*(x^-1)] - ln(x) - C;
+		
+	}
+	else if(fdx.coeff(x,2) !=0 && fdx.coeff(y,2) !=0 && fdy.coeff(x,1) !=0 ) // is this necessary?
+	{
+		dsol_y = fdy/(x*x);
+		dsol_x = fdx/(x*x) ;		
+		dsol = dsol_x / dsol_y;
+		dsol_y = dsol_y[y*(x^-1)==x];
+		dsol_x = dsol_x[y*(x^-1)==x, (y^2)*(x^-2)==(x^2)] - x*dsol_y[y*(x^-1)==x, (y^2)*(x^-2)==(x^2)];
+		dsol = fractionintegrate(dsol_y,dsol_x,x)[x==y*(x^-1)] - ln(x) - C;
 		
 	}
 	return dsol;
