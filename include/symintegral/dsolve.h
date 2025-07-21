@@ -39,6 +39,8 @@ Symbolic dsolve(const Symbolic &, const Symbolic &, const Symbolic &);
 Symbolic dsolve(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
 Symbolic dsolveseparable(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
 
+Symbolic ivp(const Symbolic &, const Symbolic &, const Symbolic &);
+
 #endif
 #endif
 

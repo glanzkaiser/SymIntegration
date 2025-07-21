@@ -39,32 +39,23 @@ double division(double x, double y)
 
 int main(void)
 {
-	Symbolic Q("Q"),r("r"),t("t"), x("x"), y("y"),yt, C("C"), S("S"), k("k"), ft, S0("S0"), ivp1("ivp1");
+	Symbolic r("r"),t("t"), y("y"), C("C"), S("S"), k("k"), ft, S0("S0"), ivp1("ivp1");
 	
-	// 2y' + ty = 2
-	yt = -(0.5*t)*y+1;
-	cout << "f(t,y) = " << yt << endl;
-	
-	cout << "\nDSolve for 2y' + ty = 2\n" <<endl;
-	cout << "y(t) = " << dsolve( yt,y,t) <<endl;
-	
-	cout << "\nDSolve for ty' + 2y = 4t^2\n" <<endl;
-	cout << "y(t) = " << dsolve( (-2/t)*y+4*t,y,t) <<endl;	
-	
-	cout << "\nDSolve for y' + 0.5y = 0.5*exp(t/3)\n" <<endl;
-	cout << "y(t) = " << dsolve( -0.5*y + 0.5*exp(division(1,3)*t),y,t) <<endl;	
-	
-	cout << "\nDSolve for y' - 2y = 4-t\n" <<endl;
-	cout << "y(t) = " << dsolve( 2*y + 4-t,y,t) <<endl;	
-
-	cout << "\nDSolve for Q' = r/4 - rQ/100\n" <<endl;
-	cout << "Q(t) = " << dsolve( r/4 - r*y/100,y,t,r) <<endl;	
-
-	cout << "\nDSolve for S' = rS \n" <<endl;
-	cout << "S(t) = " << dsolve( r*S,S,t,r) <<endl;	
-
 	cout << "\nDSolve for S' = rS - k\n" <<endl;
-	cout << "S(t) = " << dsolve( r*S - k,S,t,r) <<endl;			
+	cout << "S(t) = " << dsolve( r*S - k,S,t,r) <<endl;	
+
+	ft = dsolve( r*S - k,S,t,r)[t==0];
+	cout << "S(t=0) = " << ft <<endl;
+
+	cout << "For ivp S(0) = S0, \nC = " << solve(ft-S0,C).front().rhs <<endl;
+
+	cout << "\nTest ivp, \nS(t) = " << ivp(dsolve( r*S - k,S,t,r),t,C) <<endl;
+
+	ivp1 = ivp(dsolve( r*S - k,S,t,r),t,C)[r==0.06, k ==6000, t==20];
+	r = 0.06;
+	t = 20;
+	cout << "For ivp k = 6000, r = 6%, t = 20, S(t) = 0, \nS(0) = " << solve(ivp1,S0).front().rhs <<endl;
+
 
 	return 0; 
 }

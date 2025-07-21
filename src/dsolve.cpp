@@ -83,33 +83,53 @@ Symbolic dsolve(const Symbolic &fx, const Symbolic &y, const Symbolic &x)
 
 Symbolic dsolve(const Symbolic &fx, const Symbolic &y, const Symbolic &x, const Symbolic &z)
 {
-	Symbolic dsol, mu, gs,  C("C");
+	Symbolic dsol, mu, gs,  C("C"), k("k");
  	
 	if(fx != 0)
  	{
 		list<Equations> eq;
 		list<Equations>::iterator i;
 		UniqueSymbol a, b, c, d;
-		// Will work for this model: y' + ry/b = r/c	/ y' = r/b - ry/c 	
+		// Will work for this model: y' + ry/b = r/c	/ y' = r/b - ry/c 
+		// y' = ry - k	
+		// k = (fx.coeff(z,0)).coeff(y,0)	
 		mu = exp(-fx.coeff(y*z,1)*x*z);
 		gs = z*(fx.coeff(z,1)).coeff(y,0);
-		dsol = (integrate(mu*(gs),x))/(mu) + (C)/(mu);
+		dsol = (integrate(mu*(gs + (fx.coeff(z,0)).coeff(y,0)),x))/(mu) + (C)/(mu);
 		
-		/* // Case 1 : y' + ry/b = r/c	/ y' = r/b - ry/c 	Useless this cannot be matched. Still keep it for now maybe will be of use one day.
-		eq = (b*z - c*z*y).match(fx, (a,b,c));
+		/*// Case 1 : y' - ry = -k	/ y' = ry - k 	Useless this cannot be matched. Still keep it for now maybe will be of use one day.
+		eq = (a*y*z - b*k).match(fx, (a,b));
 		for(i=eq.begin(); i!=eq.end(); ++i)
 		{
 		try {
-		Symbolic ap = rhs(*i,a), bp = rhs(*i, b), cp = rhs(*i,c);
-		mu = exp(cp*z*x);
+		Symbolic ap = rhs(*i,a), bp = rhs(*i, b);
+		mu = exp(ap*z*x);
 		dsol = (integrate(mu*(bp*z),x))/(mu) + (C)/(mu);
 		
-		return dsol;
+		return 8;
 		
 		} catch(const SymbolicError &se) {}
 		}*/
 	}
 	return dsol;
+}
+
+Symbolic ivp(const Symbolic &fx, const Symbolic &x, const Symbolic &c)
+{
+	Symbolic ivpsol, f0,  C("C"), S0("S0");
+ 
+	if(fx != 0)
+ 	{
+		list<Equations> eq;
+		list<Equations>::iterator i;
+		UniqueSymbol a, b;
+		// Will work for this model: dS/dt = rS-k	
+		f0 = fx[x==0];
+		C = solve(f0-S0,C).front().rhs ;
+		ivpsol = fx[c==C];
+		
+	}
+	return ivpsol;
 }
 
 Symbolic dsolveseparable(const Symbolic &fdy, const Symbolic &fdx, const Symbolic &y, const Symbolic &x)
