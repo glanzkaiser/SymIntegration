@@ -39,7 +39,7 @@ double division(double x, double y)
 
 int main(void)
 {
-	Symbolic x("x"), y("y"), C("C");
+	Symbolic x("x"), y("y"), C("C"),u("u"),p("p"), t("t"),α("α");
 	
 	cout << "\nDSolveseparable for dy/dx = (x^2) / (1-y^2) \n" <<endl;
 	cout << "f(x,y) = " << dsolveseparable(1-(y^2), (x^2),y,x) <<endl;	
@@ -68,8 +68,11 @@ int main(void)
 	cout << "\nDSolveseparable for dy/dx = (3y^2 - x^2 ) / (2xy) \n" <<endl;
 	cout << "f(x,y) = " << dsolveseparable(2*x*y,3*(y^2) - (x^2),y,x) <<endl;	
 	
-	cout << "\nf(x,y) = " << fractionintegrate(1,(x*x + 2*x+1),x) <<endl;	
-	cout << "\nf(x,y) = " << fractionintegrate(2*x,(x*x + 2*x+1),x) <<endl;	
+	cout << "\nDSolveseparable for du/dt = -α*u^4\n" <<endl;
+	cout << "f(u,t) = " << dsolveseparable(pow(u,p)[p==-4],-α,u,t) <<endl;	
+
+	//cout << "\nf(x,y) = " << fractionintegrate(1,(x*x + 2*x+1),x) <<endl;	
+	//cout << "\nf(x,y) = " << fractionintegrate(2*x,(x*x + 2*x+1),x) <<endl;	
 	
 	return 0; 
 }

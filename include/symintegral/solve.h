@@ -35,6 +35,7 @@
 #ifndef SYMBOLIC_CPLUSPLUS_SOLVE_DECLARE
 #define SYMBOLIC_CPLUSPLUS_SOLVE_DECLARE
 
+Symbolic solvenonlinear(const Symbolic &, const Symbolic &);
 Equations solve(const Symbolic &, const Symbolic &);
 Equations solve(const Equation &, const Symbolic &);
 list<Equations> solve(const Equations &, const list<Symbolic> &);

@@ -8,6 +8,11 @@
 #ifndef SYMINTEGRATION_CPLUSPLUS_DSOLVE_DEFINE
 #define SYMINTEGRATION_CPLUSPLUS_DSOLVE_DEFINE
 
+double division(double x, double y)
+{
+	return x/y;
+}
+
 Symbolic dsolve(const Symbolic &fx, const Symbolic &y, const Symbolic &x)
 {
 	Symbolic dsol, mu, C("C");
@@ -77,11 +82,24 @@ Symbolic dsolve(const Symbolic &fx, const Symbolic &y, const Symbolic &x)
 		} catch(const SymbolicError &se) {}
 		}
 
+		// Case 5 : y' = a*y^4 	// Cannot be matched yet
+		eq = (a*x*x*x*x).match(fx, (a,b)); // pow(u,r)[r==4]
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a), bp = rhs(*i, b), cp = rhs(*i,c);
+		dsol = ((3*ap*x -3*C)^(division(-1,3)));
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			return dsol;
+		}
+		} catch(const SymbolicError &se) {}
+		}
 	}
 	return dsol;
 }
 
-Symbolic dsolve(const Symbolic &fx, const Symbolic &y, const Symbolic &x, const Symbolic &z)
+Symbolic dsolve(const Symbolic &fx, const Symbolic &y, const Symbolic &x, const Symbolic &z) // for 1st order ODE with rate r or k
 {
 	Symbolic dsol, mu, gs,  C("C"), k("k");
  	
@@ -114,9 +132,9 @@ Symbolic dsolve(const Symbolic &fx, const Symbolic &y, const Symbolic &x, const 
 	return dsol;
 }
 
-Symbolic ivp(const Symbolic &fx, const Symbolic &x, const Symbolic &c)
+Symbolic ivp(const Symbolic &fx, const Symbolic &x, const Symbolic &c, const Symbolic &so)
 {
-	Symbolic ivpsol, f0,  C("C"), S0("S0");
+	Symbolic ivpsol, f0,  C("C");
  
 	if(fx != 0)
  	{
@@ -125,7 +143,7 @@ Symbolic ivp(const Symbolic &fx, const Symbolic &x, const Symbolic &c)
 		UniqueSymbol a, b;
 		// Will work for this model: dS/dt = rS-k	
 		f0 = fx[x==0];
-		C = solve(f0-S0,C).front().rhs ;
+		C = solve(f0-so,C).front().rhs ;
 		ivpsol = fx[c==C];
 		
 	}
@@ -134,13 +152,18 @@ Symbolic ivp(const Symbolic &fx, const Symbolic &x, const Symbolic &c)
 
 Symbolic dsolveseparable(const Symbolic &fdy, const Symbolic &fdx, const Symbolic &y, const Symbolic &x)
 {
-	Symbolic dsol, dsol_y, dsol_x, C("C");
+	Symbolic dsol, dsol_y, dsol_x, C("C"), c_y;
  	
 	if(fdx == 0 && fdy !=0)
  	{
 		dsol = C;
 	}
-	else if(fdx != 0 && fdy != 0 && fdy.coeff(x,1) == 0 && fdx.coeff(y,1) == 0)
+	else if(df(fdx,x) == 0 && fdy !=0)
+ 	{
+		c_y = integrate(fdy,y).coeff(y);
+		dsol = integrate(fdy,y) - integrate(fdx,x)  - C;
+	}
+	else if(fdx != 0 && fdy != 0 && fdy.coeff(x,1) == 0 && fdx.coeff(y,1) == 0 && df(fdx,x) != 0 )
  	{
 		dsol = integrate(fdy,y) - integrate(fdx,x)  - C; 		
 		
@@ -156,6 +179,7 @@ Symbolic dsolveseparable(const Symbolic &fdy, const Symbolic &fdx, const Symboli
 		dsol_y = dsol_y[y*(x^-1)==x];
 		dsol_x = dsol_x[y*(x^-1)==x] - x*dsol_y[y*(x^-1)==x];
 		dsol = fractionintegrate(dsol_y,dsol_x,x)[x==y*(x^-1)] - ln(x) - C;
+		
 		
 	}
 	else if(fdy.coeff(x,2) !=0 && fdx.coeff(y,2) !=0 )

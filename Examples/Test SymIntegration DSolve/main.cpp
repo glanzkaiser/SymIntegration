@@ -39,7 +39,7 @@ double division(double x, double y)
 
 int main(void)
 {
-	Symbolic Q("Q"),r("r"),t("t"), x("x"), y("y"),yt, C("C"), S("S"), k("k"), ft, S0("S0"), ivp1("ivp1");
+	Symbolic Q("Q"),u("u"), r("r"),t("t"), x("x"), y("y"),yt, C("C"), S("S"), k("k"), ft, S0("S0"), ivp1("ivp1");
 	
 	// 2y' + ty = 2
 	yt = -(0.5*t)*y+1;
@@ -66,5 +66,6 @@ int main(void)
 	cout << "\nDSolve for S' = rS - k\n" <<endl;
 	cout << "S(t) = " << dsolve( r*S - k,S,t,r) <<endl;			
 
+	
 	return 0; 
 }

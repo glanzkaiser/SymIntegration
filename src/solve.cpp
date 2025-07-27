@@ -25,9 +25,30 @@
 #ifndef SYMBOLIC_CPLUSPLUS_SOLVE_DEFINE
 #define SYMBOLIC_CPLUSPLUS_SOLVE_DEFINE
 
+Symbolic solvenonlinear(const Symbolic &e, const Symbolic &x)
+{
+ 
+ Symbolic solnl;
+ if(e.coeff(1,0) == e) // for case exp(-ax) = b or ln|ax| = b 
+ {
+   if(df(e,x).coeff(x,0) != 0 ) // for case exp(-ax) = b 
+   {
+	Symbolic a = df(e,x).coeff(x,0);
+	Symbolic b = -e.coeff(SymbolicConstant::e,0) ;
+     	solnl = ln(b)/(a) ;
+   }	 
+ }
+ return solnl;
+}
+
+double division(Symbolic x, Symbolic y)
+{
+	return x/y;
+}
+
 Equations solve(const Symbolic &e, const Symbolic &x)
 {
- Equations soln;
+ Equations soln; 
  if(e == 0)
   soln = (soln, x == x);
  else if(df(e,x,2) == 0)
@@ -72,6 +93,26 @@ Equations solve(const Symbolic &e, const Symbolic &x)
   for(i = soln.begin(); i != soln.end();)
    if(i->lhs == x && i->rhs == 0) i = soln.erase(i);
    else ++i;
+ }
+ else if(e.coeff(1,0) == e) // for case exp(-ax) = b or ln|ax| = b 
+ {
+   if(df(e,x).coeff(x,0) != 0 && df(df(e,x),x).coeff(x,0) != df(e,x).coeff(x,0)  && -df(df(e,x),x).coeff(x,0) != df(e,x).coeff(x,0)) // for case c * exp(-tx) = a , 
+   {
+	Symbolic t = df(df(e,x),x).coeff(x,0) / df(e,x).coeff(x,0); // will work for c == 1 or c != 1
+	Symbolic a = -e.coeff(SymbolicConstant::e,0) ;
+	Symbolic c = df(e,x).coeff(x,0)/t;
+     	soln = (soln, x == ln(division(a,c))/t);
+   }
+   else if(df(e,x).coeff(x,0) != 0  && -df(df(e,x),x).coeff(x,0) == df(e,x).coeff(x,0) ) //  for case c * exp(-tx) = a , c !=1, t ==1
+   {
+ 	Symbolic a = - e.coeff(SymbolicConstant::e,0) ;
+	Symbolic c = - df(e,x).coeff(x,0) ;
+     	soln = (soln, x == ln(division(c,a)));
+   }
+   else if(df(e,x).coeff(x,-1) !=0) //  ln|ax| = b 
+   {
+ 	//soln = ;
+   }
  }
  return soln;
 }
