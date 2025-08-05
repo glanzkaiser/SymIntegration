@@ -82,13 +82,14 @@ Symbolic dsolve(const Symbolic &fx, const Symbolic &y, const Symbolic &x)
 		} catch(const SymbolicError &se) {}
 		}
 
-		// Case 5 : y' = a*y^4 	// Cannot be matched yet
-		eq = (a*x*x*x*x).match(fx, (a,b)); // pow(u,r)[r==4]
+		// Case 5 :  y' + ay = b
+		eq = (a*y+b).match(fx, (a,b)); // pow(u,r)[r==4]
 		for(i=eq.begin(); i!=eq.end(); ++i)
 		{
 		try {
-		Symbolic ap = rhs(*i, a), bp = rhs(*i, b), cp = rhs(*i,c);
-		dsol = ((3*ap*x -3*C)^(division(-1,3)));
+		Symbolic ap = rhs(*i, a), bp = rhs(*i, b);
+		mu = exp(integrate(-ap,x));
+		dsol = (integrate(bp*mu,x))/(mu) + (C)/(mu);
 		if(df(rhs(*i, a), x) == 0) 
 		{
 			return dsol;
@@ -138,14 +139,10 @@ Symbolic ivp(const Symbolic &fx, const Symbolic &x, const Symbolic &c, const Sym
  
 	if(fx != 0)
  	{
-		list<Equations> eq;
-		list<Equations>::iterator i;
-		UniqueSymbol a, b;
 		// Will work for this model: dS/dt = rS-k	
 		f0 = fx[x==0];
-		C = solve(f0-so,C).front().rhs ;
-		ivpsol = fx[c==C];
-		
+		C = solve(f0-so,c).front().rhs ;
+		ivpsol = fx[c==C];	
 	}
 	return ivpsol;
 }

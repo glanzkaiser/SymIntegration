@@ -25,6 +25,23 @@
 #ifndef SYMBOLIC_CPLUSPLUS_SOLVE_DEFINE
 #define SYMBOLIC_CPLUSPLUS_SOLVE_DEFINE
 
+Symbolic evalf(const Symbolic &fx, const Symbolic &x, const Symbolic &d)
+{
+ 
+ Symbolic evalf_function;
+ if(fx != 0) 	
+ {
+   Equations rules = (    SymbolicConstant::e == exp(1), x==d );
+   evalf_function = fx.subst_all(rules) ;
+ }
+ else if (fx == 0) 
+ {
+   return 0;
+ }
+ return evalf_function;
+ 
+}
+
 Symbolic solvenonlinear(const Symbolic &e, const Symbolic &x)
 {
  
@@ -94,7 +111,7 @@ Equations solve(const Symbolic &e, const Symbolic &x)
    if(i->lhs == x && i->rhs == 0) i = soln.erase(i);
    else ++i;
  }
- else if(e.coeff(1,0) == e) // for case exp(-ax) = b or ln|ax| = b 
+ else if(e.coeff(1,0) == e) // for case  c * exp(-tx) = a or ln|tx| = a 
  {
    if(df(e,x).coeff(x,0) != 0 && df(df(e,x),x).coeff(x,0) != df(e,x).coeff(x,0)  && -df(df(e,x),x).coeff(x,0) != df(e,x).coeff(x,0)) // for case c * exp(-tx) = a , 
    {

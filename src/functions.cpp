@@ -928,7 +928,7 @@ Simplified Power::simplify() const
 
  if(b.type() == typeid(Power))
  {
-  CastPtr<const Power> p = b;
+  CastPtr<const Power> p = b; // if b = 2^3, then (2^3)^4 = (2)^(3*4)
   return (p->parameters.front() ^ (p->parameters.back() * n)).simplify();
  }
  if(b.type() == typeid(Numeric) &&
