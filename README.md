@@ -128,6 +128,7 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Compute integral with Integration by parts				| Done
 |:sunflower:   | Compute definite integral with improper integrals			| Done (write `INFINITY` to substitute `Inf`)
 |:sunflower:   | Compute the solution of first order linear ODE of several types	| Done
+|:sunflower:   | Compute the minimization solution with gradient descent and downhill simplex	| Done
 
 # Milestone
 
