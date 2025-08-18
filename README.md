@@ -35,7 +35,7 @@ It is able to compute
 6. The integral of $`\sin(ax) \cos(bx), \cos(ax) \cos (bx), \sin(ax) \sin (bx)`$.
 7. The integral of $`\int \sin^{n} (x) \ dx , \int \cos^{n} (x) \ dx, \int \tan^{n} (x) \ dx, \int \sec^{n} (x) \ dx, \int \csc^{n} (x) \ dx `$, but the speed to show the whole symbolic integral is slow compared to SymPy, needs to be fixed.
 8. The solution ($`y(t)`$) of first order linear ordinary differential equation of type $`ay' + ty = b`$, separable equation of type $`\frac{dy}{dx} = \frac{f(x)}{g(y)}`$, and separable equation with homogeneous ratio equations of type $`\frac{dy}{dx} = \frac{f(x,y)}{g(x,y)}`$ along with the initial value problem solution.
-9. the computation of divergence, gradient, and curl.
+9. The computation of divergence, gradient, and curl.
 
 # Learning the Code
 
