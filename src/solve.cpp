@@ -62,6 +62,10 @@ double division(Symbolic x, Symbolic y)
 {
 	return x/y;
 }
+Symbolic divisionsym(Symbolic x, Symbolic y)
+{
+	return x/y;
+}
 
 Equations solve(const Symbolic &e, const Symbolic &x)
 {
@@ -118,7 +122,15 @@ Equations solve(const Symbolic &e, const Symbolic &x)
 	Symbolic t = df(df(e,x),x).coeff(x,0) / df(e,x).coeff(x,0); // will work for c == 1 or c != 1
 	Symbolic a = -e.coeff(SymbolicConstant::e,0) ;
 	Symbolic c = df(e,x).coeff(x,0)/t;
-     	soln = (soln, x == ln(division(a,c))/t);
+	Symbolic c1 = df(e,x) ;
+	if(df(e,x).coeff(exp(t*x),1)!=df(e,x).coeff(x,0))
+	{
+	soln = (soln, x == ln(divisionsym(a,c))/t);
+	}
+	else if(df(e,x).coeff(exp(t*x),1)==df(e,x).coeff(x,0)) // turns out it is the same as the if above..
+	{
+     	soln = (soln, x ==  ln(a/c)/t ); 
+	}
    }
    else if(df(e,x).coeff(x,0) != 0  && -df(df(e,x),x).coeff(x,0) == df(e,x).coeff(x,0) ) //  for case c * exp(-tx) = a , c !=1, t ==1
    {

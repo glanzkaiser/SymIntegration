@@ -82,7 +82,7 @@ Symbolic dsolve(const Symbolic &fx, const Symbolic &y, const Symbolic &x)
 		} catch(const SymbolicError &se) {}
 		}
 
-		// Case 5 :  y' + ay = b
+		// Case 5 :  ay' + by = c / y' = ay +by +c
 		eq = (a*y+b).match(fx, (a,b)); // pow(u,r)[r==4]
 		for(i=eq.begin(); i!=eq.end(); ++i)
 		{
@@ -90,6 +90,21 @@ Symbolic dsolve(const Symbolic &fx, const Symbolic &y, const Symbolic &x)
 		Symbolic ap = rhs(*i, a), bp = rhs(*i, b);
 		mu = exp(integrate(-ap,x));
 		dsol = (integrate(bp*mu,x))/(mu) + (C)/(mu);
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			return dsol;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 6 :  y' + ay = 0
+		eq = (a*y).match(fx, (a,b)); // pow(u,r)[r==4]
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a);
+		mu = exp(integrate(-ap,x));
+		dsol = (C)/(mu);
 		if(df(rhs(*i, a), x) == 0) 
 		{
 			return dsol;

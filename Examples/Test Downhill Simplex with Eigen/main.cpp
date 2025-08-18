@@ -7,9 +7,9 @@
 #include <fstream>
 #include <bits/stdc++.h> //for setw(6) at display() function
 #include <vector> // For std::vector (example container)
-#include <armadillo>
 #include "symintegrationc++.h"
 #include <algorithm> // For std::sort
+#include <eigen3/Eigen/Dense> // header file
 
 using namespace std;
 
@@ -32,21 +32,19 @@ int main(int argc, char** argv)
 	
 	float s = 0.75;
 	float t = 1;
-	int N = 37; // Number of iteration
+	int N = 7; // Number of iteration
 	int n = 2; // number of  simplex points
 
-	arma::vec x0b = {0.1, 0.5} ;
-	arma::vec x1b = {x0b[0]+μ, x0b[1]+0} ;
-	arma::vec x2b = {x0b[0]+0, x0b[1]+μ} ;
+	Eigen::Vector2d x0b, x1b, x2b, x0, x1, x2;
+	x0b << 0.1, 0.5;
+	x1b << x0b[0]+μ, x0b[1]+0 ;
+	x2b << x0b[0]+0, x0b[1]+μ ;
 
-	cout <<"Vector x_{0}: \n" << x0b <<endl;
-	cout <<"Vector x_{1}: \n" << x1b <<endl;
-	cout <<"Vector x_{2}: \n" << x2b <<endl;
+	//cout <<"Vector x_{0}: \n" << x0b <<endl;
+	//cout <<"Vector x_{1}: \n" << x1b <<endl;
+	//cout <<"Vector x_{2}: \n" << x2b <<endl;
 
-	arma::vec x0;
-	arma::vec x1;
-	arma::vec x2;
-	arma::vec xdb;
+	Eigen::Vector2d c, xr, xe, xdb, xd, xc, s0, s1;
 
 	Equations rules_x0b = (x == x0b[0],
                         		y == x0b[1]);
@@ -110,22 +108,13 @@ int main(int argc, char** argv)
 				x2 = xdb;
 			}			
 		}
-		cout << "After sorting, \nx_{0}: \n" << x0 <<endl;
-		cout << "x_{1}: \n" << x1 <<endl;
-		cout << "x_{2}: \n" << x2 <<endl;
+		//cout << "After sorting, \nx_{0}: \n" << x0 <<endl;
+		//cout << "x_{1}: \n" << x1 <<endl;
+		//cout << "x_{2}: \n" << x2 <<endl;
 	// end of sorting in ascending order
-
 
 	float α = 1, β = 0.5, γ = 2, δ = 0.5;
 	
-	arma::vec c;
-	arma::vec xr;
-	arma::vec xe;
-	arma::vec xd;
-	arma::vec xc;
-	arma::vec s0;
-	arma::vec s1;	
-
 	cout << "f(x,y) = " << f << endl;
 	// Start the downhill simplex computation
 	for (int i = 1; i <= N; i++) 
@@ -260,6 +249,14 @@ int main(int argc, char** argv)
 		cout << "f(x,y) from x_{e}= " << fxe << endl;
 		cout << "f(x,y) from x_{c}= " << fxc << endl;*/
 		
+		f_x0 = evalf(f.subst_all(rules_x0),1,1);
+		f_x1 = evalf(f.subst_all(rules_x1),1,1);
+		f_x2 = evalf(f.subst_all(rules_x2),1,1);
+		
+		fx0 = f_x0;
+		fx1 = f_x1;
+		fx2 = f_x2;
+
 		// Sort in ascending order
 		vector<double> v_fxy = {fx0, fx1, fx2};
 		sort(v_fxy.begin(), v_fxy.end()); 
