@@ -44,6 +44,10 @@
 #include "symintegral/solve.h"
 #include "symintegral/divgradcurl.h"
 #include "symintegral/dsolve.h"
+#include "symintegral/geometryandvectors.h"
+#include "symintegral/mathematicalfinance.h"
+#include "symintegral/numericalmethod.h"
+#include "symintegral/statistics.h"
 
 #ifndef SYMBOLIC_CPLUSPLUS
 #define SYMBOLIC_CPLUSPLUS

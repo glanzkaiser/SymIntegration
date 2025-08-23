@@ -100,5 +100,57 @@ Symbolic curl(const Symbolic &F, const Symbolic &x, const Symbolic &y, const Sym
 	return sol;
 }
 
+Symbolic laplacian(const Symbolic &F, const Symbolic &x, const Symbolic &y, const Symbolic &z)
+{
+	Symbolic sol, i("i"), j("j"), k("k"), î("î"), ĵ("ĵ"), k̂("k̂");
+ 	
+	Symbolic F1 = F.coeff(i,1);
+	Symbolic F2 = F.coeff(j,1);
+	Symbolic F3 = F.coeff(k,1);
+	Symbolic F1_hat = F.coeff(î,1);
+	Symbolic F2_hat = F.coeff(ĵ,1);
+	Symbolic F3_hat = F.coeff(k̂,1);
+	
+	if(F1 != 0 || F2 != 0 || F3 != 0)
+ 	{
+		sol = (df(df(F1,x),x) + df(df(F1,y),y) + df(df(F1,z),z), df(df(F2,x),x) + df(df(F2,y),y) + df(df(F2,z),z), df(df(F3,x),x) + df(df(F3,y),y) + df(df(F3,z),z));
+		sol = sol.transpose();
+	}
+	else if(F1_hat != 0 || F2_hat != 0 || F3_hat != 0)
+ 	{
+		sol = (df(df(F1_hat,x),x) + df(df(F1_hat,y),y) + df(df(F1_hat,z),z), df(df(F2_hat,x),x) + df(df(F2_hat,y),y) + df(df(F2_hat,z),z), df(df(F3_hat,x),x) + df(df(F3_hat,y),y) + df(df(F3_hat,z),z));
+		sol = sol.transpose();
+	}
+	else if(F1 == 0 && F2 == 0 && F3 == 0 && F1_hat == 0 && F2_hat == 0 && F3_hat == 0)
+ 	{
+		sol = df(df(F,x),x) + df(df(F,y),y) + df(df(F,z),z);
+	}
+	return sol;
+}
+
+Symbolic hessian(const Symbolic &F, const Symbolic &x, const Symbolic &y)
+{
+	Symbolic sol;
+ 		
+	if(F != 0)
+ 	{
+		sol = (( df(df(F,x),x), df(df(F,x),y) ), (df(df(F,y),x), df(df(F,y),y)) );
+	}
+	
+	return sol;
+}
+
+Symbolic hessian(const Symbolic &F, const Symbolic &x, const Symbolic &y, const Symbolic &z)
+{
+	Symbolic sol;
+ 		
+	if(F != 0)
+ 	{
+		sol = ( ( df(df(F,x),x), df(df(F,x),y), df(df(F,x),z) ), ( df(df(F,y),x), df(df(F,y),y), df(df(F,y),z) ), ( df(df(F,z),x), df(df(F,z),y), df(df(F,z),z) ) );
+	}
+	
+	return sol;
+}
+
 #endif
 #endif

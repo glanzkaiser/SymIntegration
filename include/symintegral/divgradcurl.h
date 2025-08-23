@@ -41,7 +41,10 @@ Symbolic grad(const Symbolic &, const Symbolic &, const Symbolic &, const Symbol
 Symbolic grad(const Symbolic &, const Symbolic &, const Symbolic &);
 Symbolic curl(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
 Symbolic curl(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
+Symbolic laplacian(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
 
+Symbolic hessian(const Symbolic &, const Symbolic &, const Symbolic &);
+Symbolic hessian(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
 
 #endif
 #endif

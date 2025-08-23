@@ -31,7 +31,7 @@ Symbolic evalf(const Symbolic &fx, const Symbolic &x, const Symbolic &d)
  Symbolic evalf_function;
  if(fx != 0) 	
  {
-   Equations rules = (    SymbolicConstant::e == exp(1), x==d );
+   Equations rules = (  SymbolicConstant::e == exp(1), x==d );
    evalf_function = fx.subst_all(rules) ;
  }
  else if (fx == 0) 

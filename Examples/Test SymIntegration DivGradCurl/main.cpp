@@ -44,12 +44,16 @@ int main(void)
 	f = -(0.5*x)*y+2*y + z*z;
 	f2 = y*i -x*j +y*z*k;
 	Symbolic f2_hat = y*î -x*ĵ +y*z*k̂;
+	Symbolic f_hat = x*x*î -y*y**ĵ +z*z*k̂;
 	cout << "F(x,y,z) = " << f << endl;
+	cout << "F (vector field) = " << f_hat << endl;
 	cout << "F2 (vector field) = " << f2_hat << endl;
 	
 	cout << "\ndiv(F2) = " << div(f2_hat,x,y,z) <<endl;
 	cout << "\ngrad(F) = " << grad(f,x,y,z) <<endl;
 	cout << "\ncurl(F2) = " << curl(f2_hat,x,y,z) <<endl;
+	
+	cout << "\nlaplacian(F) = " << laplacian(f_hat,x,y,z) <<endl;
 	
 	//cout << "\ndiv(F2) = " << div(y,-x,y*z,x,y,z) <<endl;
 	//cout << "\ndiv(F2) = " << div(f2,x,y,z) <<endl;
