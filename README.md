@@ -133,7 +133,7 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Compute definite integral with improper integrals			| Done (write `INFINITY` to substitute `Inf`)
 |:sunflower:   | Compute the solution of first order linear ODE of several types	| Done
 |:sunflower:   | Compute the probability mass function, mean, variance, moment generating function of geometric distribution, binomial distribution, negative binomial distribution, and Poisson distribution	| Done
-|:sunflower:   | Compute the probability mass function, mean, variance, moment generating function of uniform distribution, normal distribution, gamma, exponential, and beta distribution	| Done
+|:sunflower:   | Compute the probability density function, cumulative distribution function, mean, variance, moment generating function of uniform distribution, normal distribution, gamma, exponential, and beta distribution	| Done
 |:sunflower:   | Compute the minimization solution with gradient descent and downhill simplex	| Done
 
 # Milestone
