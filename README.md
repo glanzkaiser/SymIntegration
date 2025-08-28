@@ -39,7 +39,7 @@ It is able to compute
 8. The solution ($`y(t)`$) of first order linear ordinary differential equation of type $`ay' + ty = b`$, separable equation of type $`\frac{dy}{dx} = \frac{f(x)}{g(y)}`$, and separable equation with homogeneous ratio equations of type $`\frac{dy}{dx} = \frac{f(x,y)}{g(x,y)}`$ along with the initial value problem solution.
 9. The computation of divergence, gradient, and curl.
 10. The probability mass function, mean, variance, moment generating function of discrete distributions.
-11. The probability mass function, mean, variance, moment generating function of continuous distributions.
+11. The probability density function, cumulative distribution function, mean, variance, moment generating function of continuous distributions.
 
 # Learning the Code
 
