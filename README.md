@@ -7,6 +7,8 @@ The main idea is to improve its symbolic integration codes. Our main focus is to
 2. The sum, product and divide combination of the standard functions
 3. To be able to compute improper integrals with cases (e.g. computing mean and variance for exponential distribution)
 
+But as time goes by we add more than integral from calculus, we add differential equations solver, statistics, and more in the future.
+
 # Manual / Documentation
 
 <a href="https://github.com/glanzkaiser/SymIntegration/blob/main/SymIntegration.pdf">SymIntegration Manual</a>
@@ -36,7 +38,8 @@ It is able to compute
 7. The integral of $`\int \sin^{n} (x) \ dx , \int \cos^{n} (x) \ dx, \int \tan^{n} (x) \ dx, \int \sec^{n} (x) \ dx, \int \csc^{n} (x) \ dx `$, but the speed to show the whole symbolic integral is slow compared to SymPy, needs to be fixed.
 8. The solution ($`y(t)`$) of first order linear ordinary differential equation of type $`ay' + ty = b`$, separable equation of type $`\frac{dy}{dx} = \frac{f(x)}{g(y)}`$, and separable equation with homogeneous ratio equations of type $`\frac{dy}{dx} = \frac{f(x,y)}{g(x,y)}`$ along with the initial value problem solution.
 9. The computation of divergence, gradient, and curl.
-10. The probability mass function, mean, variance, moment generating function of geometric distribution, binomial distribution, negative binomial distribution, and Poisson distribution.
+10. The probability mass function, mean, variance, moment generating function of discrete distributions.
+11. The probability mass function, mean, variance, moment generating function of continuous distributions.
 
 # Learning the Code
 
@@ -130,6 +133,7 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Compute definite integral with improper integrals			| Done (write `INFINITY` to substitute `Inf`)
 |:sunflower:   | Compute the solution of first order linear ODE of several types	| Done
 |:sunflower:   | Compute the probability mass function, mean, variance, moment generating function of geometric distribution, binomial distribution, negative binomial distribution, and Poisson distribution	| Done
+|:sunflower:   | Compute the probability mass function, mean, variance, moment generating function of uniform distribution, normal distribution, gamma, exponential, and beta distribution	| Done
 |:sunflower:   | Compute the minimization solution with gradient descent and downhill simplex	| Done
 
 # Milestone
@@ -364,4 +368,10 @@ By August 23rd, 2025: SymIntegration is able to compute the pmf, mean, variance,
 The test code can be located in the folder `Examples/Test SymIntegration Discrete Distributions/main.cpp`
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/45.png" width="60%">
+
+By August 28th, 2025: SymIntegration is able to compute the pdf, cdf, mean, variance, and mgf of some continuous probability distributions: uniform, normal, gamma, exponential, beta.
+
+The test code can be located in the folder `Examples/Test SymIntegration Continuous Distributions/main.cpp`
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/46.png" width="60%">
 

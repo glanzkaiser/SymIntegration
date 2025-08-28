@@ -35,6 +35,10 @@
 #ifndef SYMINTEGRATION_CPLUSPLUS_STATISTICS_DECLARE
 #define SYMINTEGRATION_CPLUSPLUS_STATISTICS_DECLARE
 
+int fibonacciseries(int);
+double rising_pochhammer(double, int);
+double falling_pochhammer(double, int);
+
 Symbolic binomialpmf(int, int, double);
 Symbolic binomialcdf(int, int, double);
 Symbolic binomialmean(int, int, double);
@@ -52,11 +56,39 @@ Symbolic geometricmean(int, double);
 Symbolic geometricvar(int, double);
 Symbolic geometricmgf(const Symbolic &, const Symbolic &);
 
+Symbolic hypergeometricpmf(int, int, int, int);
+Symbolic hypergeometricmean(int, int, int, int);
+Symbolic hypergeometricvar(int, int, int, int);
+
 Symbolic poissonpmf(int, int);
 Symbolic poissoncdf(int, int);
 Symbolic poissonmean(int, int);
 Symbolic poissonvar(int, int);
 Symbolic poissonmgf(const Symbolic &, const Symbolic &);
+
+Symbolic uniformpdf(double, double, double);
+Symbolic uniformcdf(double, double, double);
+Symbolic uniformmgf(double, double, double);
+Symbolic uniformmean(double, double, double);
+Symbolic uniformvar(double, double, double);
+
+Symbolic normalpdf(double, double, double);
+Symbolic normalcdf(double, double, double);
+Symbolic normalmgf(double, double, double);
+Symbolic normalmean(double, double, double);
+Symbolic normalvar(double, double, double);
+
+Symbolic gammapdf(double, double, double);
+Symbolic gammacdf(double, double, double);
+Symbolic gammamgf(double, double, double);
+Symbolic gammamean(double, double, double);
+Symbolic gammavar(double, double, double);
+
+Symbolic exponentialpdf(double, double);
+Symbolic exponentialcdf(double, double);
+Symbolic exponentialmgf(double, double);
+Symbolic exponentialmean(double, double);
+Symbolic exponentialvar(double, double);
 
 #endif
 #endif

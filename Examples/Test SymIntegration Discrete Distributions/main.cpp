@@ -1,6 +1,5 @@
-// g++ -o result main.cpp -lsymintegration -larmadillo 
+// g++ -o result main.cpp -lsymintegration  
 // Merci beaucoup Freya..
-// C++ program to plot the particular and general solution of linear system Ax=b and Ax=0
 
 #include <iostream>
 #include <iomanip> // to declare the manipulator of setprecision()
@@ -46,6 +45,10 @@ int main(int argc, char** argv)
 	cout << "\ngeometricvar(5;0.01) = " << geometricvar(5,0.01) << endl;
 	cout << "\ngeometricmgf(5;0.01) = " << geometricmgf(5,0.01) << endl;
 
+	cout << "\nhypergeometricgeometricpmf(1;40,5,3) = " << hypergeometricpmf(1,40,5,3) << endl;
+	cout << "\nhypergeometricgeometricmean(1;40,5,3) = " << hypergeometricmean(1,40,5,3) << endl;
+	cout << "\nhypergeometricgeometricvar(1;40,5,3) = " << hypergeometricvar(1,40,5,3) << endl;
+	
 	cout << "\npoissonpmf(6;4) = " << poissonpmf(6,4) << endl;
 	cout << "\npoissoncdf(6;4) = " << poissoncdf(6,4) << endl;
 	cout << "\npoissonmean(6;4) = " << poissonmean(6,4) << endl;

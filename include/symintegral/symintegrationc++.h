@@ -48,6 +48,7 @@
 #include "symintegral/mathematicalfinance.h"
 #include "symintegral/numericalmethod.h"
 #include "symintegral/statistics.h"
+#include "symintegral/specialfunctions.h"
 
 #ifndef SYMBOLIC_CPLUSPLUS
 #define SYMBOLIC_CPLUSPLUS
