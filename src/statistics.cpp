@@ -3,6 +3,13 @@
 */
 #include "symintegral/symintegrationc++.h"
 #include <cmath> // For erfc and M_SQRT1_2 (or define M_SQRT1_2 if not available)
+#include <boost/math/distributions/chi_squared.hpp> // Faster computing of chi squared cdf
+#include <boost/math/distributions/beta.hpp> //Faster computing of beta cdf and pdf
+#include <boost/math/distributions/fisher_f.hpp> //Faster computing of Fisher' F cdf and pdf
+#include <boost/math/distributions/gamma.hpp> // Faster computing of gamma cdf
+#include <boost/math/distributions/laplace.hpp> //Faster computing of laplace cdf and pdf
+#include <boost/math/distributions/logistic.hpp> //Faster computing of logistic cdf and pdf
+#include <boost/math/distributions/students_t.hpp> //Faster computing of students' t cdf and pdf
 
 #ifdef  SYMBOLIC_DEFINE
 #ifndef SYMINTEGRATION_CPLUSPLUS_STATISTICS_DEFINE
@@ -126,16 +133,16 @@ Symbolic binomialcdf(int x, int n, double p)
 
 Symbolic binomialmean(int x, int n, double p)
 {
- 	Symbolic b = n*p;
+ 	Symbolic mean = n*p;
 
-	return b;
+	return mean;
 }
 
 Symbolic binomialvar(int x, int n, double p)
 {
- 	Symbolic b = n*p*(1-p);
+ 	Symbolic var = n*p*(1-p);
 
-	return b;
+	return var;
 }
 
 Symbolic binomialmgf(int x, int n, double p)
@@ -155,125 +162,125 @@ Symbolic negativebinomialpmf(int x, int k, double p)
 
 Symbolic negativebinomialmean(int x, int k, double p)
 {
- 	Symbolic b = k/p;
+ 	Symbolic mean = k/p;
 
-	return b;
+	return mean;
 }
 
 Symbolic negativebinomialvar(int x, int k, double p)
 {
- 	Symbolic b = k*(1-p)/(p*p);
+ 	Symbolic var = k*(1-p)/(p*p);
 
-	return b;
+	return var;
 }
 
 Symbolic negativebinomialmgf(const Symbolic &x, const Symbolic &k, const Symbolic &p)
 {
  	Symbolic t("t");
 
-	Symbolic b =pow(p,k)*pow(1-((1-p)*exp(t)),-k);
+	Symbolic mgf =pow(p,k)*pow(1-((1-p)*exp(t)),-k);
 	
-	return b;
+	return mgf;
 }
 
 Symbolic geometricpmf(int x, double p)
 {
- 	Symbolic b = p*(pow(1-p,x-1));
+ 	Symbolic pmf = p*(pow(1-p,x-1));
 	
-	return b;
+	return pmf;
 }
 
 Symbolic geometricmean(int x, double p)
 {
- 	Symbolic b = 1/p;
+ 	Symbolic mean = 1/p;
 
-	return b;
+	return mean;
 }
 
 Symbolic geometricvar(int x, double p)
 {
- 	Symbolic b = (1-p)/(p*p);
+ 	Symbolic var = (1-p)/(p*p);
 
-	return b;
+	return var;
 }
 
 Symbolic geometricmgf(const Symbolic &x, const Symbolic &p)
 {
  	Symbolic t("t");
 
-	Symbolic b =p*pow(1-((1-p)*exp(t)),Symbolic(-1));
+	Symbolic mgf =p*pow(1-((1-p)*exp(t)),Symbolic(-1));
 	
-	return b;
+	return mgf;
 }
 
 Symbolic hypergeometricpmf(int x, int N, int n, int k)
 {
- 	Symbolic b = combinations1(k,x)*divisions(combinations1(N-k,n-x),combinations1(N,n));
+ 	Symbolic pmf = combinations1(k,x)*divisions(combinations1(N-k,n-x),combinations1(N,n));
 	
-	return b;
+	return pmf;
 }
 
 Symbolic hypergeometricmean(int x, int N, int n, int k)
 {
- 	Symbolic b = divisionint(n*k,N);
+ 	Symbolic mean = divisionint(n*k,N);
 
-	return b;
+	return mean;
 }
 
 Symbolic hypergeometricvar(int x, int N, int n, int k)
 {
- 	Symbolic b = n*divisionint(N-n,N-1)*divisionint(k,N)*(1-divisionint(k,N));
+ 	Symbolic var = n*divisionint(N-n,N-1)*divisionint(k,N)*(1-divisionint(k,N));
 
-	return b;
+	return var;
 }
 
 Symbolic poissonpmf(int x, int k)
 {
- 	Symbolic b = exp(-k)*pow(k,x)/(factorial1(x));
+ 	Symbolic pmf = exp(-k)*pow(k,x)/(factorial1(x));
 	
-	return b;
+	return pmf;
 }
 
 Symbolic poissoncdf(int x, int k)
 {
- 	Symbolic b;
+ 	Symbolic cdf;
 	for (int i=0; i<=x;i++)
 	{
-		b += exp(-k)*pow(k,i)/(factorial1(i));
+		cdf += exp(-k)*pow(k,i)/(factorial1(i));
 	}	
-	return b;
+	return cdf;
 }
 
 Symbolic poissonmean(int x, int k)
 {
- 	Symbolic b = k;
+ 	Symbolic mean = k;
 
-	return b;
+	return mean;
 }
 
 Symbolic poissonvar(int x, int k)
 {
- 	Symbolic b = k;
+ 	Symbolic var = k;
 
-	return b;
+	return var;
 }
 
 Symbolic poissonmgf(const Symbolic &x, const Symbolic &k)
 {
  	Symbolic t("t");
 
-	Symbolic b =exp(k*(exp(t)-1));
+	Symbolic mgf =exp(k*(exp(t)-1));
 	
-	return b;
+	return mgf;
 }
 
 // Continuous Distributions
 
 Symbolic uniformpdf(double x, double a, double b)
 {
- 	Symbolic u = divisions(1,b-a);
+ 	Symbolic pdf = divisions(1,b-a);
 
-	return u;
+	return pdf;
 }
 
 Symbolic uniformcdf(double x1, double a, double b)
@@ -284,30 +291,30 @@ Symbolic uniformcdf(double x1, double a, double b)
 Symbolic uniformmgf(double x, double a, double b)
 {
  	Symbolic t("t");
-	Symbolic u = (exp(b*t) - exp(a*t))/((b-a)*t);
+	Symbolic mgf = (exp(b*t) - exp(a*t))/((b-a)*t);
 
-	return u;
+	return mgf;
 }
 
 Symbolic uniformmean(double x, double a, double b)
 {
- 	Symbolic u = 0.5*(a+b);
+ 	Symbolic mean = 0.5*(a+b);
 
-	return u;
+	return mean;
 }
 
 Symbolic uniformvar(double x, double a, double b)
 {
- 	Symbolic u = divisions(1,12)*(b-a)*(b-a);
+ 	Symbolic var = divisions(1,12)*(b-a)*(b-a);
 
-	return u;
+	return var;
 }
 
 Symbolic normalpdf(double x, double μ, double σ)
 {
- 	Symbolic b = divisions(1,sqrt(2*π)*σ)*exp(-0.5*divisions(x-μ,σ)*divisions(x-μ,σ));
+ 	Symbolic pdf = divisions(1,sqrt(2*π)*σ)*exp(-0.5*divisions(x-μ,σ)*divisions(x-μ,σ));
 
-	return evalf(b,1,1);
+	return evalf(pdf,1,1);
 }
 
 // Function to compute the standard normal CDF
@@ -322,77 +329,81 @@ Symbolic normalcdf(double x1, double μ, double σ)
 {
 	double x = ((x1 - μ) / σ);
 	
- 	Symbolic N = 0.5 * erfc(-x * M_SQRT1_2);
+ 	Symbolic cdf = 0.5 * erfc(-x * M_SQRT1_2);
 
-	return N;
+	return cdf;
 }
 
 Symbolic normalmgf(double x, double μ, double σ)
 {
  	Symbolic t("t");
-	Symbolic b = exp(μ*t + 0.5*σ*σ*t*t);
+	Symbolic mgf = exp(μ*t + 0.5*σ*σ*t*t);
 
-	return b;
+	return mgf;
 }
 
 Symbolic normalmean(double x, double μ, double σ)
 {
- 	Symbolic b = μ;
+ 	Symbolic mean = μ;
 
-	return b;
+	return mean;
 }
 
 Symbolic normalvar(double x, double μ, double σ)
 {
- 	Symbolic b = σ*σ;
+ 	Symbolic var = σ*σ;
 
-	return b;
+	return var;
 }
 
 Symbolic gammapdf(double x, double α, double β)
 {
- 	Symbolic b = divisions(1,(Symbolic(β)^(Symbolic(α)))*tgamma(α))*(Symbolic(x)^(Symbolic(α-1)))*exp(-divisions(x,β));
+ 	//Symbolic b = divisions(1,(Symbolic(β)^(Symbolic(α)))*tgamma(α))*(Symbolic(x)^(Symbolic(α-1)))*exp(-divisions(x,β));
+	//return evalf(b,1,1);
 
-	return evalf(b,1,1);
+	boost::math::gamma_distribution<> gamma_dist(α,β);
+	double x_value = x;
+	double pdf_value = boost::math::pdf(gamma_dist, x_value);
+
+	return pdf_value;
 }
 
-Symbolic gammacdf(double x1, double α, double β)
+Symbolic gammacdf(double x, double α, double β)
 {	
-	Symbolic x("x");
-	Symbolic f = divisions(1,(Symbolic(β)^(Symbolic(α)))*tgamma(α))*(x^(Symbolic(α-1)))*exp(-divisions(x,β));
+	boost::math::gamma_distribution<> gamma_dist(α,β);
+	double x_value = x;
+	double cdf_value = boost::math::cdf(gamma_dist, x_value);
 
- 	Symbolic b = integrate(f,x)[x==x1] - integrate(f,x)[x==0];
-
-	return evalf(b,1,1);
+	return cdf_value;
 }
 
 Symbolic gammamgf(double x, double α, double β)
 {
  	Symbolic t("t");
-	Symbolic b = ((1-β*t)^(Symbolic(-α)));
+	Symbolic mgf = ((1-β*t)^(Symbolic(-α)));
 
-	return b;
+	return mgf;
 }
 
 Symbolic gammamean(double x, double α, double β)
 {
- 	Symbolic b = α*β;
+ 	Symbolic mean = α*β;
 
-	return b;
+	return mean;
 }
 
 Symbolic gammavar(double x, double α, double β)
 {
- 	Symbolic b = α*β*β;
+ 	Symbolic var = α*β*β;
 
-	return b;
+	return var;
 }
 
 Symbolic exponentialpdf(double x, double λ)
 {
- 	Symbolic b = λ*exp(-λ*x);
+ 	Symbolic pdf = λ*exp(-λ*x);
 
-	return evalf(b,1,1);
+	return evalf(pdf,1,1);
 }
 
 Symbolic exponentialcdf(double x1, double λ)
@@ -400,75 +411,263 @@ Symbolic exponentialcdf(double x1, double λ)
 	Symbolic x("x");
 	Symbolic f =  λ*exp(-λ*x);
 
- 	Symbolic b = 1 + integrate(f,x)[x==x1] ;
+ 	Symbolic cdf = 1 + integrate(f,x)[x==x1] ;
 
-	return evalf(b,1,1);
+	return evalf(cdf,1,1);
 }
 
 Symbolic exponentialmgf(double x, double λ)
 {
  	Symbolic t("t");
-	Symbolic b = (1-(divisions(t,λ)))^(Symbolic(-1));
+	Symbolic mgf = (1-(divisions(t,λ)))^(Symbolic(-1));
 
-	return b;
+	return mgf;
 }
 
 Symbolic exponentialmean(double x, double λ)
 {
- 	Symbolic b = divisions(1,λ);
+ 	Symbolic mean = divisions(1,λ);
 
-	return b;
+	return mean;
 }
 
 Symbolic exponentialvar(double x, double λ)
 {
- 	Symbolic b = divisions(1,λ*λ);
+ 	Symbolic var = divisions(1,λ*λ);
 
-	return b;
+	return var;
 }
 
-Symbolic betapdf(double x, double  α, double β)
+Symbolic betapdf(double x, double α, double β)
 {
- 	Symbolic b = ( tgamma(α+β)/(tgamma(α)*tgamma(β)) ) * (x^(Symbolic(α-1))) * ((1-x)^(Symbolic(β-1)));
+ 	//Symbolic b = ( tgamma(α+β)/(tgamma(α)*tgamma(β)) ) * (x^(Symbolic(α-1))) * ((1-x)^(Symbolic(β-1)));
+	//return evalf(b,1,1);
 
-	return evalf(b,1,1);
+	boost::math::beta_distribution<> my_beta(α,β);
+	double pdf_value = boost::math::pdf(my_beta,x);
+
+	return pdf_value;
 }
 
-Symbolic betacdf(double x1, double α, double β)
+Symbolic betacdf(double x, double α, double β)
 {	
-	Symbolic x("x");
+	/*Symbolic x("x");
 	int alpha  = α;
 	int beta = β;
 	Symbolic f = ( tgamma(α+β)/(tgamma(α)*tgamma(β)) ) * (pow(x,Symbolic(alpha-1))) * (pow(1-x,(Symbolic(beta-1))));
 
  	Symbolic b = integrate(f,x)[x==x1] ;
 
-	return evalf(b,1,1);
+	return evalf(b,1,1);*/
+
+	boost::math::beta_distribution<> my_beta(α,β);
+	double cdf_value = boost::math::cdf(my_beta,x);
+
+	return cdf_value;
 }
 
 Symbolic betamgf(double x, double α, double β)
 {
  	Symbolic t("t");
-	Symbolic b = hypergeometric_1F1(α, α+β,t,5);
+	Symbolic mgf = hypergeometric_1F1(α, α+β,t,5);
 
-	return b;
+	return mgf;
 }
 
-Symbolic betamean(double x, double  α, double β)
+Symbolic betamean(double x, double α, double β)
 {
- 	Symbolic b = divisions(α,α+β);
+ 	Symbolic mean = divisions(α,α+β);
 
-	return b;
+	return mean;
 }
 
-Symbolic betavar(double x, double  α, double β)
+Symbolic betavar(double x, double α, double β)
 {
- 	Symbolic b = divisions(α*β,(α+β+1)*(α+β)*(α+β));
+ 	Symbolic var = divisions(α*β,(α+β+1)*(α+β)*(α+β));
 
-	return b;
+	return var;
+}
+
+Symbolic cauchypdf(double x)
+{
+ 	Symbolic pdf = divisionint(1,π)*divisionint(1,x*x+1);
+
+	return pdf;
 }
 
 
+Symbolic chisquaredpdf(double x, double r)
+{
+	int a = 0.5*r;
+	int c = 0.5*r-1;
+ 	Symbolic pdf = divisionint(1,tgamma(0.5*r)*pow(2,a)) * pow(x,c) * exp(-0.5*x);
+
+	return evalf(pdf,1,1);
+}
+
+
+Symbolic chisquaredcdf(double x, double r)
+{
+	// We are using Boost to compute chi squared cdf
+	// We try to use the lower and upper incomplete gamma function but it cannot produce the correct result
+	double degrees_of_freedom = r; 
+	boost::math::chi_squared_distribution<> chi_squared(degrees_of_freedom);
+
+	double x_value = x; // The value at which to evaluate the CDF
+	double cdf_value = boost::math::cdf(chi_squared, x_value);
+
+	return cdf_value;
+}
+
+Symbolic chisquaredmgf(double x, double r)
+{
+ 	Symbolic t("t");
+	Symbolic mgf= (1-2*t)^(Symbolic(-0.5*r));
+
+	return mgf;
+}
+
+Symbolic chisquaredmean(double x, double r)
+{
+ 	Symbolic mean = r;
+
+	return mean;
+}
+
+Symbolic chisquaredvar(double x, double r)
+{
+ 	Symbolic var = 2*r;
+
+	return var;
+}
+
+Symbolic Fpdf(double x, double r1, double r2)
+{
+	boost::math::fisher_f_distribution<> fisher_f(r1,r2);
+	double pdf_value = boost::math::pdf(fisher_f,x);
+
+	return pdf_value;
+}
+
+Symbolic Fcdf(double x, double r1, double r2)
+{
+	boost::math::fisher_f_distribution<> fisher_f(r1,r2);
+	double cdf_value = boost::math::cdf(fisher_f,x);
+
+	return cdf_value;
+}
+
+Symbolic Fmean(double x, double r1, double r2)
+{
+	Symbolic mean = divisions(r2,r2-2) ;
+
+	return mean;
+}
+
+Symbolic Fvar(double x, double r1, double r2)
+{
+	Symbolic var = 2*divisions(r2,r2-2)*divisions(r2,r2-2) * divisions(r1+r2-2,r1*(r2-4));
+
+	return var;
+}
+
+Symbolic tpdf(double x, double r)
+{
+	boost::math::students_t_distribution<> students_t(r);
+	double pdf_value = boost::math::pdf(students_t,x);
+
+	return pdf_value;
+}
+
+Symbolic tcdf(double x, double r)
+{
+	boost::math::students_t_distribution<> students_t(r);
+	double cdf_value = boost::math::cdf(students_t,x);
+
+	return cdf_value;
+}
+
+Symbolic tmean(double x, double r)
+{
+	Symbolic mean = 0;
+
+	return mean;
+}
+
+Symbolic tvar(double x, double r)
+{
+	Symbolic var = divisions(r,r-2);
+
+	return var;
+}
+
+Symbolic laplacepdf(double x, double θ)
+{
+	boost::math::laplace_distribution<> laplace(θ);
+	double pdf_value = boost::math::pdf(laplace,x);
+
+	return pdf_value;
+}
+
+Symbolic laplacecdf(double x, double θ)
+{
+	boost::math::laplace_distribution<> laplace(θ);
+	double cdf_value = boost::math::cdf(laplace,x);
+
+	return cdf_value;
+}
+
+Symbolic laplacemgf(double x, double θ)
+{
+ 	Symbolic t("t");
+	Symbolic mgf= exp(t*θ) * ( (1-t*t)^(Symbolic(-1)) );
+
+	return mgf;
+}
+
+Symbolic laplacemean(double x, double θ)
+{
+	Symbolic mean = θ;
+
+	return mean;
+}
+
+Symbolic laplacevar(double x, double θ)
+{
+	Symbolic var = 2;
+
+	return var;
+}
+
+Symbolic logisticpdf(double x, double θ)
+{
+	boost::math::logistic_distribution<> logistic(θ);
+	double pdf_value = boost::math::pdf(logistic,x);
+
+	return pdf_value;
+}
+
+Symbolic logisticcdf(double x, double θ)
+{
+	boost::math::logistic_distribution<> logistic(θ);
+	double cdf_value = boost::math::cdf(logistic,x);
+
+	return cdf_value;
+}
+
+Symbolic logisticmean(double x, double θ)
+{
+	Symbolic mean = θ;
+
+	return mean;
+}
+
+Symbolic logisticvar(double x, double θ)
+{
+	Symbolic var = divisions(π*π,3);
+
+	return var;
+}
 
 #endif
 #endif

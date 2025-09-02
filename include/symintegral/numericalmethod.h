@@ -35,6 +35,7 @@
 #ifndef SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHOD_DECLARE
 #define SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHOD_DECLARE
 
+Symbolic bisectionmethod(const Symbolic &, const Symbolic &,double, double, int);
 Symbolic newtonmethod(const Symbolic &, const Symbolic &, const Symbolic &, int);
 
 #endif

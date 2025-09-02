@@ -90,6 +90,42 @@ Symbolic exponentialmgf(double, double);
 Symbolic exponentialmean(double, double);
 Symbolic exponentialvar(double, double);
 
+Symbolic betapdf(double, double, double);
+Symbolic betacdf(double, double, double);
+Symbolic betamgf(double, double, double);
+Symbolic betamean(double, double, double);
+Symbolic betavar(double, double, double);
+
+Symbolic chisquaredpdf(double, double);
+Symbolic chisquaredcdf(double, double);
+Symbolic chisquaredmgf(double, double);
+Symbolic chisquaredmean(double, double);
+Symbolic chisquaredvar(double, double);
+
+Symbolic cauchypdf(double);
+
+Symbolic Fpdf(double, double, double);
+Symbolic Fcdf(double, double, double);
+Symbolic Fmean(double, double, double);
+Symbolic Fvar(double, double, double);
+
+Symbolic tpdf(double, double);
+Symbolic tcdf(double, double);
+Symbolic tmean(double, double);
+Symbolic tvar(double, double);
+
+Symbolic laplacepdf(double, double);
+Symbolic laplacecdf(double, double);
+Symbolic laplacemgf(double, double);
+Symbolic laplacemean(double, double);
+Symbolic laplacevar(double, double);
+
+Symbolic logisticpdf(double, double);
+Symbolic logisticcdf(double, double);
+Symbolic logisticmgf(double, double);
+Symbolic logisticmean(double, double);
+Symbolic logisticvar(double, double);
+
 #endif
 #endif
 
