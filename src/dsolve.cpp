@@ -148,6 +148,28 @@ Symbolic dsolve(const Symbolic &fx, const Symbolic &y, const Symbolic &x, const 
 	return dsol;
 }
 
+Symbolic dsolvelogistic(const Symbolic &fx, const Symbolic &y, const Symbolic &y0, const Symbolic &t, const Symbolic &r, const Symbolic &K, const Symbolic &T) // for 1st order ODE logistic growth
+{
+	Symbolic dsol;
+ 	
+	if(fx.coeff(y,1) == r && fx.coeff(y,2) == -r*(K^(-1)))
+ 	{
+		dsol = (y0*K)/(y0 + (K - y0)*exp(-r*t));
+	}
+	if(fx.coeff(y,1) == -r && fx.coeff(y,2) == r*(T^(-1)))
+ 	{
+		dsol = (y0*T)/(y0 + (T - y0)*exp(r*t));
+	}
+	if(fx.coeff(y,1) == -r && fx.coeff(y,2) == r*(T^(-1)) + r*(K^(-1)))
+ 	{
+		cout << "For T < y < K and y > K"<< endl;
+		cout << "y(t) = " << (y0*K)/(y0 + (K - y0)*exp(-r*t)) << endl;
+		cout << "For 0 < y < T, \ny(t) ="<< endl;
+		dsol = (y0*T)/(y0 + (T - y0)*exp(r*t));
+	}
+	return dsol;
+}
+
 Symbolic ivp(const Symbolic &fx, const Symbolic &x, const Symbolic &c, const Symbolic &so)
 {
 	Symbolic ivpsol, f0,  C("C");

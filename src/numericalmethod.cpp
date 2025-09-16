@@ -83,6 +83,38 @@ Symbolic newtonmethod(const Symbolic &f, const Symbolic &x, const Symbolic &x0, 
 	return pn;
 }
 
+Symbolic eulermethod(const Symbolic &f, const Symbolic &y, const Symbolic &x, const Symbolic &y0, const Symbolic &x0, const Symbolic &x1, double h)
+{
+ 	Symbolic tangent, t("t");
+	double t_now, y_now, f_now;
+	double N1 = (x1-x0)/h;
+	int N = N1;
+	y_now = y0;
+	t_now = x0;
+
+	f_now = f[x==t_now, y==y_now] ;
+	tangent = y_now + f_now*(t-t_now);
+
+	cout << "\nf(x) = " << f <<endl;
+	
+	cout << endl;
+	cout << setw(6) << "t" << "\t\t" << "Euler approximation y_{i}" << "\t\t\t" << "Tangent line"  << "\n";
+	cout << setprecision(6) << setw(6) << x0 << "\t\t" << y_now << "\t\t\t\t\t" << tangent << "\n";	
+	for (int i = x0; i < N;  i++)
+	{
+		t_now = t_now + h;
+		y_now = y_now + f_now*h;
+		f_now = f[x==t_now, y==y_now] ;
+		tangent = y_now + f_now*(t-t_now);
+
+		cout << setprecision(6) << setw(6) << t_now << "\t\t" << y_now << "\t\t\t\t\t" << tangent << "\n";
+		
+		
+	}
+	cout << "\nsolution = "<< endl;
+	return y_now;
+}
+
 
 
 #endif

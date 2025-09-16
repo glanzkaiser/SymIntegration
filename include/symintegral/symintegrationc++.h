@@ -44,9 +44,11 @@
 #include "symintegral/solve.h"
 #include "symintegral/divgradcurl.h"
 #include "symintegral/dsolve.h"
+#include "symintegral/dynamicalsystem.h"
 #include "symintegral/geometryandvectors.h"
 #include "symintegral/mathematicalfinance.h"
 #include "symintegral/numericalmethod.h"
+#include "symintegral/simplify.h"
 #include "symintegral/statistics.h"
 #include "symintegral/specialfunctions.h"
 

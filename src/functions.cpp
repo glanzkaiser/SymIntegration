@@ -35,27 +35,14 @@ Sin::Sin(const Sin &s) : Symbol(s) {}
 
 Sin::Sin(const Symbolic &s) : Symbol(Symbol("sin")[s]) {}
 
-Asin::Asin(const Asin &s) : Symbol(s) {}
-
-Asin::Asin(const Symbolic &s) : Symbol(Symbol("asin")[s]) {}
-
-Acos::Acos(const Acos &s) : Symbol(s) {}
-
-Acos::Acos(const Symbolic &s) : Symbol(Symbol("acos")[s]) {}
-
 Simplified Sin::simplify() const
 {
  const Symbolic &s = parameters.front().simplify();
- const Symbolic &ac = Symbol(Symbol("acos")[s]) ;
- //const Symbolic &x = parameters.front();
  if(s == 0) return Number<int>(0);
- //if(s == ac) return Number<int>(8);
- //if(parameters.front() == Symbol("acos")[s])) return Number<int>(8);
  if(s.type() == typeid(Product))
  {
   CastPtr<const Product> p(s);
   if(p->factors.front() == -1) return -Sin(-s);
- // if(p ->factors.front() == acos(s)) return sqrt(1-(parameters.front()*parameters.front()));
  }
  if(s.type() == typeid(Numeric) &&
     Number<void>(s).numerictype() == typeid(double))
@@ -78,9 +65,9 @@ Symbolic Sin::integrate(const Symbolic &s) const
 // Implementation of Asin            //
 //////////////////////////////////////
 
-//Asin::Asin(const Asin &s) : Symbol(s) {}
+Asin::Asin(const Asin &s) : Symbol(s) {}
 
-//Asin::Asin(const Symbolic &s) : Symbol(Symbol("asin")[s]) {}
+Asin::Asin(const Symbolic &s) : Symbol(Symbol("asin")[s]) {}
 
 Simplified Asin::simplify() const
 {
@@ -146,9 +133,9 @@ Symbolic Cos::integrate(const Symbolic &s) const
 // Implementation of Acos            //
 //////////////////////////////////////
 
-//Acos::Acos(const Acos &s) : Symbol(s) {}
+Acos::Acos(const Acos &s) : Symbol(s) {}
 
-//Acos::Acos(const Symbolic &s) : Symbol(Symbol("acos")[s]) {}
+Acos::Acos(const Symbolic &s) : Symbol(Symbol("acos")[s]) {}
 
 Simplified Acos::simplify() const
 {
