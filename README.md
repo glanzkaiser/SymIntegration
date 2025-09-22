@@ -139,7 +139,7 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Compute the probability density function, cumulative distribution function, mean, variance, moment generating function of uniform distribution, normal distribution, gamma, exponential, beta, cauchy, laplace, logistic, chi-squared, students't, and F distribution	| Done
 |:sunflower:   | Compute the root / solution of a function of one variable with bisection method and Newton-Raphson method	| Done
 |:sunflower:   | Compute the minimization solution with gradient descent and downhill simplex	| Done
-|:sunflower:   | Compute the regression line equation along with Pearson's correlaiton ($`r`$) with input of vector of 2 columns	| Done
+|:sunflower:   | Compute the regression line equation along with Pearson's correlation ($`r`$) with input of vector of 2 columns	| Done
 |:sunflower:   | Bond pricing computation and amortization table	| Done
 
 
