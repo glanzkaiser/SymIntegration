@@ -38,7 +38,7 @@
 Symbolic bisectionmethod(const Symbolic &, const Symbolic &,double, double, int);
 Symbolic newtonmethod(const Symbolic &, const Symbolic &, const Symbolic &, int);
 Symbolic eulermethod(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, double);
-
+Symbolic directionfield(const Symbolic &, const Symbolic &, const Symbolic &, double, double, double, double, double, double);
 #endif
 #endif
 

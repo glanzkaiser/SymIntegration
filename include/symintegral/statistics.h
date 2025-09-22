@@ -126,6 +126,9 @@ Symbolic logisticmgf(double, double);
 Symbolic logisticmean(double, double);
 Symbolic logisticvar(double, double);
 
+double rpearson(const SymbolicMatrix&, int);
+Symbolic regressionline(const SymbolicMatrix&, int);
+
 #endif
 #endif
 

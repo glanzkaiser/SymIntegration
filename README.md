@@ -40,6 +40,9 @@ It is able to compute
 9. The computation of divergence, gradient, and curl.
 10. The probability mass function, mean, variance, moment generating function of discrete distributions.
 11. The probability density function, cumulative distribution function, mean, variance, moment generating function of continuous distributions.
+12. The regression line equation along with Pearson's correlaiton ($`r`$) with input of vector of 2 columns
+13. Bond pricing and amortization table for mortgage loan or other credit related loan.
+14. Compute direction fields and plot it with gnuplot
 
 # Learning the Code
 
@@ -136,6 +139,9 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Compute the probability density function, cumulative distribution function, mean, variance, moment generating function of uniform distribution, normal distribution, gamma, exponential, beta, cauchy, laplace, logistic, chi-squared, students't, and F distribution	| Done
 |:sunflower:   | Compute the root / solution of a function of one variable with bisection method and Newton-Raphson method	| Done
 |:sunflower:   | Compute the minimization solution with gradient descent and downhill simplex	| Done
+|:sunflower:   | Compute the regression line equation along with Pearson's correlaiton ($`r`$) with input of vector of 2 columns	| Done
+|:sunflower:   | Bond pricing computation and amortization table	| Done
+
 
 # Milestone
 
@@ -382,3 +388,14 @@ The test code can be located in the folder `Examples/Test SymIntegration Continu
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/47.png" width="60%">
 
+By September 20th, 2025: We add some functions to compute bond price, amortization table, regression line, and Pearson's correlation coefficient.
+
+The test code can be located in the folder `Examples/Test SymIntegration Amortization for Mortgage/main.cpp`
+
+The test code can be located in the folder `Examples/Test SymIntegration Pearson's Product Moment Correlation and Regression Line with Armadillo/main.cpp`
+
+We are also able to compute direction fields from input of symbolic function $`f(t,y)`$, then plot it with gnuplot afterwards.
+
+The test code can be located in the folder `Examples//home/browni/Bureau/glanzgithub/SymIntegration/Examples/Test SymIntegration Compute Direction Fields/main.cpp`
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/48.png" width="60%">

@@ -669,5 +669,71 @@ Symbolic logisticvar(double x, double θ)
 	return var;
 }
 
+double rpearson(const SymbolicMatrix &A, int N)
+{
+	double sum_xy, sum_x, sum_y, x_bar, y_bar, sum_xsquared, sum_ysquared, Sxy, Sx, Sy, r_pearson;
+	sum_xy = 0;
+	sum_x = 0;
+	sum_y = 0;
+	sum_xsquared = 0;
+	sum_ysquared = 0;
+	for(int i=0; i < N; ++i)
+	{
+		sum_x = sum_x + A[i][0];
+		sum_y = sum_y + A[i][1];
+		sum_xy = sum_xy +(A[i][0]*A[i][1]);
+		sum_xsquared = sum_xsquared + (A[i][0]*A[i][0]);
+		sum_ysquared = sum_ysquared + (A[i][1]*A[i][1]);
+		
+	}	
+
+	x_bar = sum_x/N;
+	y_bar = sum_y/N;
+
+	Sxy = (sum_xy/N) - (x_bar*y_bar);
+	Sx = sqrt(sum_xsquared/N - (x_bar*x_bar));
+	Sy = sqrt(sum_ysquared/N - (y_bar*y_bar));
+	r_pearson = Sxy/(Sx*Sy);
+
+	cout << "x bar: " << x_bar <<endl;
+	cout << "y bar: " << y_bar <<endl;
+	cout << "sum x: " << sum_x <<endl;
+	cout << "sum y: " << sum_y <<endl;
+	cout << "sum xy: " << sum_xy <<endl;
+	cout << "sum x^2: " << sum_xsquared <<endl;
+	cout << "sum y^2: " << sum_ysquared <<endl;
+
+	cout << "\nPearson's correlation coefficient, r : " << endl;
+
+	return r_pearson;
+}
+
+Symbolic regressionline(const SymbolicMatrix &A, int N)
+{
+	Symbolic x("x"), y("y");
+	double sum_xy, sum_x, sum_y, x_bar, y_bar, sum_xsquared, Sxy, Sx;
+	sum_xy = 0;
+	sum_x = 0;
+	sum_y = 0;
+	sum_xsquared = 0;
+	for(int i=0; i < N; ++i)
+	{
+		sum_x = sum_x + A[i][0];
+		sum_y = sum_y + A[i][1];
+		sum_xy = sum_xy +(A[i][0]*A[i][1]);
+		sum_xsquared = sum_xsquared + (A[i][0]*A[i][0]);	
+	}	
+
+	x_bar = sum_x/N;
+	y_bar = sum_y/N;
+
+	Sxy = (sum_xy/N) - (x_bar*y_bar);
+	Sx = sqrt(sum_xsquared/N - (x_bar*x_bar));
+	
+	Symbolic regression_line = (Sxy/(Sx*Sx))*(x-x_bar) + y_bar;
+
+	return regression_line;
+}
+
 #endif
 #endif

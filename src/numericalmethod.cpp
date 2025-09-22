@@ -115,6 +115,39 @@ Symbolic eulermethod(const Symbolic &f, const Symbolic &y, const Symbolic &x, co
 	return y_now;
 }
 
+//#include <iostream>
+#include <fstream>
+using namespace std;
+
+Symbolic directionfield(const Symbolic &f, const Symbolic &tf, const Symbolic &yf, double x_min, double x_max,  double y_min, double y_max,  double step_size, double k)
+{
+	// Open a file to write data for Gnuplot
+	ofstream dataFile("direction_field.dat");
+	
+	double dx, dy, magnitude;
+	for (double y = y_min; y <= y_max; y += step_size) 
+	{
+		for (double x = x_min; x <= x_max; x += step_size) 
+			{
+				if (std::abs(y) > 0.001) 
+				{ // Avoid division by zero for this example
+				double slope = f[tf==x, yf==y];
+				// Calculate components of a unit vector in the direction of the slope
+				dx = 1.0;
+				dy = slope;
+				magnitude = sqrt(dx * dx + dy * dy);
+				dx = k * dx / magnitude;
+				dy = k * dy / magnitude;
+				
+				// Write starting point (x,y) and vector components (dx, dy) to file
+				dataFile << x << " \t \t  " << y << " \t  \t " << dx << " \t  \t " << dy << endl;
+				}
+			}	
+	}
+
+	dataFile.close();
+	return 0;
+}
 
 
 #endif

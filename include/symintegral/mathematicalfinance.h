@@ -35,8 +35,9 @@
 #ifndef SYMINTEGRATION_CPLUSPLUS_MATHEMATICALFINANCE_DECLARE
 #define SYMINTEGRATION_CPLUSPLUS_MATHEMATICALFINANCE_DECLARE
 
-Symbolic bondpricing(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
-
+double presentvalue(double, double, int);
+double bondpricing(double, double, double, int);
+double amortization(double, double, int);
 #endif
 #endif
 

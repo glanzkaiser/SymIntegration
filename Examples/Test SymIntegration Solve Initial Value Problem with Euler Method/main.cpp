@@ -45,15 +45,15 @@ int main(void)
 	auto start = high_resolution_clock::now();
 
 	Symbolic t("t"), y("y"), C("C");
-	Symbolic F = 3 - 2*t -0.5*y;
+	Symbolic F = 4 - t + 2*y;
 
-	cout<< "For dy/dt = 3 - 2*t -0.5*y" << endl;
+	cout<< "For dy/dt = 4 - t + 2*y" << endl;
 	cout << "y(t) = " << dsolve(F,y,t) << endl;	
 	Symbolic sol = dsolve(F,y,t);
 
 	cout << "ivp for y(0)=1 \ny(t) = " << ivp(sol,t,C,1) << endl;	
 
-	cout << "Euler' Method\n " << eulermethod(F,y,t,1,0,1,0.2) << endl;	
+	cout << "Euler' Method\n " << eulermethod(F,y,t,1,0,5,0.05) << endl;	
 	// Get ending timepoint
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<microseconds>(stop - start);
