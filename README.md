@@ -40,7 +40,7 @@ It is able to compute
 9. The computation of divergence, gradient, and curl.
 10. The probability mass function, mean, variance, moment generating function of discrete distributions.
 11. The probability density function, cumulative distribution function, mean, variance, moment generating function of continuous distributions.
-12. The regression line equation along with Pearson's correlaiton ($`r`$) with input of vector of 2 columns
+12. The regression line equation along with Pearson's correlation ($`r`$) with input of vector of 2 columns
 13. Bond pricing and amortization table for mortgage loan or other credit related loan.
 14. Compute direction fields and plot it with gnuplot
 
@@ -396,6 +396,6 @@ The test code can be located in the folder `Examples/Test SymIntegration Pearson
 
 We are also able to compute direction fields from input of symbolic function $`f(t,y)`$, then plot it with gnuplot afterwards.
 
-The test code can be located in the folder `Examples//home/browni/Bureau/glanzgithub/SymIntegration/Examples/Test SymIntegration Compute Direction Fields/main.cpp`
+The test code can be located in the folder `Examples/Test SymIntegration Compute Direction Fields/main.cpp`
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/48.png" width="60%">
