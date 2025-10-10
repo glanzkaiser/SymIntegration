@@ -42,7 +42,9 @@ It is able to compute
 11. The probability density function, cumulative distribution function, mean, variance, moment generating function of continuous distributions.
 12. The regression line equation along with Pearson's correlation ($`r`$) with input of vector of 2 columns
 13. Bond pricing and amortization table for mortgage loan or other credit related loan.
-14. Compute direction fields and plot it with gnuplot
+14. Compute direction fields and plot it with gnuplot.
+15. Linear programming solution with Simplex Method.
+16. Numerical differentiation and Richardson's Extrapolation.
 
 # Learning the Code
 
@@ -140,8 +142,10 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Compute the root / solution of a function of one variable with bisection method and Newton-Raphson method	| Done
 |:sunflower:   | Compute the minimization solution with gradient descent and downhill simplex	| Done
 |:sunflower:   | Compute the regression line equation along with Pearson's correlation ($`r`$) with input of vector of 2 columns	| Done
-|:sunflower:   | Bond pricing computation and amortization table	| Done
-
+|:sunflower:   | Bond pricing computation and amortization table			| Done
+|:sunflower:   | Linear Programming: Simplex Method					| Done
+|:sunflower:   | Generate Random Number with Mersenne Twister				| Done
+|:sunflower:   | Numerical differentiation and Richardson's Extrapolation		| Done
 
 # Milestone
 
