@@ -11,6 +11,9 @@
 #include <boost/math/distributions/logistic.hpp> //Faster computing of logistic cdf and pdf
 #include <boost/math/distributions/students_t.hpp> //Faster computing of students' t cdf and pdf
 
+#include <random> // For random number generation
+#include <chrono>
+
 #ifdef  SYMBOLIC_DEFINE
 #ifndef SYMINTEGRATION_CPLUSPLUS_STATISTICS_DEFINE
 #define SYMINTEGRATION_CPLUSPLUS_STATISTICS_DEFINE
@@ -111,6 +114,51 @@ Symbolic combinations1(int n, int r) {
 		return 0; // Invalid input
 	}
 	return factorial1(n) / (factorial1(r) * factorial1(n - r));
+}
+
+// Generate random numbers
+int randomnumberint(int a, int b, int n)
+{
+	// 1. Obtain a seed:
+	// Using std::random_device for a non-deterministic seed if available,
+	// otherwise falling back to a time-based seed.
+	std::random_device rd;
+	std::mt19937 generate(rd()); // Mersenne Twister engine seeded with rd
+
+	// Alternatively, for a time-based seed (less truly random but often sufficient):
+	// std::mt19937 gen(std::chrono::system_clock::now().time_since_epoch().count());
+
+	// 2. Define a distribution:
+	// For integers within a specific range (e.g., 1 to 100 inclusive)
+	std::uniform_int_distribution<> distrib(a, b);
+	
+	for(int i=1; i<=n; i++)
+	{
+		cout << distrib(generate) << endl;
+	}
+	return distrib(generate);
+}
+
+double randomnumberreal(double a, double b, int n)
+{
+	// 1. Obtain a seed:
+	// Using std::random_device for a non-deterministic seed if available,
+	// otherwise falling back to a time-based seed.
+	std::random_device rd;
+	std::mt19937 generate(rd()); // Mersenne Twister engine seeded with rd
+
+	// Alternatively, for a time-based seed (less truly random but often sufficient):
+	// std::mt19937 gen(std::chrono::system_clock::now().time_since_epoch().count());
+
+	// 2. Define a distribution:
+	// For floating-point numbers within a specific range (e.g., 0.0 to 1.0)
+	std::uniform_real_distribution<> real_distrib(a, b);
+
+	for(int i=1; i<n; i++)
+	{
+		cout << real_distrib(generate) << endl;
+	}
+	return real_distrib(generate);
 }
 
 // Discrete Distributions
@@ -669,6 +717,114 @@ Symbolic logisticvar(double x, double θ)
 	return var;
 }
 
+#include <vector>
+#include <map>
+#include <algorithm> // For std::max_element,  std::sort
+#include <numeric> // For std::accumulate
+
+// Function to find the mode of a vector
+double findMode(const std::vector<double>& data) 
+{
+	if (data.empty()) 
+	{
+        // Handle empty input case, e.g., throw an exception or return a special value
+	return 0; // Or some indicator of no mode
+	}
+
+	std::map<double, double> frequencyMap;
+	for (double value : data) 
+	{
+		frequencyMap[value]++;
+	}
+
+	double mode = data[0]; // Initialize with the first element
+	double maxFrequency = 0;
+
+	for (const auto& pair : frequencyMap) 
+	{
+		if (pair.second > maxFrequency) 
+		{
+			maxFrequency = pair.second;
+			mode = pair.first;
+		}
+	}
+	return mode;
+}
+
+double descriptivestatistics(vector<double> vector_x)
+{
+	int n = vector_x.size();
+	double mean, variance, stdev;
+
+	int modeValue = findMode(vector_x);
+ 	cout << "\nMode : " << modeValue << endl; 
+
+	std::sort(vector_x.begin(), vector_x.end());
+	// Median: The middle value in a sorted dataset. If the dataset has an even number of elements, it's the average of the two middle values.
+	if (n % 2 == 1) 
+	{
+		cout << "Median : " << vector_x[n / 2] << endl;
+        } 
+	else 
+	{
+		cout << "Median : " << (vector_x[n / 2 - 1] + vector_x[n / 2]) / 2.0 << endl;
+	}	
+
+	double sum = 0.0;
+	for (double val : vector_x) 
+	{
+		sum += val;
+	}
+        mean = sum / n;
+	
+	cout << "Mean : " << mean << endl;
+
+	// Assuming the vector containing the 'data' is already sorted
+	double p = 0.25; // For the 1/4
+	double index_double = p * (n - 1);
+	size_t lower_index = static_cast<size_t>(std::floor(index_double));
+	size_t upper_index = static_cast<size_t>(std::ceil(index_double));
+	
+	double quantile_value, quantile_value2;
+	if (lower_index == upper_index) 
+	{
+		quantile_value = vector_x[lower_index];
+	} 
+	else 
+	{
+		double weight = index_double - lower_index;
+		quantile_value = vector_x[lower_index] * (1.0 - weight) + vector_x[upper_index] * weight;
+	}
+
+	double p2 = 0.75; // For the 3/4
+	double index_double2 = p2 * (n - 1);
+	size_t lower_index2 = static_cast<size_t>(std::floor(index_double2));
+	size_t upper_index2 = static_cast<size_t>(std::ceil(index_double2));
+	if (lower_index2 == upper_index2) 
+	{
+		quantile_value2 = vector_x[lower_index2];
+	} 
+	else 
+	{
+		double weight2 = index_double2 - lower_index2;
+		quantile_value2 = vector_x[lower_index2] * (1.0 - weight2) + vector_x[upper_index2] * weight2;
+	}
+	cout << "Quantile 1/4: " << quantile_value << endl;
+
+	cout << "Quantile 3/4: " << quantile_value2 << endl;
+
+	double sumSquaredDiff = 0.0;
+	for (double val : vector_x) 
+	{
+		sumSquaredDiff += std::pow(val - mean, 2);
+	}
+	variance = sumSquaredDiff / (n - 1); // Sample variance
+
+	cout << "Variance : " << variance << endl;
+	stdev = sqrt(variance);
+	cout << "Standard deviation : " ;
+	return stdev;
+}
 double rpearson(const SymbolicMatrix &A, int N)
 {
 	double sum_xy, sum_x, sum_y, x_bar, y_bar, sum_xsquared, sum_ysquared, Sxy, Sx, Sy, r_pearson;

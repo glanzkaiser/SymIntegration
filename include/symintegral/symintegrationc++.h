@@ -42,12 +42,14 @@
 #include "symintegral/symerror.h"  //   SymbolicError  : CloningSymbolicInterface
 #include "symintegral/constants.h"
 #include "symintegral/solve.h"
-#include "symintegral/divgradcurl.h"
+#include "symintegral/divgradcurl.h"s
 #include "symintegral/dsolve.h"
 #include "symintegral/dynamicalsystem.h"
 #include "symintegral/geometryandvectors.h"
+#include "symintegral/linearalgebra.h"
 #include "symintegral/mathematicalfinance.h"
 #include "symintegral/numericalmethod.h"
+#include "symintegral/operationsresearch.h"
 #include "symintegral/simplify.h"
 #include "symintegral/statistics.h"
 #include "symintegral/specialfunctions.h"

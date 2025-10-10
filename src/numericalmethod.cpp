@@ -7,6 +7,15 @@
 #ifndef SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHOD_DEFINE
 #define SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHOD_DEFINE
 
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <cmath>
+#include <bits/stdc++.h> //for setw(6) 
+#include <iomanip> // to declare the manipulator of setprecision()
+
+using namespace std;
+
 Symbolic bisectionmethod(const Symbolic &f, const Symbolic &x, double a, double b, int N)
 {
  	Symbolic xa, xb, xp, fa, fp;
@@ -109,15 +118,117 @@ Symbolic eulermethod(const Symbolic &f, const Symbolic &y, const Symbolic &x, co
 
 		cout << setprecision(6) << setw(6) << t_now << "\t\t" << y_now << "\t\t\t\t\t" << tangent << "\n";
 		
-		
 	}
 	cout << "\nsolution = "<< endl;
 	return y_now;
 }
 
-//#include <iostream>
-#include <fstream>
-using namespace std;
+double numericaldifferentiation(const Symbolic &f, const Symbolic &x, double x0, double h)
+{
+	Symbolic df_symbolic = (f[x==x0+h]-f[x==x0])/(h);
+	
+	double df_numeric = df_symbolic[SymbolicConstant::e == exp(1)] ;
+	return df_numeric;
+}
+
+double numericaldifferentiation3pointoneside(const Symbolic &f, const Symbolic &x, double x0, double h)
+{
+	Symbolic df_symbolic = (-3*f[x==x0] + 4*f[x==x0+h] - f[x==x0 + 2*h])/(2*h);
+	
+	double df_numeric = df_symbolic[SymbolicConstant::e == exp(1)] ;
+	return df_numeric;
+}
+
+double numericaldifferentiation3pointbothsides(const Symbolic &f, const Symbolic &x, double x0, double h)
+{
+	Symbolic df_symbolic = (f[x==x0+h] - f[x==x0 - h])/(2*h);
+	
+	double df_numeric = df_symbolic[SymbolicConstant::e == exp(1)] ;
+	return df_numeric;
+}
+
+double numericaldifferentiation5pointoneside(const Symbolic &f, const Symbolic &x, double x0, double h)
+{
+	Symbolic df_symbolic = (f[x==x0 - 2*h] - 8*f[x==x0-h] + 8*f[x==x0+h] - f[x==x0 + 2*h])/(12*h);
+	
+	double df_numeric = df_symbolic[SymbolicConstant::e == exp(1)] ;
+	return df_numeric;
+}
+
+double numericaldifferentiation5pointbothsides(const Symbolic &f, const Symbolic &x, double x0, double h)
+{
+	Symbolic df_symbolic = (-25*f[x==x0] + 48*f[x==x0+h] -36*f[x==x0+2*h] + 16*f[x==x0 + 3*h] - 3*f[x==x0+4*h])/(12*h);
+	
+	double df_numeric = df_symbolic[SymbolicConstant::e == exp(1)] ;
+	return df_numeric;
+}
+
+double trapezoidalrule(const Symbolic &f, const Symbolic &x, double a, double b)
+{
+	double h = (b-a)/1;
+	Symbolic df_symbolic = (f[x==a] + f[x==b])*h/(2);
+
+	double df_numeric = df_symbolic[SymbolicConstant::e == exp(1)] ;
+	return df_numeric;
+}
+
+double simpsonsrule(const Symbolic &f, const Symbolic &x, double a, double b)
+{
+	double h = (b-a)/2;
+	Symbolic df_symbolic = (f[x==a] + 4*f[x==a+h] + f[x==b])*h/(3);
+	
+	double df_numeric = df_symbolic[SymbolicConstant::e == exp(1)] ;
+	return df_numeric;
+}
+
+double simpsonsrule38(const Symbolic &f, const Symbolic &x, double a, double b)
+{
+	double h = (b-a)/3;
+	Symbolic df_symbolic = (f[x==a] + 3*f[x==a+h] + 3*f[x==a+2*h] + f[x==b])*3*h/(8);
+	
+	double df_numeric = df_symbolic[SymbolicConstant::e == exp(1)] ;
+	return df_numeric;
+}
+
+double richardsonextrapolation(const Symbolic &f, const Symbolic &x, double x0, double h, int level, int order_of_error)
+{
+	std::vector<double> approx(level);
+	std::vector<double> current_h_value(level);
+	std::vector<vector<double>> squareMatrix(level, vector<double>(level));
+
+	for (int i = 0; i< level ; i++)
+	{
+		current_h_value[i] = h / std::pow(2, i);
+		approx[i] = (1/(2*current_h_value[i]))*(evalf(f[x==x0+current_h_value[i]],x,1) - evalf(f[x==x0-current_h_value[i]],x,1));
+		squareMatrix[i][0] = approx[i] ;
+	}
+	int j1 = 0;
+	for (int k = 1; k < level; ++k) 
+	{
+		for (int i = 0; i < level - k; ++i) 
+		{
+			// Burden Faires Numerical Analysis book subsection 4.2 centered difference formula with O(h^(order-of_error))
+			approx[i] = approx[i + 1] + (approx[i + 1] - approx[i]) / (std::pow(order_of_error, k) - 1);
+			
+			squareMatrix[i+1+j1][k] = approx[i] ;			
+		}
+		j1 = j1+1;
+	}
+	cout << "Richardson's Extrapolation table:\n" << endl;
+	// Display the Richardson's extrapolation in matrix display
+	for(int i = 0; i<level; i++)
+	{
+		cout << setw(23);
+		for(int j=0; j<level; j++)
+		{
+			cout << setprecision(10) << squareMatrix[i][j] << setw(23);
+		}
+		cout << endl;
+	}
+	cout << endl;
+	cout << "\nBest approximation :" << endl;
+	return squareMatrix[level-1][level-1] ;
+}
 
 Symbolic directionfield(const Symbolic &f, const Symbolic &tf, const Symbolic &yf, double x_min, double x_max,  double y_min, double y_max,  double step_size, double k)
 {
