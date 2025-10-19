@@ -18,8 +18,9 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-
-// dsolve.h
+#include <random>
+#include <iostream>
+#include <vector>
 
 #ifndef SYMINTEGRATION_CPLUSPLUS_STATISTICS
 
@@ -73,13 +74,13 @@ Symbolic uniformmean(double, double, double);
 Symbolic uniformvar(double, double, double);
 
 Symbolic normalpdf(double, double, double);
-Symbolic normalcdf(double, double, double);
+double normalcdf(double, double, double);
 Symbolic normalmgf(double, double, double);
 Symbolic normalmean(double, double, double);
 Symbolic normalvar(double, double, double);
 
-Symbolic gammapdf(double, double, double);
-Symbolic gammacdf(double, double, double);
+double gammapdf(double, double, double);
+double gammacdf(double, double, double);
 Symbolic gammamgf(double, double, double);
 Symbolic gammamean(double, double, double);
 Symbolic gammavar(double, double, double);
@@ -90,8 +91,8 @@ Symbolic exponentialmgf(double, double);
 Symbolic exponentialmean(double, double);
 Symbolic exponentialvar(double, double);
 
-Symbolic betapdf(double, double, double);
-Symbolic betacdf(double, double, double);
+double betapdf(double, double, double);
+double betacdf(double, double, double);
 Symbolic betamgf(double, double, double);
 Symbolic betamean(double, double, double);
 Symbolic betavar(double, double, double);
@@ -133,6 +134,26 @@ Symbolic regressionline(const SymbolicMatrix&, int);
 
 int randomnumberint(int, int, int);
 double randomnumberreal(double, double, int);
+
+double randomnumbernormal(double, double, int);
+double randomnumbergamma(double, double, int);
+double randomnumberbeta(double, double, int);
+
+double generateBeta(double, double, std::mt19937&);
+std::vector<double> vrandn_bernoulli(double, int);
+std::vector<double> vrandn_binomial(double, int);
+std::vector<double> vrandn_normal(double, double, int);
+std::vector<double> vrandn_exponential(double, int);
+std::vector<double> vrandn_chisquared(double, int);
+std::vector<double> vrandn_gamma(double, double, int);
+std::vector<double> vrandn_beta(double, double, int);
+std::vector<double> vrandn_fdist(double, double, int);
+std::vector<double> vrandn_tdist(double, int);
+std::vector<double> vrandn_erlang(double, double, int);
+
+double calculateMean(vector<double>);
+double calculateCovariance(vector<double>, vector<double>); 
+SymbolicMatrix covariancematrix(vector<vector<double>>);
 
 #endif
 #endif

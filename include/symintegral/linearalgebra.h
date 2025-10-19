@@ -18,8 +18,9 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-
-// dsolve.h
+#include <random>
+#include <iostream>
+#include <vector>
 
 #ifndef SYMINTEGRATION_CPLUSPLUS_LINEARALGEBRA
 
@@ -35,8 +36,19 @@
 #ifndef SYMINTEGRATION_CPLUSPLUS_LINEARALGEBRA_DECLARE
 #define SYMINTEGRATION_CPLUSPLUS_LINEARALGEBRA_DECLARE
 
+vector<vector<double>> loadMatrixFromFile(const string&);
+void printMatrix(vector<vector<double>>);
+void printVector(vector<double>);
+vector<double> getColumn(vector<vector<double>>, int); 
+vector<double> getRow(vector<vector<double>>, int); 
+
+vector<vector<double>> multiply(vector<vector<double>>  &, vector<vector<double>> &);
+vector<vector<double>> add(vector<vector<double>>  &, vector<vector<double>> &);
+
 Symbolic gaussianelimination(const SymbolicMatrix&, int);
 Symbolic gaussianeliminationtest(const SymbolicMatrix&, int, int);
+
+void solve_nhsystem(vector<vector<double>> &,vector<vector<double>> &, vector<double> &);
 
 #endif
 #endif

@@ -1,0 +1,21 @@
+#  lucas_commands.txt
+#
+set terminal wxt size 800,600 enhanced font 'Verdana,10' persist
+#
+unset key
+
+# Define bin width
+bin_width = 1.0;
+
+# Functions to calculate bin center
+bin_number(x) = floor(x/bin_width)
+rounded(x) = bin_width * ( bin_number(x) + 0.5 )
+
+# Plot the histogram
+set title "Data Histogram"
+set xlabel "Data Value"
+set ylabel "Frequency"
+set style fill solid 0.5 border -1 # Solid fill with transparency and border
+set boxwidth bin_width # Set box width
+
+plot 'gamma.dat' using (rounded($1)):(1) smooth frequency with histeps title 'Data Frequency'

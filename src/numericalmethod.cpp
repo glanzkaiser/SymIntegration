@@ -55,8 +55,8 @@ Symbolic bisectionmethod(const Symbolic &f, const Symbolic &x, double a, double 
 		
 		cout << endl;
 	}	
-	cout << "solution = " << p << endl;
-	return 0;
+	cout << "solution = " ;
+	return p;
 }
 
 Symbolic newtonmethod(const Symbolic &f, const Symbolic &x, const Symbolic &x0, int N)
@@ -260,6 +260,113 @@ Symbolic directionfield(const Symbolic &f, const Symbolic &tf, const Symbolic &y
 	return 0;
 }
 
+void choleskyDecomposition(vector<vector<double>> matrix)
+{
+	int n = matrix.size();
+
+	// to store the lower triangular matrix
+	vector<vector<double>> lower(n, vector<double>(n, 0));
+
+	// Decomposing a matrix into Lower Triangular
+	for (int i = 0; i < n; i++) 
+	{
+		for (int j = 0; j <= i; j++) 
+		{
+			double sum = 0;
+			// summation for diagonals
+			if (j == i) 
+			{
+				for (int k = 0; k < j; k++)
+				{
+					sum += pow(lower[j][k], 2);
+					
+				}
+				lower[j][j] = sqrt(matrix[j][j] - sum);
+			} 
+			else 
+			{
+		        // Evaluating L(i, j) using L(j, j)
+				for (int k = 0; k < j; k++)
+				{
+					sum += (lower[i][k] * lower[j][k]);
+					
+				}
+				lower[i][j] = (matrix[i][j] - sum) / lower[j][j];
+			}
+		}
+	}
+	
+	cout << "\nA = " << endl;
+	// Displaying Lower Triangular Matrix
+	for (int i = 0; i < n; i++) 
+	{
+	// Lower Triangular
+		for (int j = 0; j < n; j++)
+		{
+			cout << setw(10) << lower[i][j] << setw(10);
+		}
+		cout << endl;
+	}
+
+	cout<<endl;
+
+	cout << "\nA^{T} = " << endl;
+
+	// Displaying Transpose of Lower Triangular Matrix
+	for (int i = 0; i < n; i++) 
+	{        
+		// Lower Triangular
+		for (int j = 0; j < n; j++)
+		{
+			cout <<  setw(10) << lower[j][i] <<  setw(10);
+		}
+		cout << endl;
+	}
+}
+
+// Function to perform LU decomposition
+void LUDecomposition(vector<vector<double>> &A, vector<vector<double>> &L, vector<vector<double>> &U) 
+{
+	int n = A.size();	
+	
+	// Initialize L with ones on the diagonal and zeros above
+	// Initialize U with zeros below the diagonal
+	for (int i = 0; i < n; ++i) 
+	{
+		for (int j = 0; j < n; ++j) 
+		{
+			L[i][j] = (i == j) ? 1.0 : 0.0; // Ones on diagonal for L
+			U[i][j] = 0.0;
+		}
+	}
+	
+	// Doolittle's algorithm
+	for (int i = 0; i < n; ++i) 
+	{
+		// Calculate U elements
+		for (int j = i; j < n; ++j) 
+		{
+			double sum = 0.0;
+			for (int k = 0; k < i; ++k) 
+			{
+				sum += L[i][k] * U[k][j];
+			}
+			U[i][j] = A[i][j] - sum;
+		}
+        
+
+		// Calculate L elements (below the diagonal)
+		for (int j = i + 1; j < n; ++j) 
+		{
+			double sum = 0.0;
+			for (int k = 0; k < i; ++k) 
+			{
+				sum += L[j][k] * U[k][i];
+			}
+			L[j][i] = (A[j][i] - sum) / U[i][i]; // U[i][i] cannot be zero
+		}
+	}
+}
 
 #endif
 #endif

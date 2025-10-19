@@ -45,6 +45,8 @@ It is able to compute
 14. Compute direction fields and plot it with gnuplot.
 15. Linear programming solution with Simplex Method.
 16. Numerical differentiation and Richardson's Extrapolation.
+17. Matrices multiplication, addition, LU decomposition, Cholesky decomposition
+18. Generate random number that has certain distribution (uniform, gamma, beta, normal, F, chi-squared) and plot the histogram with Hamzstplot
 
 # Learning the Code
 
@@ -146,6 +148,11 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Linear Programming: Simplex Method					| Done
 |:sunflower:   | Generate Random Number with Mersenne Twister				| Done
 |:sunflower:   | Numerical differentiation and Richardson's Extrapolation		| Done
+|:sunflower:   | LU-decomposition and Cholesky decomposition				| Done
+|:sunflower:   | Matrices multiplication and addition					| Done
+|:sunflower:   | Gaussian elimination							| Done
+|:sunflower:   | Create covariance matrix						| Done
+|:sunflower:   | Create lattice and plot with Gnuplot					| Done
 
 # Milestone
 

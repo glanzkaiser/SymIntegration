@@ -35,7 +35,7 @@ Symbolic simplexmethod(const SymbolicMatrix &A, vector<double> F, int C, int R, 
 {
 	//int nbv = n-R;
 	//int combi =combinationsint(n,nbv);
-	int m = R; // number of equality constraints = number of absic variables
+	int m = R; // number of equality constraints = number of basic variables
 	
 	vector<double> v_objfunction; // Create a vector to store the value of objective function
 

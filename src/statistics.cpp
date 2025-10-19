@@ -11,6 +11,11 @@
 #include <boost/math/distributions/logistic.hpp> //Faster computing of logistic cdf and pdf
 #include <boost/math/distributions/students_t.hpp> //Faster computing of students' t cdf and pdf
 
+#include <vector>
+#include <map>
+#include <algorithm> // For std::max_element,  std::sort
+#include <numeric> // For std::accumulate
+
 #include <random> // For random number generation
 #include <chrono>
 
@@ -160,6 +165,237 @@ double randomnumberreal(double a, double b, int n)
 	}
 	return real_distrib(generate);
 }
+
+double randomnumbergamma(double alpha, double beta, int n)
+{
+	// 1. Obtain a seed:
+	// otherwise falling back to a time-based seed.
+	// Seed it with a time-based value for more randomness across runs.
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::mt19937 generate(seed); 
+
+	// 2. Define the gamma distribution parameters
+	// alpha (shape parameter) and beta (scale parameter)
+	std::gamma_distribution<> distribution(alpha, beta);
+
+	for(int i=1; i<n; i++)
+	{
+		cout << distribution(generate) << endl;
+	}
+	return distribution(generate);
+}
+
+// Generating random numbers in C++ can be achieved using either the older C-style rand() and srand() functions or the more modern C++11 <random> library. 
+// The <random> library is generally preferred for its better statistical properties and more flexible control over distributions.
+// This approach provides more robust and statistically sound random number generation.
+// Using std::random_device for a non-deterministic seed (if available and entropy > 0)
+// or std::chrono::system_clock::now().time_since_epoch().count() for a time-based seed.
+
+std::vector<double> vrandn_bernoulli(double p, int n)
+{
+	// 1. Obtain a seed:
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::default_random_engine generator(seed);
+
+	std::vector<double> vec;
+	// 2. Create a Bernoulli distribution
+	// The constructor takes the probability 'p' of generating 'true'.
+	std::bernoulli_distribution distribution(p);
+
+	for(int i=1; i<n; i++)
+	{
+		vec.push_back(static_cast<double>(distribution(generator))); 
+	}
+	return vec;
+}
+
+std::vector<double> vrandn_binomial(double p, int n)
+{
+	// 1. Obtain a seed:
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::default_random_engine generator(seed);
+
+	std::vector<double> vec;
+
+	// 2. Create a binomial distribution object
+	std::binomial_distribution<> dist_binomial(n, p);
+
+	for(int i=1; i<n; i++)
+	{
+		vec.push_back(static_cast<double>(dist_binomial(generator))); 
+	}
+	return vec;
+}
+
+std::vector<double> vrandn_normal(double mu, double sigma, int n)
+{
+	// 1. Obtain a seed:
+	// Seeding with std::chrono::system_clock::now().time_since_epoch().count()
+	// provides a more robust seed than a fixed value.
+	std::default_random_engine generator(
+        std::chrono::system_clock::now().time_since_epoch().count());
+	
+	std::vector<double> vec;
+ 	std::normal_distribution<double> distribution(mu, sigma);
+	for(int i=1; i<n; i++)
+	{
+		vec.push_back(static_cast<double>(distribution(generator))); 
+	}
+	return vec;
+}
+
+std::vector<double> vrandn_exponential(double lambda, int n)
+{
+	// 1. Obtain a seed:
+	// Seeding with std::chrono::system_clock::now().time_since_epoch().count()
+	// provides a more robust seed than a fixed value.
+	// We seed it with the current time for better randomness.
+	std::mt19937 generator(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+
+	std::vector<double> vec;
+ 	// 2. Create an exponential distribution object
+	// The constructor takes the 'lambda' (rate) parameter.
+	// The mean of an exponential distribution is 1/lambda.
+	std::exponential_distribution<double> distribution(lambda);
+
+	for(int i=1; i<n; i++)
+	{
+		vec.push_back(static_cast<double>(distribution(generator))); 
+	}
+	return vec;
+}
+
+std::vector<double> vrandn_chisquared(double nu, int n)
+{
+	// 1. Obtain a seed:
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::default_random_engine generator(seed);
+
+	std::vector<double> vec;
+	// 2. Define the Chi-squared distribution
+	// The constructor takes the degrees of freedom (n) as a parameter.
+	std::chi_squared_distribution<float> chi_squared_dist(nu);
+
+	for(int i=1; i<n; i++)
+	{
+		vec.push_back(static_cast<double>(chi_squared_dist(generator))); 
+	}
+	return vec;
+}
+
+// Instantiate an std::fisher_f_distribution: This distribution represents the F-distribution. 
+// Its constructor takes two parameters: the numerator degrees of freedom (v1) and the denominator degrees of freedom (v2). Both must be positive.
+
+std::vector<double> vrandn_fdist(double numerator_df, double denominator_df, int n)
+{
+	// 1. Obtain a seed:
+	std::random_device rd; // Obtain a non-deterministic seed
+	std::mt19937 gen(rd()); // Standard Mersenne Twister engine seeded with rd()
+
+	std::vector<double> vec;
+ 	// 2. Instantiate the F-distribution
+	std::fisher_f_distribution<> f_dist(numerator_df, denominator_df);
+
+	for(int i=1; i<n; i++)
+	{
+		vec.push_back(static_cast<double>(f_dist(gen))); 
+	}
+	return vec;
+}
+
+std::vector<double> vrandn_tdist(double nu, int n)
+{
+	// 1. Obtain a seed:
+	std::random_device rd; // Obtain a non-deterministic seed
+	std::mt19937 gen(rd()); // Standard Mersenne Twister engine seeded with rd()
+
+	std::vector<double> vec;
+ 	// 2. Define the Student's t-distribution.
+	// The constructor takes the degrees of freedom (nu).
+	std::student_t_distribution<> t_dist(nu);
+
+	for(int i=1; i<n; i++)
+	{
+		vec.push_back(static_cast<double>(t_dist(gen))); 
+	}
+	return vec;
+}
+
+// Generating Erlang-distributed random numbers in C++ involves using the <random> library, 
+// which provides facilities for generating pseudo-random numbers with various distributions. 
+// Since the Erlang distribution is a special case of the Gamma distribution where the shape parameter (k or alpha) is an integer, 
+// you can leverage the std::gamma_distribution to achieve this. 
+
+std::vector<double> vrandn_erlang(double k, double lambda, int n)
+{
+	// 1. Obtain a seed:
+	std::mt19937 engine(std::chrono::system_clock::now().time_since_epoch().count());
+
+	std::vector<double> vec;
+	const double beta = 1.0 / lambda; // Scale parameter for std::gamma_distribution
+ 	// 2. Create a gamma_distribution object
+	// For Erlang, the shape parameter (alpha) is 'k' and the scale parameter (beta) is '1/lambda'.
+	std::gamma_distribution<double> erlang_dist(k, beta);
+
+	for(int i=1; i<n; i++)
+	{
+		vec.push_back(static_cast<double>(erlang_dist(engine))); 
+	}
+	return vec;
+}
+
+std::vector<double> vrandn_gamma(double alpha, double beta, int n)
+{
+	// 1. Obtain a seed:
+	// otherwise falling back to a time-based seed.
+	// Seed it with a time-based value for more randomness across runs.
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::mt19937 generate(seed); 
+
+	// 2. Define the gamma distribution parameters
+	// alpha (shape parameter) and beta (scale parameter)
+	std::gamma_distribution<> distribution(alpha, beta);
+	std::vector<double> vec;
+ 
+	for(int i=1; i<n; i++)
+	{
+		vec.push_back(static_cast<double>(distribution(generate))); 
+	}
+	return vec;
+}
+
+// The C++ Standard Library does not directly offer a std::beta_distribution
+// a Beta distribution can be simulated using two independently generated Gamma distributions.
+
+double generateBeta(double alpha, double beta, std::mt19937& generator) {
+	// Create two gamma distributions with scale parameter 1
+	std::gamma_distribution<double> gamma_alpha(alpha, 1.0);
+	std::gamma_distribution<double> gamma_beta(beta, 1.0);
+
+	// Generate random numbers from each gamma distribution
+	double x = gamma_alpha(generator);
+	double y = gamma_beta(generator);
+
+	// Calculate the beta-distributed random number
+	return x / (x + y);
+}
+
+std::vector<double> vrandn_beta(double alpha, double beta, int n)
+{
+	// 1. Obtain a seed:
+	std::random_device rd;
+	std::mt19937 generate(rd()); // Mersenne Twister engine seeded with rd
+
+	std::vector<double> vec;
+ 	
+	for(int i=1; i<n; i++)
+	{
+		vec.push_back(static_cast<double>(generateBeta(alpha, beta, generate))); 
+	}
+	return vec;
+}
+
+
 
 // Discrete Distributions
 Symbolic binomialpmf(int x, int n, double p)
@@ -358,9 +594,9 @@ Symbolic uniformvar(double x, double a, double b)
 	return var;
 }
 
-Symbolic normalpdf(double x, double μ, double σ)
+Symbolic normalpdf(double x, double mu, double sigma)
 {
- 	Symbolic pdf = divisions(1,sqrt(2*π)*σ)*exp(-0.5*divisions(x-μ,σ)*divisions(x-μ,σ));
+ 	Symbolic pdf = divisions(1,sqrt(2*π)*sigma)*exp(-0.5*divisions(x-mu,sigma)*divisions(x-mu,sigma));
 
 	return evalf(pdf,1,1);
 }
@@ -373,165 +609,196 @@ double normalCDF(double x) {
     return 0.5 * erfc(-x * M_SQRT1_2);
 }
 
-Symbolic normalcdf(double x1, double μ, double σ)
+double normalcdf(double x1, double mu, double sigma)
 {
-	double x = ((x1 - μ) / σ);
+	double x = ((x1 - mu) / sigma);
 	
- 	Symbolic cdf = 0.5 * erfc(-x * M_SQRT1_2);
+ 	double cdf = 0.5 * erfc(-x * M_SQRT1_2);
 
 	return cdf;
 }
 
-Symbolic normalmgf(double x, double μ, double σ)
+Symbolic normalmgf(double x, double mu, double sigma)
 {
  	Symbolic t("t");
-	Symbolic mgf = exp(μ*t + 0.5*σ*σ*t*t);
+	Symbolic mgf = exp(mu*t + 0.5*sigma*sigma*t*t);
 
 	return mgf;
 }
 
-Symbolic normalmean(double x, double μ, double σ)
+Symbolic normalmean(double x, double mu, double sigma)
 {
- 	Symbolic mean = μ;
+ 	Symbolic mean = mu;
 
 	return mean;
 }
 
-Symbolic normalvar(double x, double μ, double σ)
+Symbolic normalvar(double x, double mu, double sigma)
 {
- 	Symbolic var = σ*σ;
+ 	Symbolic var = sigma*sigma;
 
 	return var;
 }
 
-Symbolic gammapdf(double x, double α, double β)
+double gammapdf(double x, double alpha, double beta) // 16 digits precise with boost::math::gamma_distribution<> gamma_dist(alpha,beta)
 {
- 	//Symbolic b = divisions(1,(Symbolic(β)^(Symbolic(α)))*tgamma(α))*(Symbolic(x)^(Symbolic(α-1)))*exp(-divisions(x,β));
+ 	//Symbolic b = divisions(1,(Symbolic(beta)^(Symbolic(alpha)))*tgamma(alpha))*(Symbolic(x)^(Symbolic(alpha-1)))*exp(-divisions(x,beta));
 	//return evalf(b,1,1);
 
-	boost::math::gamma_distribution<> gamma_dist(α,β);
-	double x_value = x;
-	double pdf_value = boost::math::pdf(gamma_dist, x_value);
+	//boost::math::gamma_distribution<> gamma_dist(alpha,beta);
+	//double x_value = x;
+	//double pdf_value = boost::math::pdf(gamma_dist, x_value);
+
+	if (x < 0 || alpha <= 0 || beta <= 0) 
+	{
+	// Handle invalid input: Gamma distribution is defined for x > 0, alpha > 0, beta > 0
+	return 0.0; 
+	}
+
+	// Calculate the Gamma function of alpha
+	double gamma_alpha = std::tgamma(alpha);
+
+	// Compute the PDF
+	double pdf_value = (std::pow(beta, -alpha) * std::pow(x, alpha - 1) * std::exp(-x/beta)) / gamma_alpha;
 
 	return pdf_value;
 }
 
-Symbolic gammacdf(double x, double α, double β)
+double gammacdf(double x, double alpha, double beta)
 {	
-	boost::math::gamma_distribution<> gamma_dist(α,β);
+	boost::math::gamma_distribution<> gamma_dist(alpha,beta);
 	double x_value = x;
 	double cdf_value = boost::math::cdf(gamma_dist, x_value);
 
 	return cdf_value;
 }
 
-Symbolic gammamgf(double x, double α, double β)
+Symbolic gammamgf(double x, double alpha, double beta)
 {
  	Symbolic t("t");
-	Symbolic mgf = ((1-β*t)^(Symbolic(-α)));
+	Symbolic mgf = ((1-beta*t)^(Symbolic(-alpha)));
 
 	return mgf;
 }
 
-Symbolic gammamean(double x, double α, double β)
+Symbolic gammamean(double x, double alpha, double beta)
 {
- 	Symbolic mean = α*β;
+ 	Symbolic mean = alpha*beta;
 
 	return mean;
 }
 
-Symbolic gammavar(double x, double α, double β)
+Symbolic gammavar(double x, double alpha, double beta)
 {
- 	Symbolic var = α*β*β;
+ 	Symbolic var = alpha*beta*beta;
 
 	return var;
 }
 
-Symbolic exponentialpdf(double x, double λ)
+Symbolic exponentialpdf(double x, double lambda)
 {
- 	Symbolic pdf = λ*exp(-λ*x);
+ 	Symbolic pdf = lambda*exp(-lambda*x);
 
 	return evalf(pdf,1,1);
 }
 
-Symbolic exponentialcdf(double x1, double λ)
+Symbolic exponentialcdf(double x1, double lambda)
 {	
 	Symbolic x("x");
-	Symbolic f =  λ*exp(-λ*x);
+	Symbolic f =  lambda*exp(-lambda*x);
 
  	Symbolic cdf = 1 + integrate(f,x)[x==x1] ;
 
 	return evalf(cdf,1,1);
 }
 
-Symbolic exponentialmgf(double x, double λ)
+Symbolic exponentialmgf(double x, double lambda)
 {
  	Symbolic t("t");
-	Symbolic mgf = (1-(divisions(t,λ)))^(Symbolic(-1));
+	Symbolic mgf = (1-(divisions(t,lambda)))^(Symbolic(-1));
 
 	return mgf;
 }
 
-Symbolic exponentialmean(double x, double λ)
+Symbolic exponentialmean(double x, double lambda)
 {
- 	Symbolic mean = divisions(1,λ);
+ 	Symbolic mean = divisions(1,lambda);
 
 	return mean;
 }
 
-Symbolic exponentialvar(double x, double λ)
+Symbolic exponentialvar(double x, double lambda)
 {
- 	Symbolic var = divisions(1,λ*λ);
+ 	Symbolic var = divisions(1,lambda*lambda);
 
 	return var;
 }
 
-Symbolic betapdf(double x, double α, double β)
+double betapdf(double x, double alpha, double beta)
 {
- 	//Symbolic b = ( tgamma(α+β)/(tgamma(α)*tgamma(β)) ) * (x^(Symbolic(α-1))) * ((1-x)^(Symbolic(β-1)));
+ 	//Symbolic b = ( tgamma(alpha+beta)/(tgamma(alpha)*tgamma(beta)) ) * (x^(Symbolic(alpha-1))) * ((1-x)^(Symbolic(beta-1)));
 	//return evalf(b,1,1);
 
-	boost::math::beta_distribution<> my_beta(α,β);
-	double pdf_value = boost::math::pdf(my_beta,x);
+	//boost::math::beta_distribution<> my_beta(alpha,beta);
+	//double pdf_value = boost::math::pdf(my_beta,x);
 
-	return pdf_value;
+	if (x < 0.0 || x > 1.0 || alpha <= 0.0 || beta <= 0.0) 
+	{
+		// Handle invalid input: PDF is 0 outside [0,1] or parameters are invalid
+		return 0.0;	
+	}
+	else 
+	{
+		// Calculate log of the Beta function using log-Gamma functions
+		double log_beta_function = std::lgamma(alpha) + std::lgamma(beta) - std::lgamma(alpha + beta);
+
+		// Calculate log of the numerator
+		double log_numerator = (alpha - 1.0) * std::log(x) + (beta - 1.0) * std::log(1.0 - x);
+
+		// Calculate the log of the PDF
+		double log_pdf = log_numerator - log_beta_function;
+
+		// Return the exponentiated value
+		return std::exp(log_pdf);
+	}
+	
 }
 
-Symbolic betacdf(double x, double α, double β)
+double betacdf(double x, double alpha, double beta)
 {	
 	/*Symbolic x("x");
-	int alpha  = α;
-	int beta = β;
-	Symbolic f = ( tgamma(α+β)/(tgamma(α)*tgamma(β)) ) * (pow(x,Symbolic(alpha-1))) * (pow(1-x,(Symbolic(beta-1))));
+	int alpha  = alpha;
+	int beta = beta;
+	Symbolic f = ( tgamma(alpha+beta)/(tgamma(alpha)*tgamma(beta)) ) * (pow(x,Symbolic(alpha-1))) * (pow(1-x,(Symbolic(beta-1))));
 
  	Symbolic b = integrate(f,x)[x==x1] ;
 
 	return evalf(b,1,1);*/
 
-	boost::math::beta_distribution<> my_beta(α,β);
+	boost::math::beta_distribution<> my_beta(alpha,beta);
 	double cdf_value = boost::math::cdf(my_beta,x);
 
 	return cdf_value;
 }
 
-Symbolic betamgf(double x, double α, double β)
+Symbolic betamgf(double x, double alpha, double beta)
 {
  	Symbolic t("t");
-	Symbolic mgf = hypergeometric_1F1(α, α+β,t,5);
+	Symbolic mgf = hypergeometric_1F1(alpha, alpha+beta,t,5);
 
 	return mgf;
 }
 
-Symbolic betamean(double x, double α, double β)
+Symbolic betamean(double x, double alpha, double beta)
 {
- 	Symbolic mean = divisions(α,α+β);
+ 	Symbolic mean = divisions(alpha,alpha+beta);
 
 	return mean;
 }
 
-Symbolic betavar(double x, double α, double β)
+Symbolic betavar(double x, double alpha, double beta)
 {
- 	Symbolic var = divisions(α*β,(α+β+1)*(α+β)*(α+β));
+ 	Symbolic var = divisions(alpha*beta,(alpha+beta+1)*(alpha+beta)*(alpha+beta));
 
 	return var;
 }
@@ -717,10 +984,7 @@ Symbolic logisticvar(double x, double θ)
 	return var;
 }
 
-#include <vector>
-#include <map>
-#include <algorithm> // For std::max_element,  std::sort
-#include <numeric> // For std::accumulate
+
 
 // Function to find the mode of a vector
 double findMode(const std::vector<double>& data) 
@@ -889,6 +1153,56 @@ Symbolic regressionline(const SymbolicMatrix &A, int N)
 	Symbolic regression_line = (Sxy/(Sx*Sx))*(x-x_bar) + y_bar;
 
 	return regression_line;
+}
+
+// Function to calculate the mean of a vector
+double calculateMean(vector<double> data) 
+{
+	return std::accumulate(data.begin(), data.end(), 0.0) / data.size();
+}
+
+// Function to calculate the covariance between two vectors
+double calculateCovariance(vector<double> data1, vector<double> data2) 
+{
+	if (data1.size() != data2.size() || data1.empty()) 
+	{
+		return 0.0; // Handle error or return appropriate value
+	}
+
+	double mean1 = calculateMean(data1);
+	double mean2 = calculateMean(data2);
+	double sum_of_products = 0.0;
+
+	for (size_t i = 0; i < data1.size(); ++i) 
+	{
+		sum_of_products += (data1[i] - mean1) * (data2[i] - mean2);
+	}
+
+	return sum_of_products / (data1.size() - 1); // Sample covariance
+}
+
+
+
+SymbolicMatrix covariancematrix(vector<vector<double>> matrix)
+{
+	vector<vector<double>> cov_matrix;
+	
+	//int R = matrix.size();
+	int C = matrix[0].size();
+
+	Matrix<Symbolic> B_mat(C,C);
+
+	for(int i = 0; i < C; i++)
+	{
+		for(int j=0; j < C; j++)
+		{
+			B_mat[i][j] = calculateCovariance(getColumn(matrix, i),getColumn(matrix, j));	
+		}
+	}
+
+	cout << "\nThe covariance matrix:" <<endl;
+	
+	return B_mat;
 }
 
 #endif
