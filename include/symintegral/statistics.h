@@ -18,6 +18,31 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+/*
+ * zlib License
+ *
+ * Regularized Incomplete Beta Function
+ *
+ * Copyright (c) 2016, 2017 Lewis Van Winkle
+ * http://CodePlea.com
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgement in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ */
+
 #include <random>
 #include <iostream>
 #include <vector>
@@ -40,80 +65,88 @@ int fibonacciseries(int);
 double rising_pochhammer(double, int);
 double falling_pochhammer(double, int);
 
-Symbolic binomialpmf(int, int, double);
-Symbolic binomialcdf(int, int, double);
-Symbolic binomialmean(int, int, double);
-Symbolic binomialvar(int, int, double);
+double factoriald(int);
+double combinationsd(int, int);
+
+double binomialpmf(int, int, double);
+double binomialcdf(int, int, double);
+double binomialmean(int, int, double);
+double binomialvar(int, int, double);
 Symbolic binomialmgf(int, int, double);
 
-Symbolic negativebinomialpmf(int, int, double);
-Symbolic negativebinomialcdf(int, int, double);
-Symbolic negativebinomialmean(int, int, double);
-Symbolic negativebinomialvar(int, int, double);
+double negativebinomialpmf(int, int, double);
+double negativebinomialcdf(int, int, double);
+double negativebinomialmean(int, int, double);
+double negativebinomialvar(int, int, double);
 Symbolic negativebinomialmgf(const Symbolic &, const Symbolic &, const Symbolic &);
 
-Symbolic geometricpmf(int, double);
-Symbolic geometricmean(int, double);
-Symbolic geometricvar(int, double);
+double geometricpmf(int, double);
+double geometricmean(int, double);
+double geometricvar(int, double);
 Symbolic geometricmgf(const Symbolic &, const Symbolic &);
 
-Symbolic hypergeometricpmf(int, int, int, int);
-Symbolic hypergeometricmean(int, int, int, int);
-Symbolic hypergeometricvar(int, int, int, int);
+double hypergeometricpmf(int, int, int, int);
+double hypergeometricmean(int, int, int, int);
+double hypergeometricvar(int, int, int, int);
 
-Symbolic poissonpmf(int, int);
-Symbolic poissoncdf(int, int);
-Symbolic poissonmean(int, int);
-Symbolic poissonvar(int, int);
+double poissonpmf(int, int);
+double poissoncdf(int, int);
+double poissonmean(int, int);
+double poissonvar(int, int);
 Symbolic poissonmgf(const Symbolic &, const Symbolic &);
 
-Symbolic uniformpdf(double, double, double);
-Symbolic uniformcdf(double, double, double);
+double uniformpdf(double, double, double);
+double uniformcdf(double, double, double);
 Symbolic uniformmgf(double, double, double);
-Symbolic uniformmean(double, double, double);
-Symbolic uniformvar(double, double, double);
+double uniformmean(double, double, double);
+double uniformvar(double, double, double);
 
 Symbolic normalpdf(double, double, double);
 double normalcdf(double, double, double);
 Symbolic normalmgf(double, double, double);
-Symbolic normalmean(double, double, double);
-Symbolic normalvar(double, double, double);
+double normalmean(double, double, double);
+double normalvar(double, double, double);
+
+double zquantile(double);
 
 double gammapdf(double, double, double);
 double gammacdf(double, double, double);
 Symbolic gammamgf(double, double, double);
-Symbolic gammamean(double, double, double);
-Symbolic gammavar(double, double, double);
+double gammamean(double, double, double);
+double gammavar(double, double, double);
 
 Symbolic exponentialpdf(double, double);
 Symbolic exponentialcdf(double, double);
 Symbolic exponentialmgf(double, double);
-Symbolic exponentialmean(double, double);
-Symbolic exponentialvar(double, double);
+double exponentialmean(double, double);
+double exponentialvar(double, double);
 
 double betapdf(double, double, double);
 double betacdf(double, double, double);
 Symbolic betamgf(double, double, double);
-Symbolic betamean(double, double, double);
-Symbolic betavar(double, double, double);
+double betamean(double, double, double);
+double betavar(double, double, double);
 
-Symbolic chisquaredpdf(double, double);
-Symbolic chisquaredcdf(double, double);
+double chisquaredpdf(double, double);
+double chisquaredcdf(double, double);
 Symbolic chisquaredmgf(double, double);
-Symbolic chisquaredmean(double, double);
-Symbolic chisquaredvar(double, double);
+double chisquaredmean(double, double);
+double chisquaredvar(double, double);
 
-Symbolic cauchypdf(double);
+double cauchypdf(double);
 
-Symbolic Fpdf(double, double, double);
-Symbolic Fcdf(double, double, double);
-Symbolic Fmean(double, double, double);
-Symbolic Fvar(double, double, double);
+double lowergamma(double, double);
+double incbeta(double, double, double);
 
-Symbolic tpdf(double, double);
-Symbolic tcdf(double, double);
-Symbolic tmean(double, double);
-Symbolic tvar(double, double);
+double Fpdf(double, double, double);
+double Fcdf(double, double, double);
+double Fmean(double, double, double);
+double Fvar(double, double, double);
+
+double tpdf(double, double);
+double tcdf(double, double);
+double tmean(double, double);
+double tvar(double, double);
 
 Symbolic laplacepdf(double, double);
 Symbolic laplacecdf(double, double);
@@ -131,6 +164,7 @@ double descriptivestatistics(vector<double>);
 
 double rpearson(const SymbolicMatrix&, int);
 Symbolic regressionline(const SymbolicMatrix&, int);
+vector<vector<double>> multipleregression(vector<vector<double>> &, vector<vector<double>> &);
 
 int randomnumberint(int, int, int);
 double randomnumberreal(double, double, int);
@@ -155,6 +189,10 @@ double calculateMean(vector<double>);
 double calculateCovariance(vector<double>, vector<double>); 
 SymbolicMatrix covariancematrix(vector<vector<double>>);
 
+void hypothesistest(vector<double>, double, double, double, double);
+void hypothesistest_lefttailed(vector<double>, double, double, double, double);
+void hypothesistest_righttailed(vector<double>, double, double, double, double);
+void ANOVA(vector<vector<double>>);
 #endif
 #endif
 

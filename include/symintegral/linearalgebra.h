@@ -37,6 +37,7 @@
 #define SYMINTEGRATION_CPLUSPLUS_LINEARALGEBRA_DECLARE
 
 vector<vector<double>> loadMatrixFromFile(const string&);
+vector<double> loadVectorFromFile(const string&);
 void printMatrix(vector<vector<double>>);
 void printVector(vector<double>);
 vector<double> getColumn(vector<vector<double>>, int); 
@@ -44,11 +45,40 @@ vector<double> getRow(vector<vector<double>>, int);
 
 vector<vector<double>> multiply(vector<vector<double>>  &, vector<vector<double>> &);
 vector<vector<double>> add(vector<vector<double>>  &, vector<vector<double>> &);
+vector<vector<double>> transpose(const vector<vector<double>> &);
+void scalarmultiplication_alt(vector<vector<double>> &, double);
+vector<vector<double>> scalarmultiplication(vector<vector<double>>, double);
+
+void getCofactor(vector<vector<double>> &, vector<vector<double>> &, int, int, int);
+double determinant1(vector<vector<double>> &, int);
+vector<vector<double>> adjugate(vector<vector<double>> &);
+vector<vector<double>> inverse(vector<vector<double>> &);
+
+double determinant_alt(vector<vector<double>>);
+long double determinant(const vector<vector<double>> &);
+double norm(const vector<double> &);
+double dot(const vector<double> &, const vector<double> &);
+double distance(const vector<double> &, const vector<double> &);
+double distance(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const vector<double> &);
+
+double angle(const vector<double> &, const vector<double> &);
+double degtorad(double);
+double radtodeg(double);
+vector<double> orthogonalprojection(vector<double>, vector<double>);
+vector<double> add(vector<double> &, vector<double> &);
+vector<double> subtract(vector<double> &, vector<double> &);
+vector<double> scalarmultiplication(vector<double> &, double);
+vector<double> crossproduct(vector<double> &, vector<double> &);
+double scalartripleproduct(vector<double> &, vector<double> &, vector<double> &);
+
+SymbolicMatrix vectorequation(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
+void vectorequationdecomp(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, vector<double> &, vector<double> &, vector<double> &);
 
 Symbolic gaussianelimination(const SymbolicMatrix&, int);
 Symbolic gaussianeliminationtest(const SymbolicMatrix&, int, int);
 
 void solve_nhsystem(vector<vector<double>> &,vector<vector<double>> &, vector<double> &);
+void LUsolve_nhsystem(vector<vector<double>> &,vector<vector<double>> &, vector<double> &);
 
 #endif
 #endif

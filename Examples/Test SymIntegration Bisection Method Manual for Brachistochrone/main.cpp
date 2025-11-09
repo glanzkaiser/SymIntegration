@@ -1,5 +1,5 @@
 // Merci beaucoup Freya et Sentinel
-// g++ main.cpp -o result -lginac -lcln
+// g++ main.cpp -o main -lsymintegration
 #include <iostream>
 #include "symintegrationc++.h"
 #include <chrono>

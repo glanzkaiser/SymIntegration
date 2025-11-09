@@ -21,7 +21,7 @@
 
 // number.h
 
-#ifndef SYMBOLIC_CPLUSPLUS_NUMBER
+#ifndef SYMINTEGRATION_CPLUSPLUS_NUMBER
 
 #include <cmath>
 #include <iostream>
@@ -33,8 +33,8 @@
 using namespace std;
 
 #ifdef  SYMBOLIC_FORWARD
-#ifndef SYMBOLIC_CPLUSPLUS_NUMBER_FORWARD
-#define SYMBOLIC_CPLUSPLUS_NUMBER_FORWARD
+#ifndef SYMINTEGRATION_CPLUSPLUS_NUMBER_FORWARD
+#define SYMINTEGRATION_CPLUSPLUS_NUMBER_FORWARD
 
 class Numeric;
 template <class T> class Number;
@@ -43,9 +43,9 @@ template <class T> class Number;
 #endif
 
 #ifdef  SYMBOLIC_DECLARE
-#define SYMBOLIC_CPLUSPLUS_NUMBER
-#ifndef SYMBOLIC_CPLUSPLUS_NUMBER_DECLARE
-#define SYMBOLIC_CPLUSPLUS_NUMBER_DECLARE
+#define SYMINTEGRATION_CPLUSPLUS_NUMBER
+#ifndef SYMINTEGRATION_CPLUSPLUS_NUMBER_DECLARE
+#define SYMINTEGRATION_CPLUSPLUS_NUMBER_DECLARE
 
 class Numeric: public CloningSymbolicInterface
 {

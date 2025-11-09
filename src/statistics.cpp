@@ -1,15 +1,12 @@
 /*
-   
+#include <boost/math/distributions/beta.hpp> 
+#include <boost/math/distributions/gamma.hpp> 
+#include <boost/math/distributions/students_t.hpp>    
 */
 #include "symintegral/symintegrationc++.h"
 #include <cmath> // For erfc and M_SQRT1_2 (or define M_SQRT1_2 if not available)
-#include <boost/math/distributions/chi_squared.hpp> // Faster computing of chi squared cdf
-#include <boost/math/distributions/beta.hpp> //Faster computing of beta cdf and pdf
-#include <boost/math/distributions/fisher_f.hpp> //Faster computing of Fisher' F cdf and pdf
-#include <boost/math/distributions/gamma.hpp> // Faster computing of gamma cdf
 #include <boost/math/distributions/laplace.hpp> //Faster computing of laplace cdf and pdf
 #include <boost/math/distributions/logistic.hpp> //Faster computing of logistic cdf and pdf
-#include <boost/math/distributions/students_t.hpp> //Faster computing of students' t cdf and pdf
 
 #include <vector>
 #include <map>
@@ -22,7 +19,7 @@
 #ifdef  SYMBOLIC_DEFINE
 #ifndef SYMINTEGRATION_CPLUSPLUS_STATISTICS_DEFINE
 #define SYMINTEGRATION_CPLUSPLUS_STATISTICS_DEFINE
-#define π 3.1415926535897f
+#define π 3.141592653589793238462643383279502884f
 
 double divisionint(double x, double y)
 {
@@ -120,7 +117,26 @@ Symbolic combinations1(int n, int r) {
 	}
 	return factorial1(n) / (factorial1(r) * factorial1(n - r));
 }
+double factoriald(int n) {
+	if (n <= 1) 
+	{
+		return 1;
+	}
+	double result = 1;
+	for (int i = 2; i <= n; ++i) 
+	{
+		result *= i;
+	}
+	return result;
+}
 
+double combinationsd(int n, int r) {
+	if (r < 0 || r > n) 
+	{
+		return 0; // Invalid input
+	}
+	return factoriald(n) / (factoriald(r) * factoriald(n - r));
+}
 // Generate random numbers
 int randomnumberint(int a, int b, int n)
 {
@@ -398,33 +414,33 @@ std::vector<double> vrandn_beta(double alpha, double beta, int n)
 
 
 // Discrete Distributions
-Symbolic binomialpmf(int x, int n, double p)
+double binomialpmf(int x, int n, double p)
 {
- 	Symbolic b = combinations1(n,x)*pow(p,x)*pow(1-p,n-x);
+ 	Symbolic b = combinationsd(n,x)*pow(p,x)*pow(1-p,n-x);
 	
 	return b;
 }
 
-Symbolic binomialcdf(int x, int n, double p)
+double binomialcdf(int x, int n, double p)
 {
- 	Symbolic b;
+ 	double b;
 	for (int i=0; i<=x;i++)
 	{
-		b += combinations1(n,i)*pow(p,i)*pow(1-p,n-i);
+		b += combinationsd(n,i)*pow(p,i)*pow(1-p,n-i);
 	}	
 	return b;
 }
 
-Symbolic binomialmean(int x, int n, double p)
+double binomialmean(int x, int n, double p)
 {
- 	Symbolic mean = n*p;
+ 	double mean = n*p;
 
 	return mean;
 }
 
-Symbolic binomialvar(int x, int n, double p)
+double binomialvar(int x, int n, double p)
 {
- 	Symbolic var = n*p*(1-p);
+ 	double var = n*p*(1-p);
 
 	return var;
 }
@@ -437,23 +453,23 @@ Symbolic binomialmgf(int x, int n, double p)
 	return b;
 }
 
-Symbolic negativebinomialpmf(int x, int k, double p)
+double negativebinomialpmf(int x, int k, double p)
 {
- 	Symbolic b = combinations1(x-1,k-1)*pow(p,k)*pow(1-p,x-k);
+ 	double b = combinationsd(x-1,k-1)*pow(p,k)*pow(1-p,x-k);
 	
 	return b;
 }
 
-Symbolic negativebinomialmean(int x, int k, double p)
+double negativebinomialmean(int x, int k, double p)
 {
- 	Symbolic mean = k/p;
+ 	double mean = k/p;
 
 	return mean;
 }
 
-Symbolic negativebinomialvar(int x, int k, double p)
+double negativebinomialvar(int x, int k, double p)
 {
- 	Symbolic var = k*(1-p)/(p*p);
+ 	double var = k*(1-p)/(p*p);
 
 	return var;
 }
@@ -467,23 +483,23 @@ Symbolic negativebinomialmgf(const Symbolic &x, const Symbolic &k, const Symboli
 	return mgf;
 }
 
-Symbolic geometricpmf(int x, double p)
+double geometricpmf(int x, double p)
 {
- 	Symbolic pmf = p*(pow(1-p,x-1));
+ 	double pmf = p*(pow(1-p,x-1));
 	
 	return pmf;
 }
 
-Symbolic geometricmean(int x, double p)
+double geometricmean(int x, double p)
 {
- 	Symbolic mean = 1/p;
+ 	double mean = 1/p;
 
 	return mean;
 }
 
-Symbolic geometricvar(int x, double p)
+double geometricvar(int x, double p)
 {
- 	Symbolic var = (1-p)/(p*p);
+ 	double var = (1-p)/(p*p);
 
 	return var;
 }
@@ -497,54 +513,54 @@ Symbolic geometricmgf(const Symbolic &x, const Symbolic &p)
 	return mgf;
 }
 
-Symbolic hypergeometricpmf(int x, int N, int n, int k)
+double hypergeometricpmf(int x, int N, int n, int k)
 {
- 	Symbolic pmf = combinations1(k,x)*divisions(combinations1(N-k,n-x),combinations1(N,n));
+ 	double pmf = combinationsd(k,x)*divisiond(combinationsd(N-k,n-x),combinationsd(N,n));
 	
 	return pmf;
 }
 
-Symbolic hypergeometricmean(int x, int N, int n, int k)
+double hypergeometricmean(int x, int N, int n, int k)
 {
- 	Symbolic mean = divisionint(n*k,N);
+ 	double mean = divisionint(n*k,N);
 
 	return mean;
 }
 
-Symbolic hypergeometricvar(int x, int N, int n, int k)
+double hypergeometricvar(int x, int N, int n, int k)
 {
- 	Symbolic var = n*divisionint(N-n,N-1)*divisionint(k,N)*(1-divisionint(k,N));
+ 	double var = n*divisionint(N-n,N-1)*divisionint(k,N)*(1-divisionint(k,N));
 
 	return var;
 }
 
-Symbolic poissonpmf(int x, int k)
+double poissonpmf(int x, int k)
 {
- 	Symbolic pmf = exp(-k)*pow(k,x)/(factorial1(x));
+ 	double pmf = exp(-k)*pow(k,x)/(factorial1(x));
 	
 	return pmf;
 }
 
-Symbolic poissoncdf(int x, int k)
+double poissoncdf(int x, int k)
 {
- 	Symbolic cdf;
+ 	double cdf;
 	for (int i=0; i<=x;i++)
 	{
-		cdf += exp(-k)*pow(k,i)/(factorial1(i));
+		cdf += exp(-k)*pow(k,i)/(factoriald(i));
 	}	
 	return cdf;
 }
 
-Symbolic poissonmean(int x, int k)
+double poissonmean(int x, int k)
 {
- 	Symbolic mean = k;
+ 	double mean = k;
 
 	return mean;
 }
 
-Symbolic poissonvar(int x, int k)
+double poissonvar(int x, int k)
 {
- 	Symbolic var = k;
+ 	double var = k;
 
 	return var;
 }
@@ -560,16 +576,16 @@ Symbolic poissonmgf(const Symbolic &x, const Symbolic &k)
 
 // Continuous Distributions
 
-Symbolic uniformpdf(double x, double a, double b)
+double uniformpdf(double x, double a, double b)
 {
- 	Symbolic pdf = divisions(1,b-a);
+ 	double pdf = divisiond(1,b-a);
 
 	return pdf;
 }
 
-Symbolic uniformcdf(double x1, double a, double b)
+double uniformcdf(double x1, double a, double b)
 {
-	return divisions(x1,b-a) - divisions(a,b-a) ;
+	return divisiond(x1,b-a) - divisiond(a,b-a) ;
 }
 
 Symbolic uniformmgf(double x, double a, double b)
@@ -580,23 +596,23 @@ Symbolic uniformmgf(double x, double a, double b)
 	return mgf;
 }
 
-Symbolic uniformmean(double x, double a, double b)
+double uniformmean(double x, double a, double b)
 {
- 	Symbolic mean = 0.5*(a+b);
+ 	double mean = 0.5*(a+b);
 
 	return mean;
 }
 
-Symbolic uniformvar(double x, double a, double b)
+double uniformvar(double x, double a, double b)
 {
- 	Symbolic var = divisions(1,12)*(b-a)*(b-a);
+ 	double var = divisions(1,12)*(b-a)*(b-a);
 
 	return var;
 }
 
 Symbolic normalpdf(double x, double mu, double sigma)
 {
- 	Symbolic pdf = divisions(1,sqrt(2*π)*sigma)*exp(-0.5*divisions(x-mu,sigma)*divisions(x-mu,sigma));
+ 	Symbolic pdf = divisiond(1,sqrt(2*π)*sigma)*exp(-0.5*divisions(x-mu,sigma)*divisiond(x-mu,sigma));
 
 	return evalf(pdf,1,1);
 }
@@ -626,18 +642,25 @@ Symbolic normalmgf(double x, double mu, double sigma)
 	return mgf;
 }
 
-Symbolic normalmean(double x, double mu, double sigma)
+double normalmean(double x, double mu, double sigma)
 {
- 	Symbolic mean = mu;
+ 	double mean = mu;
 
 	return mean;
 }
 
-Symbolic normalvar(double x, double mu, double sigma)
+double normalvar(double x, double mu, double sigma)
 {
- 	Symbolic var = sigma*sigma;
+ 	double var = sigma*sigma;
 
 	return var;
+}
+
+double zquantile(double cdf)
+{
+	double z_quantile = r8_normal_01_cdf_inverse(cdf);
+
+	return z_quantile;	
 }
 
 double gammapdf(double x, double alpha, double beta) // 16 digits precise with boost::math::gamma_distribution<> gamma_dist(alpha,beta)
@@ -666,9 +689,13 @@ double gammapdf(double x, double alpha, double beta) // 16 digits precise with b
 
 double gammacdf(double x, double alpha, double beta)
 {	
-	boost::math::gamma_distribution<> gamma_dist(alpha,beta);
-	double x_value = x;
-	double cdf_value = boost::math::cdf(gamma_dist, x_value);
+	//boost::math::gamma_distribution<> gamma_dist(alpha,beta);
+	//double x_value = x;
+	//double cdf_value = boost::math::cdf(gamma_dist, x_value);
+
+	// 13 decimal digit precision with boost::math::gamma_distribution
+	
+	double cdf_value = lowergamma(alpha,x/beta)/(tgamma(alpha));
 
 	return cdf_value;
 }
@@ -681,16 +708,16 @@ Symbolic gammamgf(double x, double alpha, double beta)
 	return mgf;
 }
 
-Symbolic gammamean(double x, double alpha, double beta)
+double gammamean(double x, double alpha, double beta)
 {
- 	Symbolic mean = alpha*beta;
+ 	double mean = alpha*beta;
 
 	return mean;
 }
 
-Symbolic gammavar(double x, double alpha, double beta)
+double gammavar(double x, double alpha, double beta)
 {
- 	Symbolic var = alpha*beta*beta;
+ 	double var = alpha*beta*beta;
 
 	return var;
 }
@@ -720,16 +747,16 @@ Symbolic exponentialmgf(double x, double lambda)
 	return mgf;
 }
 
-Symbolic exponentialmean(double x, double lambda)
+double exponentialmean(double x, double lambda)
 {
- 	Symbolic mean = divisions(1,lambda);
+ 	double mean = divisions(1,lambda);
 
 	return mean;
 }
 
-Symbolic exponentialvar(double x, double lambda)
+double exponentialvar(double x, double lambda)
 {
- 	Symbolic var = divisions(1,lambda*lambda);
+ 	double var = divisiond(1,lambda*lambda);
 
 	return var;
 }
@@ -766,18 +793,12 @@ double betapdf(double x, double alpha, double beta)
 
 double betacdf(double x, double alpha, double beta)
 {	
-	/*Symbolic x("x");
-	int alpha  = alpha;
-	int beta = beta;
-	Symbolic f = ( tgamma(alpha+beta)/(tgamma(alpha)*tgamma(beta)) ) * (pow(x,Symbolic(alpha-1))) * (pow(1-x,(Symbolic(beta-1))));
-
- 	Symbolic b = integrate(f,x)[x==x1] ;
-
-	return evalf(b,1,1);*/
-
+	/*
 	boost::math::beta_distribution<> my_beta(alpha,beta);
-	double cdf_value = boost::math::cdf(my_beta,x);
+	double cdf_value = boost::math::cdf(my_beta,x);*/
 
+	// Precision with boost::math::beta_distribution is insanely exact
+	double cdf_value = incbeta(x,alpha,beta);
 	return cdf_value;
 }
 
@@ -789,47 +810,47 @@ Symbolic betamgf(double x, double alpha, double beta)
 	return mgf;
 }
 
-Symbolic betamean(double x, double alpha, double beta)
+double betamean(double x, double alpha, double beta)
 {
- 	Symbolic mean = divisions(alpha,alpha+beta);
+ 	double mean = divisiond(alpha,alpha+beta);
 
 	return mean;
 }
 
-Symbolic betavar(double x, double alpha, double beta)
+double betavar(double x, double alpha, double beta)
 {
- 	Symbolic var = divisions(alpha*beta,(alpha+beta+1)*(alpha+beta)*(alpha+beta));
+ 	double var = divisiond(alpha*beta,(alpha+beta+1)*(alpha+beta)*(alpha+beta));
 
 	return var;
 }
 
-Symbolic cauchypdf(double x)
+double cauchypdf(double x)
 {
- 	Symbolic pdf = divisionint(1,π)*divisionint(1,x*x+1);
+ 	double pdf = divisiond(1,π)*divisiond(1,x*x+1);
 
 	return pdf;
 }
 
 
-Symbolic chisquaredpdf(double x, double r)
+double chisquaredpdf(double x, double r)
 {
 	int a = 0.5*r;
 	int c = 0.5*r-1;
- 	Symbolic pdf = divisionint(1,tgamma(0.5*r)*pow(2,a)) * pow(x,c) * exp(-0.5*x);
+ 	double pdf = divisionint(1,tgamma(0.5*r)*pow(2,a)) * pow(x,c) * exp(-0.5*x);
 
-	return evalf(pdf,1,1);
+	return pdf;
 }
 
 
-Symbolic chisquaredcdf(double x, double r)
+double chisquaredcdf(double x, double r)
 {
-	// We are using Boost to compute chi squared cdf
-	// We try to use the lower and upper incomplete gamma function but it cannot produce the correct result
-	double degrees_of_freedom = r; 
-	boost::math::chi_squared_distribution<> chi_squared(degrees_of_freedom);
+	//double degrees_of_freedom = r; 
+	//boost::math::chi_squared_distribution<> chi_squared(degrees_of_freedom);
 
-	double x_value = x; // The value at which to evaluate the CDF
-	double cdf_value = boost::math::cdf(chi_squared, x_value);
+	/*The cumulative distribution function (CDF) for Chi-Squared distribution
+	It has at least 16 decimal digit precision with boost::math::chi_squared_distribution
+	*/
+	double cdf_value =(1/(tgamma(r/2.0)))*lowergamma(r/2.0,x/2.0);
 
 	return cdf_value;
 }
@@ -842,76 +863,187 @@ Symbolic chisquaredmgf(double x, double r)
 	return mgf;
 }
 
-Symbolic chisquaredmean(double x, double r)
+double chisquaredmean(double x, double r)
 {
- 	Symbolic mean = r;
+ 	double mean = r;
 
 	return mean;
 }
 
-Symbolic chisquaredvar(double x, double r)
+double chisquaredvar(double x, double r)
 {
- 	Symbolic var = 2*r;
+ 	double var = 2*r;
 
 	return var;
 }
 
-Symbolic Fpdf(double x, double r1, double r2)
+double lowergamma(double s, double x)
 {
-	boost::math::fisher_f_distribution<> fisher_f(r1,r2);
-	double pdf_value = boost::math::pdf(fisher_f,x);
+	int sgn = 1;
+	double l;
+	for (int i = 0; i < 100 ; i++)
+	{
+		l += sgn*pow(x,i+s)/(factoriald(i)*(i+s));
+		sgn = -sgn;
+	}
+	return l;
+}
+
+#include <math.h>
+
+#define STOP 1.0e-8
+#define TINY 1.0e-30
+
+double incbeta(double x, double a, double b) 
+{
+	if (x < 0.0 ) 
+	{
+		return 1.0/0.0;
+	}	
+	if (x > 1.0) 
+	{
+		x = 1/(1+(a*x)/(b));
+		cout << x << endl;
+	}
+	/*The continued fraction converges nicely for x < (a+1)/(a+b+2)*/
+	if (x > (a+1.0)/(a+b+2.0)) 
+	{
+		return (1.0-incbeta(1.0-x,b,a)); /*Use the fact that beta is symmetrical.*/
+	}
+
+	/*Find the first part before the continued fraction.*/
+	const double lbeta_ab = lgamma(a)+lgamma(b)-lgamma(a+b);
+	const double front = exp(log(x)*a+log(1.0-x)*b-lbeta_ab) / a;
+
+	/*Use Lentz's algorithm to evaluate the continued fraction.*/
+	double f = 1.0, c = 1.0, d = 0.0;
+
+	int i, m;
+	for (i = 0; i <= 200; ++i) 
+	{
+		m = i/2;
+
+		double numerator;
+		if (i == 0) 
+		{
+			numerator = 1.0; /*First numerator is 1.0.*/
+		} 
+		else if (i % 2 == 0) 
+		{
+			numerator = (m*(b-m)*x)/((a+2.0*m-1.0)*(a+2.0*m)); /*Even term.*/
+		} 
+		else 
+		{
+			numerator = -((a+m)*(a+b+m)*x)/((a+2.0*m)*(a+2.0*m+1)); /*Odd term.*/
+		}
+
+		/*Do an iteration of Lentz's algorithm.*/
+		d = 1.0 + numerator * d;
+		if (fabs(d) < TINY) 
+		{
+			d = TINY;
+		}
+		d = 1.0 / d;
+
+		c = 1.0 + numerator / c;
+		if (fabs(c) < TINY) 
+		{
+			c = TINY;
+		}
+		const double cd = c*d;
+		f *= cd;
+
+		/*Check for stop.*/
+		if (fabs(1.0-cd) < STOP) 
+		{
+			return front * (f-1.0);
+		}
+	}
+
+	return 1.0/0.0; /*Needed more loops, did not converge.*/
+}
+
+double Fpdf(double x, double r1, double r2)
+{
+	//boost::math::fisher_f_distribution<> fisher_f(r1,r2);
+	//double pdf_value = boost::math::pdf(fisher_f,x);
+
+	// this function returns the same function as boost::math::fisher_f_distribution<> fisher_f(r1,r2); for F pdf
+	double pdf_value = (tgamma(0.5*(r1+r2)))*(pow(r1/r2,0.5*r1))/(tgamma(0.5*r1)*tgamma(0.5*r2)) * (pow(x,(0.5*r1)-1)/(pow(1+(r1*x/r2),0.5*(r1+r2)))) ;
 
 	return pdf_value;
 }
 
-Symbolic Fcdf(double x, double r1, double r2)
+double Fcdf(double x, double r1, double r2)
 {
-	boost::math::fisher_f_distribution<> fisher_f(r1,r2);
-	double cdf_value = boost::math::cdf(fisher_f,x);
+	//boost::math::fisher_f_distribution<> fisher_f(r1,r2);
+	//double cdf_value = boost::math::cdf(fisher_f,x);
+
+	/*The cumulative distribution function (CDF) for Fisher's F distribution
+	It has at least 11 decimal digit precision with boost::math::fisher_f_distribution
+	*/
+
+	double z ;
+	double cdf_value;
+	
+	z = (x*r1)/(r2 + r1*x);
+	cdf_value = incbeta(z,r1/2.0, r2/2.0);
+
 
 	return cdf_value;
 }
 
-Symbolic Fmean(double x, double r1, double r2)
+double Fmean(double x, double r1, double r2)
 {
-	Symbolic mean = divisions(r2,r2-2) ;
+	double mean = divisions(r2,r2-2) ;
 
 	return mean;
 }
 
-Symbolic Fvar(double x, double r1, double r2)
+double Fvar(double x, double r1, double r2)
 {
-	Symbolic var = 2*divisions(r2,r2-2)*divisions(r2,r2-2) * divisions(r1+r2-2,r1*(r2-4));
+	double var = 2*divisions(r2,r2-2)*divisions(r2,r2-2) * divisions(r1+r2-2,r1*(r2-4));
 
 	return var;
 }
 
-Symbolic tpdf(double x, double r)
+double tpdf(double x, double r)
 {
-	boost::math::students_t_distribution<> students_t(r);
-	double pdf_value = boost::math::pdf(students_t,x);
+	//boost::math::students_t_distribution<> students_t(r);
+	//double pdf_value = boost::math::pdf(students_t,x);
 
+	/*The PDF for Student's t distribution
+	It has 7 decimal digit precision with boost::math::students_t_distribution
+	*/
+	double z = (tgamma((r+1)/2.0))/(tgamma(r/2.0) * sqrt(π*r)) ;
+	double pdf_value = z * pow((1 + (x*x)/(r)),-((r+1)/2.0));
 	return pdf_value;
 }
 
-Symbolic tcdf(double x, double r)
+double tcdf(double x, double r)
 {
-	boost::math::students_t_distribution<> students_t(r);
-	double cdf_value = boost::math::cdf(students_t,x);
+	//boost::math::students_t_distribution<> students_t(r);
+	//double cdf_value = boost::math::cdf(students_t,x);
+
+	/*The cumulative distribution function (CDF) for Student's t distribution
+	It has 15 decimal digit precision with boost::math::students_t_distribution
+	*/
+	double t = (x + sqrt(x * x + r)) / (2.0 * sqrt(x * x + r));
+	double cdf_value = incbeta(t, r/2.0, r/2.0);
 
 	return cdf_value;
 }
 
-Symbolic tmean(double x, double r)
+double tmean(double x, double r)
 {
-	Symbolic mean = 0;
+	double mean = 0;
 
 	return mean;
 }
 
-Symbolic tvar(double x, double r)
+double tvar(double x, double r)
 {
-	Symbolic var = divisions(r,r-2);
+	double var = divisiond(r,r-2);
 
 	return var;
 }
@@ -1019,7 +1151,7 @@ double descriptivestatistics(vector<double> vector_x)
 {
 	int n = vector_x.size();
 	double mean, variance, stdev;
-
+	cout << "\nSample size : " << n << endl; 
 	int modeValue = findMode(vector_x);
  	cout << "\nMode : " << modeValue << endl; 
 
@@ -1086,7 +1218,7 @@ double descriptivestatistics(vector<double> vector_x)
 
 	cout << "Variance : " << variance << endl;
 	stdev = sqrt(variance);
-	cout << "Standard deviation : " ;
+	cout << "Standard deviation : " << stdev;
 	return stdev;
 }
 double rpearson(const SymbolicMatrix &A, int N)
@@ -1155,6 +1287,23 @@ Symbolic regressionline(const SymbolicMatrix &A, int N)
 	return regression_line;
 }
 
+vector<vector<double>> multipleregression(vector<vector<double>> &X, vector<vector<double>> &y)
+{
+	dmat X_t = transpose(X);
+	dmat XtX= multiply(X_t,X);
+	dmat inv = inverse(XtX);
+	dmat A = multiply(inv,X_t);
+	dmat b = multiply(A,y);
+
+	cout << endl;
+
+	int n = b.size();
+	for(int i = 0; i < n ; ++i)
+	{
+		cout <<"b["<< i <<"] = " << b[i][0] << endl;
+	}
+	return b;
+}
 // Function to calculate the mean of a vector
 double calculateMean(vector<double> data) 
 {
@@ -1181,8 +1330,6 @@ double calculateCovariance(vector<double> data1, vector<double> data2)
 	return sum_of_products / (data1.size() - 1); // Sample covariance
 }
 
-
-
 SymbolicMatrix covariancematrix(vector<vector<double>> matrix)
 {
 	vector<vector<double>> cov_matrix;
@@ -1205,5 +1352,243 @@ SymbolicMatrix covariancematrix(vector<vector<double>> matrix)
 	return B_mat;
 }
 
+void hypothesistest(vector<double> data, double mu, double sigma, double alpha, double effect_size)
+{
+	double critical_value, critical_value2, z_quantile, z_value, z_beta, meanbeta, p_value, power, beta;
+	double t_value, t_quantile, t_beta;
+
+	int n = data.size();
+	double mean = calculateMean(data);
+	double sumSquaredDiff = 0.0;
+	for (double val : data) 
+	{
+		sumSquaredDiff += std::pow(val - mean, 2);
+	}
+	
+	double variance = sumSquaredDiff / (n - 1); // Sample variance
+	double sigma_sample = sqrt(variance);
+
+	std::sort(data.begin(), data.end());
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nHypothesis testing two-tailed" << endl;
+	cout << "\nH0: μ = " << mu << endl;
+	cout << "H1: μ != " << mu << endl;
+	
+	if (n < 30) // For small sample size we use t-statistic
+	{
+		t_value = (mean-mu)/(sigma_sample/sqrt(n));
+		p_value = tcdf(t_value,n);
+
+		critical_value = mu + t_quantile*(sigma_sample)/(sqrt(n)) ;
+		meanbeta = mu + effect_size; // for right-tailed
+
+		t_beta = (critical_value-meanbeta)/(sigma_sample/sqrt(n));
+		beta = tcdf(t_beta,n-1);
+
+		p_value = 1 - tcdf(t_value,n-1);
+	}
+	else if (n >= 30) // For large sample size we use Z-statistic
+	{
+		z_value = ((mu-effect_size)-mu)/(sigma/sqrt(n));
+		
+		z_quantile = zquantile(1-(0.5*alpha));
+
+		critical_value = mu + z_quantile*(sigma)/(sqrt(n)) ; // upper bound
+		critical_value2 = mu - z_quantile*(sigma)/(sqrt(n)) ; // lower bound
+
+		meanbeta = mu + effect_size; // for two-tailed
+		z_beta = (critical_value-meanbeta)/(sigma/sqrt(n));
+		
+		beta = (1 - 2*normalcdf(z_beta,0,1) );	
+		power = 1-beta;
+		p_value = 2*normalcdf(z_value,0,1);	
+		
+		cout << "\nThe probability of a type I error (alpha): " << alpha << endl;
+		cout << "The probability of a type II error (beta): " << beta << endl;
+		cout << "Power: " << power << endl;
+		cout << "\nCritical value (upper bound): " << critical_value << endl;
+		cout << "Critical value (lower bound): " << critical_value2 << endl;
+		cout << "Critical region : z < - " << z_quantile << " and z > " << z_quantile << endl;
+		cout << "Computed z : " << z_value << endl;
+		cout << "\n*Reject the null hypothesis when the sample average is greater than " << critical_value << " or less than " << critical_value2 << endl;
+		cout << "\n*Reject the null hypothesis when the computed z is greater than " << z_quantile << " or smaller than -" << z_quantile << endl;
+		
+		cout << "\nP-value: " << p_value << endl;
+		cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+		cout << "\n********************************************************" << endl;
+	
+	}
+}
+
+void hypothesistest_righttailed(vector<double> data, double mu, double sigma, double alpha, double effect_size)
+{
+	double critical_value, z_quantile, z_value, z_beta, meanbeta, p_value, power, beta;
+	double t_value, t_quantile, t_beta;
+
+	int n = data.size();
+	double mean = calculateMean(data);
+	double sumSquaredDiff = 0.0;
+	for (double val : data) 
+	{
+		sumSquaredDiff += std::pow(val - mean, 2);
+	}
+	
+	double variance = sumSquaredDiff / (n - 1); // Sample variance
+	double sigma_sample = sqrt(variance);
+
+	std::sort(data.begin(), data.end());
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nHypothesis testing right-tailed" << endl;
+	cout << "\nH0: μ = " << mu << endl;
+	cout << "H1: μ > " << mu << endl;
+	
+	if (n < 30) // For small sample size we use t-statistic
+	{
+		t_value = (mean-mu)/(sigma_sample/sqrt(n));
+		p_value = tcdf(t_value,n);
+
+		critical_value = mu + t_quantile*(sigma_sample)/(sqrt(n)) ;
+		meanbeta = mu + effect_size; // for right-tailed
+
+		t_beta = (critical_value-meanbeta)/(sigma_sample/sqrt(n));
+		beta = tcdf(t_beta,n-1);
+
+		p_value = 1 - tcdf(t_value,n-1);
+	}
+	else if (n >= 30) // For large sample size we use Z-statistic
+	{
+		z_value = ((mu+effect_size)-mu)/(sigma/sqrt(n));
+		
+		z_quantile = zquantile(1-alpha);
+
+		critical_value = mu + z_quantile*(sigma)/(sqrt(n)) ;
+
+		meanbeta = mu + effect_size; // for right-tailed
+		z_beta = (critical_value-meanbeta)/(sigma/sqrt(n));
+		beta = normalcdf(z_beta,0,1);	
+		power = 1-beta;
+		p_value = 1 - normalcdf(z_value,0,1);	
+		
+		cout << "\nThe probability of a type I error (alpha): " << alpha << endl;
+		cout << "The probability of a type II error (beta): " << beta << endl;
+		cout << "Power: " << power << endl;
+		cout << "\nCritical value: " << critical_value << endl;
+		cout << "Critical region : z > " << z_quantile << endl;
+		cout << "Computed z : " << z_value << endl;
+		cout << "\n*Reject the null hypothesis when the sample average is greater than " << critical_value << endl;
+		cout << "\n*Reject the null hypothesis when the computed z is greater than " << z_quantile << endl;
+		
+		cout << "\nP-value: " << p_value << endl;
+		cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+		cout << "\n********************************************************" << endl;
+	
+	}
+}
+
+
+void ANOVA(vector<vector<double>> matrix)
+{
+	vector<vector<double>> anovamatrix;
+	vector<double> total_column;
+	vector<double> mean_column;
+	vector<double> sst_column;
+	vector<double> ssa_column;
+	int C = matrix[0].size();
+	int N = 0; // computing total data
+
+	for(int i = 0 ; i < C ; ++i)
+	{
+		double sum = 0;
+		int R = matrix.size();		
+		for (int j = 0 ; j < R ; ++j)
+		{
+			sum += matrix[j][i]; // sum of the column
+		
+			if(matrix[j][i] !=0 )		
+			{
+				N = N+1;
+			}
+			else if(matrix[j][i] == 0 )		
+			{
+				N = N;
+			}
+
+		}
+			total_column.push_back(sum);
+			mean_column.push_back(sum/(R));
+			//cout << "sum of column " << i << " = " << total_column[i] << endl;
+			//cout << "mean sum of column " << i << " = " << mean_column[i] << endl;
+			
+	}
+	
+	double Y = 0.0;
+	double y_bar = 0.0;
+	for (double val : total_column) 
+	{
+		Y += val;
+	}
+        for (double val : mean_column) 
+	{
+		y_bar += val;
+	}
+	y_bar = y_bar/C;
+	
+	for(int i = 0 ; i < C ; ++i)
+	{
+		double sst_temp = 0.0;
+		vector<double> v_col = getColumn(matrix,i);
+		for (double val : v_col)
+		{
+			sst_temp += (val-y_bar)*(val-y_bar);
+		}
+		sst_column.push_back(sst_temp);
+	}
+	double SST = 0.0; // Total sum of squares
+	for (double val : sst_column)
+	{
+		SST += val;
+	}
+	
+	for(int i = 0 ; i < C ; ++i)
+	{
+		double ssa_temp = 0.0;
+		vector<double> v_col2 = getColumn(matrix,i);
+		int n = v_col2.size();
+
+		ssa_temp = n*(mean_column[i] - y_bar)*(mean_column[i] - y_bar);
+		
+		ssa_column.push_back(ssa_temp);
+	}
+	double SSA = 0.0; // Treatment sum of squares
+	for (double val : ssa_column)
+	{
+		SSA += val;
+	}	
+	double SSE = SST-SSA;
+	
+	int df_model = C-1;
+	int df_total = N-1;
+	int df_error = df_total - df_model;
+
+	double s1_square = SSA/(df_model);
+	double s1 = SSE/(df_error);
+	double computed_f = s1_square/s1; 
+
+	int r1 = df_model;
+	int r2 = df_error;
+	double p_value = 1 - Fcdf(computed_f,r1,r2);
+	double r_square = 1 - SSE/SST;
+
+	cout << "\nSource" << setw(10) << "DF" << setw(23) << "SS" << setw(23) << "MS" << setw(23) << "F" << setw(23) << "P" << endl;
+	cout << "\nModel" << setw(10) <<  df_model << setw(23) << SSA << setw(23) << s1_square << setw(23) << computed_f << setw(23) << p_value << endl;
+	cout << "\nError" << setw(10) << df_error << setw(23) << SSE << setw(23) << s1 << setw(23) << endl;
+	cout << "\nTotal" << setw(10) << df_total << setw(23) << SST << endl;
+	
+	cout << "\nR-Square"<< setw(23) << "Grand Mean" << setw(23) << "Root MSE" << endl;
+	cout << r_square << setw(23) << y_bar << setw(23) << sqrt(s1) << endl;
+	
+}
 #endif
 #endif

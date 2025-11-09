@@ -1,4 +1,4 @@
-// g++ -o result main.cpp -lsymbolicc++
+// g++ -o result main.cpp -lsymintegration
 // Merci beaucoup Freya et Sentinel
 
 #include<bits/stdc++.h>

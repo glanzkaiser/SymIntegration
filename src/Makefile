@@ -11,7 +11,7 @@ SOURCES += operationsresearch.cpp polynomial.cpp product.cpp quatern.cpp rationa
 SOURCES += solve.cpp specialfunctions.cpp statistics.cpp sum.cpp symbol.cpp symbolic.cpp symerror.cpp 
 SOURCES += symintegrationc++.cpp symmatrix.cpp vecnorm.cpp 
 SOURCES += vector.cpp verylong.cpp
-
+SOURCES += asa241.cpp
 
 OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 UNAME_S := $(shell uname -s)

@@ -16,6 +16,11 @@
 
 using namespace std;
 
+double divisiond(double x, double y)
+{
+	return x/y;
+}
+
 Symbolic bisectionmethod(const Symbolic &f, const Symbolic &x, double a, double b, int N)
 {
  	Symbolic xa, xb, xp, fa, fp;

@@ -1,4 +1,4 @@
-// g++ -o result main.cpp -larmadillo
+// g++ -o result main.cpp -larmadillo -lsymintegration
 // Merci beaucoup Freya..
 // C++ program to find the solution of system of linear equations
 

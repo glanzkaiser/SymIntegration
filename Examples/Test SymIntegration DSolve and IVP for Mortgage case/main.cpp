@@ -49,9 +49,9 @@ int main(void)
 
 	cout << "For ivp S(0) = S0, \nC = " << solve(ft-S0,C).front().rhs <<endl;
 
-	cout << "\nTest ivp, \nS(t) = " << ivp(dsolve( r*S - k,S,t,r),t,C) <<endl;
+	cout << "\nTest ivp, \nS(t) = " << ivp(dsolve( r*S - k,S,t,r),t,C,S0) <<endl;
 
-	ivp1 = ivp(dsolve( r*S - k,S,t,r),t,C)[r==0.06, k ==6000, t==20];
+	ivp1 = ivp(dsolve( r*S - k,S,t,r),t,C,S0)[r==0.06, k ==6000, t==20];
 	r = 0.06;
 	t = 20;
 	cout << "For ivp k = 6000, r = 6%, t = 20, S(t) = 0, \nS(0) = " << solve(ivp1,S0).front().rhs <<endl;

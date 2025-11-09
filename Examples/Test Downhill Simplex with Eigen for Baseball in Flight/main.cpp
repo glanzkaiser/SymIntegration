@@ -1,4 +1,4 @@
-// g++ -o result main.cpp -lsymintegration -larmadillo 
+// g++ -o result main.cpp -lsymintegration
 // Merci beaucoup Freya..
 // C++ program to plot the particular and general solution of linear system Ax=b and Ax=0
 

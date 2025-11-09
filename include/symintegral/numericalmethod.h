@@ -35,6 +35,8 @@
 #ifndef SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHOD_DECLARE
 #define SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHOD_DECLARE
 
+double divisiond(double, double);
+
 Symbolic bisectionmethod(const Symbolic &, const Symbolic &,double, double, int);
 Symbolic newtonmethod(const Symbolic &, const Symbolic &, const Symbolic &, int);
 Symbolic eulermethod(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, double);

@@ -1,4 +1,4 @@
-// g++ main.cpp -o result -larmadillo
+// g++ main.cpp -o result -lsymintegration -larmadillo
 
 #include <iostream>
 #include <armadillo>

@@ -25,6 +25,7 @@
 #include <iostream>
 #include <iterator>
 #include <list>
+#include <vector>
 #include "cloning.h"
 #include "identity.h"
 
@@ -42,7 +43,7 @@
 #include "symintegral/symerror.h"  //   SymbolicError  : CloningSymbolicInterface
 #include "symintegral/constants.h"
 #include "symintegral/solve.h"
-#include "symintegral/divgradcurl.h"s
+#include "symintegral/divgradcurl.h"
 #include "symintegral/dsolve.h"
 #include "symintegral/dynamicalsystem.h"
 #include "symintegral/geometryandvectors.h"
@@ -54,8 +55,10 @@
 #include "symintegral/statistics.h"
 #include "symintegral/specialfunctions.h"
 
-#ifndef SYMBOLIC_CPLUSPLUS
-#define SYMBOLIC_CPLUSPLUS
+#include "asa241.hpp" // for computing quantile of Z statistic
+
+#ifndef SYMINTEGRATION_CPLUSPLUS
+#define SYMINTEGRATION_CPLUSPLUS
 
 // Include the relevant classes in 3 phases
 //  Phase 1 ensures that every class has a forward
@@ -78,6 +81,8 @@
 typedef list<Equation> Equations;
 typedef list<Equations> PatternMatches;
 
+typedef vector<vector<double>> dmat;
+typedef vector<double> dvec;
 // declarations of classes without definitions
 #define SYMBOLIC_DECLARE
 #include "symintegral/symintegrationc++.h"

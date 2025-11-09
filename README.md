@@ -47,6 +47,10 @@ It is able to compute
 16. Numerical differentiation and Richardson's Extrapolation.
 17. Matrices multiplication, addition, LU decomposition, Cholesky decomposition
 18. Generate random number that has certain distribution (uniform, gamma, beta, normal, F, chi-squared) and plot the histogram with Hamzstplot
+19. Compute One-Way ANOVA, multiple regression model.
+20. Compute one-tailed and two-tailed hypothesis testing.
+21. Compute cdf of Normal, student's t distribution, F distribution, chi-squared distribution, beta distribution, gamma distribution without Boost.
+22. Compute the quantile of standard normal distribution / inverse of cdf without Boost.
 
 # Learning the Code
 
@@ -153,6 +157,9 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Gaussian elimination							| Done
 |:sunflower:   | Create covariance matrix						| Done
 |:sunflower:   | Create lattice and plot with Gnuplot					| Done
+|:sunflower:   | Compute one-way ANOVA							| Done
+|:sunflower:   | Compute multiple regression model					| Done
+|:sunflower:   | Compute one-tailed and two-tailed hypothesis testing			| Done
 
 # Milestone
 
