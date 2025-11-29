@@ -42,6 +42,9 @@ Symbolic newtonmethod(const Symbolic &, const Symbolic &, const Symbolic &, int)
 Symbolic eulermethod(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, double);
 Symbolic directionfield(const Symbolic &, const Symbolic &, const Symbolic &, double, double, double, double, double, double);
 
+double NewtonRaphson(const Symbolic &, const Symbolic &, double);
+double secantmethod(const Symbolic &, const Symbolic &, double,  double, double, int);
+
 double numericaldifferentiation(const Symbolic &, const Symbolic &, double, double);
 double numericaldifferentiation3pointoneside(const Symbolic &, const Symbolic &, double, double);
 double numericaldifferentiation3pointbothsides(const Symbolic &, const Symbolic &, double, double);

@@ -48,9 +48,10 @@ It is able to compute
 17. Matrices multiplication, addition, LU decomposition, Cholesky decomposition
 18. Generate random number that has certain distribution (uniform, gamma, beta, normal, F, chi-squared) and plot the histogram with Hamzstplot
 19. Compute One-Way ANOVA, multiple regression model.
-20. Compute one-tailed and two-tailed hypothesis testing.
+20. Compute one-tailed and two-tailed hypothesis testing. One- and Two-Sample Estiomation Problem, e.g. Confidence Interval and Prediction Interval.
 21. Compute cdf of Normal, student's t distribution, F distribution, chi-squared distribution, beta distribution, gamma distribution without Boost.
 22. Compute the quantile of standard normal distribution / inverse of cdf without Boost.
+23. Transcription and translation from DNA to mRNA to polypeptide (Molecular biology).
 
 # Learning the Code
 
@@ -160,6 +161,9 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Compute one-way ANOVA							| Done
 |:sunflower:   | Compute multiple regression model					| Done
 |:sunflower:   | Compute one-tailed and two-tailed hypothesis testing			| Done
+|:sunflower:   | One- and Two-Sample Estiomation Problem, e.g. Confidence Interval and Prediction Interval		| Done
+|:sunflower:   | Transcription and translation from DNA to mRNA to polypeptide (Molecular biology)			| Done
+
 
 # Milestone
 

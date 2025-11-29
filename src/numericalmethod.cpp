@@ -96,6 +96,61 @@ Symbolic newtonmethod(const Symbolic &f, const Symbolic &x, const Symbolic &x0, 
 	cout << "solution = "<< endl;
 	return pn;
 }
+#define EPSILON 0.00001
+// Secant method function
+double secantmethod(const Symbolic &fx, const Symbolic &x, double x0, double x1, double tolerance, int maxIterations) 
+{
+	double x_new, fx0, fx1;
+	
+	for (int i = 0; i < maxIterations; ++i) 
+	{
+		//fx0 = f(x0);
+		//fx1 = f(x1);
+		fx0 = fx[x==x0];
+		fx1 = fx[x==x1];
+		// Check for division by zero
+		if (abs(fx1 - fx0) < 1e-10) 
+		{
+			throw runtime_error("Secant method: Division by zero (f(x1) == f(x0))");
+		}
+
+		// Apply the secant method formula: 
+		// x_new = x1 - f(x1) * (x1 - x0) / (f(x1) - f(x0))
+		x_new = x1 - fx1 * (x1 - x0) / (fx1 - fx0);
+
+		// Check for convergence (stopping criterion)
+		if (abs(x_new - x1) < tolerance) 
+		{
+			return x_new; // Root found within the desired tolerance
+		}
+
+		// Update values for the next iteration
+		x0 = x1;
+		x1 = x_new;
+		}
+
+		// If the loop finishes without converging, throw an exception
+		throw runtime_error("Secant method: Did not converge within max iterations");
+}
+
+
+double NewtonRaphson(const Symbolic &f, const Symbolic &x, double x0)
+{
+	Symbolic fd;
+	fd = df(f,x);
+
+	double root;
+	double h = f[x==x0] / fd[x==x0];
+	while (abs(h) >= EPSILON)
+	{
+		h = f[x==x0] / fd[x==x0];
+		
+		// x(i+1) = x(i) - f(x) / f'(x)  
+		x0 = x0 - h;
+	}
+	root = x0;
+	return root;
+}
 
 Symbolic eulermethod(const Symbolic &f, const Symbolic &y, const Symbolic &x, const Symbolic &y0, const Symbolic &x0, const Symbolic &x1, double h)
 {

@@ -53,7 +53,10 @@
 #include "symintegral/operationsresearch.h"
 #include "symintegral/simplify.h"
 #include "symintegral/statistics.h"
+#include "symintegral/statistics-mle.h"
 #include "symintegral/specialfunctions.h"
+
+#include "symintegral/biology-dna.h"
 
 #include "asa241.hpp" // for computing quantile of Z statistic
 
@@ -83,6 +86,7 @@ typedef list<Equations> PatternMatches;
 
 typedef vector<vector<double>> dmat;
 typedef vector<double> dvec;
+typedef vector<string> svec;
 // declarations of classes without definitions
 #define SYMBOLIC_DECLARE
 #include "symintegral/symintegrationc++.h"

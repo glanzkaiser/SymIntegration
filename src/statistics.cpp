@@ -12,6 +12,9 @@
 #include <map>
 #include <algorithm> // For std::max_element,  std::sort
 #include <numeric> // For std::accumulate
+#include <iostream>
+#include <string>
+#include <fstream> // For file operations
 
 #include <random> // For random number generation
 #include <chrono>
@@ -20,6 +23,8 @@
 #ifndef SYMINTEGRATION_CPLUSPLUS_STATISTICS_DEFINE
 #define SYMINTEGRATION_CPLUSPLUS_STATISTICS_DEFINE
 #define π 3.141592653589793238462643383279502884f
+
+#define EPSILON 0.00001
 
 double divisionint(double x, double y)
 {
@@ -96,8 +101,17 @@ Symbolic divisions(Symbolic x, Symbolic y)
 {
 	return x/y;
 }
+
 // Factorial and combinations
-Symbolic factorial1(int n) {
+Symbolic factorialsym(Symbolic n) { // Dummy factorial symbolic for symbolic computational purpose like MLE
+	
+	Symbolic result = n*(n-1)*(n-2)*(n-3)*1;
+	
+	return result;
+}
+
+// Factorial and combinations
+Symbolic factorials(int n) {
 	if (n <= 1) 
 	{
 		return 1;
@@ -110,12 +124,12 @@ Symbolic factorial1(int n) {
 	return result;
 }
 
-Symbolic combinations1(int n, int r) {
+Symbolic combinationss(int n, int r) {
 	if (r < 0 || r > n) 
 	{
 		return 0; // Invalid input
 	}
-	return factorial1(n) / (factorial1(r) * factorial1(n - r));
+	return factorials(n) / (factorials(r) * factorials(n - r));
 }
 double factoriald(int n) {
 	if (n <= 1) 
@@ -137,6 +151,61 @@ double combinationsd(int n, int r) {
 	}
 	return factoriald(n) / (factoriald(r) * factoriald(n - r));
 }
+
+vector<string> loadStringVector(const string& filename) 
+{
+	vector<string> vecx;
+	ifstream inputFile(filename);
+
+	if (!inputFile.is_open()) 
+	{
+		cerr << "Error: Could not open file " << filename << endl;
+		return vecx; // Return empty matrix on error
+	}
+
+	if (inputFile.is_open()) 
+	{
+		string line;
+		while (getline(inputFile,line)) 
+		{ // Reads numbers separated by whitespace
+			vecx.push_back(line);
+		}
+		inputFile.close();
+		
+	} 
+	inputFile.close();
+	return vecx;
+}
+
+void printStringVector(vector<string> vectorx)
+{
+	//int n = vectorx.size();
+	for (const std::string& s : vectorx) 
+	{
+		cout << s << endl;
+	}
+}
+
+void saveVectordouble(vector<double> vecx, const string& filename) 
+{
+	// Create an ofstream object and open the file for writing
+	ofstream outputFile(filename);
+	
+	if (!outputFile.is_open()) 
+	{
+	cerr << "Error: Could not open the file for writing." << endl;
+	}
+
+	//  Iterate through the vector and write each element to the file
+	for (double num : vecx) 	
+	{
+		outputFile << num << endl; // Write the number followed by a newline
+	}
+
+	// Close the file to release resources
+	outputFile.close();
+}
+
 // Generate random numbers
 int randomnumberint(int a, int b, int n)
 {
@@ -536,7 +605,7 @@ double hypergeometricvar(int x, int N, int n, int k)
 
 double poissonpmf(int x, int k)
 {
- 	double pmf = exp(-k)*pow(k,x)/(factorial1(x));
+ 	double pmf = exp(-k)*pow(k,x)/(factoriald(x));
 	
 	return pmf;
 }
@@ -658,7 +727,7 @@ double normalvar(double x, double mu, double sigma)
 
 double zquantile(double cdf)
 {
-	double z_quantile = r8_normal_01_cdf_inverse(cdf);
+	double z_quantile = r8_normal_01_cdf_inverse(cdf); // for double-precision floating point calculations
 
 	return z_quantile;	
 }
@@ -834,9 +903,9 @@ double cauchypdf(double x)
 
 double chisquaredpdf(double x, double r)
 {
-	int a = 0.5*r;
-	int c = 0.5*r-1;
- 	double pdf = divisionint(1,tgamma(0.5*r)*pow(2,a)) * pow(x,c) * exp(-0.5*x);
+	double a = 0.5*r;
+	double c = 0.5*r-1;
+ 	double pdf = divisiond(1,tgamma(0.5*r)*pow(2,a)) * pow(x,c) * exp(-0.5*x);
 
 	return pdf;
 }
@@ -850,7 +919,24 @@ double chisquaredcdf(double x, double r)
 	/*The cumulative distribution function (CDF) for Chi-Squared distribution
 	It has at least 16 decimal digit precision with boost::math::chi_squared_distribution
 	*/
-	double cdf_value =(1/(tgamma(r/2.0)))*lowergamma(r/2.0,x/2.0);
+	
+	// double cdf_value =(divisiond(1,(tgamma(0.5*r))))*lowergamma(0.5*r,0.5*x); 
+
+	// We approximate the cdf using the Simpsons rule
+	double b = x;
+	double a = 0;
+	int n = 108;
+        double h = (b - a) / n;
+        double sum = chisquaredpdf(a,r) + chisquaredpdf(b,r); // Endpoints
+        for (int i = 1; i < n; i += 2) 
+	{
+            sum += 4 * chisquaredpdf(a + i * h,r); // Odd-indexed points
+        }
+        for (int i = 2; i < n; i += 2) 
+	{
+            sum += 2 * chisquaredpdf(a + i * h,r); // Even-indexed points
+        }
+        double cdf_value =  divisiond(sum*h,3.0) ;
 
 	return cdf_value;
 }
@@ -877,14 +963,77 @@ double chisquaredvar(double x, double r)
 	return var;
 }
 
+double chisquaredquantile(double r, double cdf) 
+{
+	
+	// Newton-Raphson
+	double x0 = r; // nu is the best estimator for initial approximation
+	double root;
+	double h =( chisquaredcdf(x0,r) - cdf) / chisquaredpdf(x0,r);
+	while (abs(h) >= EPSILON)
+	{
+		h = ( chisquaredcdf(x0,r) - cdf) / chisquaredpdf(x0,r);
+		
+		// x(i+1) = x(i) - f(x) / f'(x)  
+		x0 = x0 - h;
+	}
+	root = x0;
+	
+	return root;
+
+	/*
+	// with Bisection method, slow but converges.
+	double a = 0.00001;
+	double b;
+	if(r < 10 && r>0)
+	{
+		b = 10;
+	}
+	if(r < 10 && r>5 && cdf >0.5)
+	{
+		b = 21;
+	}
+	if(r < 30 && r > 20)
+	{
+		b = 100;
+	}
+	if(r >= 30)
+	{
+		b = 1000;
+	}
+	int N = 100;
+	double c;
+	for (int i = 0; i < N; ++i) 
+	{
+		c = (a + b) / 2;
+		if (abs(divisiond(b - a, 2)) < EPSILON) 
+		{
+			return c; // Root found within tolerance
+		}
+
+		if ((chisquaredcdf(c,r) - cdf) * (chisquaredcdf(a,r) - cdf) < 0) 
+		{
+			b = c;
+		} 
+		else 
+		{
+			a = c;
+		}
+	}
+	cerr << "Warning: Maximum iterations reached. Approximated root: " << c << endl;
+	return c; // Return the best approximation found
+	*/
+}
+
+
 double lowergamma(double s, double x)
 {
-	int sgn = 1;
+	//int sgn = 1;
 	double l;
-	for (int i = 0; i < 100 ; i++)
+	for (int i = 0; i < 101 ; i++)
 	{
-		l += sgn*pow(x,i+s)/(factoriald(i)*(i+s));
-		sgn = -sgn;
+		l += divisiond(pow(-1,i)*pow(x,i+s),(factoriald(i)*(i+s)));
+		//sgn = -sgn;
 	}
 	return l;
 }
@@ -1007,6 +1156,22 @@ double Fvar(double x, double r1, double r2)
 	return var;
 }
 
+double Fquantile(double r1, double r2, double cdf)
+{
+	double x0 = 1;
+	double root;
+	double h =( Fcdf(x0,r1,r2) - cdf) / Fpdf(x0,r1,r2);
+	while (abs(h) >= EPSILON)
+	{
+		h = ( Fcdf(x0,r1,r2) - cdf) / Fpdf(x0,r1,r2);
+		
+		// x(i+1) = x(i) - f(x) / f'(x)  
+		x0 = x0 - h;
+	}
+	root = x0;
+	return root;
+}
+
 double tpdf(double x, double r)
 {
 	//boost::math::students_t_distribution<> students_t(r);
@@ -1015,6 +1180,18 @@ double tpdf(double x, double r)
 	/*The PDF for Student's t distribution
 	It has 7 decimal digit precision with boost::math::students_t_distribution
 	*/
+
+	/*
+	double pi = std::acos(-1.0); // Calculate pi
+	double coefficient = std::tgamma(0.5 * (nu + 1.0)) /  (std::sqrt(nu * pi) * std::tgamma(0.5 * nu));
+	double term = std::pow(1.0 + (x * x) / nu, -0.5 * (nu + 1.0));
+	return coefficient * term;
+	*/
+	if (r <= 0) 
+	{
+		// Handle invalid degrees of freedom
+		return 0.0; 
+	}
 	double z = (tgamma((r+1)/2.0))/(tgamma(r/2.0) * sqrt(π*r)) ;
 	double pdf_value = z * pow((1 + (x*x)/(r)),-((r+1)/2.0));
 	return pdf_value;
@@ -1046,6 +1223,21 @@ double tvar(double x, double r)
 	double var = divisiond(r,r-2);
 
 	return var;
+}
+
+double tquantile(double x0, double r, double cdf) // with Newton-Raphson method
+{
+	double root;
+	double h =( tcdf(x0,r) - cdf) / tpdf(x0,r);
+	while (abs(h) >= EPSILON)
+	{
+		h = ( tcdf(x0,r) - cdf) / tpdf(x0,r);
+		
+		// x(i+1) = x(i) - f(x) / f'(x)  
+		x0 = x0 - h;
+	}
+	root = x0;
+	return root;
 }
 
 Symbolic laplacepdf(double x, double θ)
@@ -1221,6 +1413,21 @@ double descriptivestatistics(vector<double> vector_x)
 	cout << "Standard deviation : " << stdev;
 	return stdev;
 }
+
+vector<double> normalquantile(vector<double> vector_x, double scale)
+{
+	vector<double> nquantile;
+	sort(vector_x.begin(), vector_x.end());
+	double mean = calculateMean(vector_x);
+	int n = vector_x.size();	
+		
+	for(int i = 0 ; i < n ; ++i)
+	{
+		nquantile.push_back(scale*(vector_x[i] - mean));
+	} 
+	return nquantile;
+}
+
 double rpearson(const SymbolicMatrix &A, int N)
 {
 	double sum_xy, sum_x, sum_y, x_bar, y_bar, sum_xsquared, sum_ysquared, Sxy, Sx, Sy, r_pearson;
@@ -1352,13 +1559,441 @@ SymbolicMatrix covariancematrix(vector<vector<double>> matrix)
 	return B_mat;
 }
 
+void confidenceinterval_onesampletwosides(vector<double> data, double sigma, double alpha)
+{
+	double mean, z_quantile, lower_bound, upper_bound;
+	int n = data.size();
+
+	mean = calculateMean(data);
+
+	z_quantile = zquantile(1-(0.5*alpha));
+	lower_bound = mean - z_quantile*(divisiond(sigma,sqrt(n)));
+	upper_bound = mean + z_quantile*(divisiond(sigma,sqrt(n)));
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nConfidence interval one sample two sides, σ known" << endl;
+	cout << "Mean data = "<< mean << ", σ = " << sigma << ", n = " << n << endl;	
+	cout << "\nThe " << 100*(1-alpha) << "\% confidence interval is :\n" << endl;	
+	cout << lower_bound << " < μ1 < " << upper_bound << endl;	
+	cout << "\n********************************************************" << endl;
+}
+
+void confidenceinterval_onesampleonesided(vector<double> data, double sigma, double alpha)
+{
+	double mean, z_quantile, lower_bound, upper_bound;
+	int n = data.size();
+
+	mean = calculateMean(data);
+
+	z_quantile = zquantile(1-alpha);
+	lower_bound = mean - z_quantile*(divisiond(sigma,sqrt(n)));
+	upper_bound = mean + z_quantile*(divisiond(sigma,sqrt(n)));
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nConfidence interval one sample one-sided confidence bounds, σ known" << endl;
+	cout << "Mean data = "<< mean << ", σ = " << sigma << ", n = " << n << endl;	
+	cout << "\nThe " << 100*(1-alpha) << "\% confidence interval is :\n" << endl;	
+	cout << "Upper one-sided bound: "<< upper_bound << endl;	
+	cout << "Lower one-sided bound: "<< lower_bound << endl;	
+	cout << "\n********************************************************" << endl;
+}
+
+void confidenceinterval_onesampletwosides(vector<double> data, double alpha)
+{
+	double mean, sigma, t_quantile, lower_bound, upper_bound;
+	int n = data.size();
+
+	mean = calculateMean(data);
+	double sumSquaredDiff = 0.0;
+	for (double val : data) 
+	{
+		sumSquaredDiff += std::pow(val - mean, 2);
+	}
+	double variance = sumSquaredDiff / (n - 1); // Sample variance
+	sigma = sqrt(variance);
+
+	t_quantile = tquantile(1,n-1,1-(0.5*alpha));
+	lower_bound = mean - t_quantile*(divisiond(sigma,sqrt(n)));
+	upper_bound = mean + t_quantile*(divisiond(sigma,sqrt(n)));
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nConfidence interval one sample two sides, σ unknown" << endl;
+	cout << "Mean data = "<< mean << ", σ = " << sigma << ", n = " << n << endl;	
+	cout << "\nThe " << 100*(1-alpha) << "\% confidence interval is :\n" << endl;	
+	cout << lower_bound << " < μ1 < " << upper_bound << endl;	
+	cout << "\n********************************************************" << endl;
+}
+
+void confidenceinterval_onesampleonesided(vector<double> data, double alpha)
+{
+	double mean, sigma, t_quantile, lower_bound, upper_bound;
+	int n = data.size();
+
+	mean = calculateMean(data);
+	double sumSquaredDiff = 0.0;
+	for (double val : data) 
+	{
+		sumSquaredDiff += std::pow(val - mean, 2);
+	}
+	double variance = sumSquaredDiff / (n - 1); // Sample variance
+	sigma = sqrt(variance);
+
+	t_quantile = tquantile(1,n-1,1-(alpha));
+	lower_bound = mean - t_quantile*(divisiond(sigma,sqrt(n)));
+	upper_bound = mean + t_quantile*(divisiond(sigma,sqrt(n)));
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nConfidence interval one sample one-sided confidence bounds, σ unknown" << endl;
+	cout << "Mean data = "<< mean << ", σ = " << sigma << ", n = " << n << endl;	
+	cout << "\nThe " << 100*(1-alpha) << "\% confidence interval is :\n" << endl;	
+	cout << "Upper one-sided bound: "<< upper_bound << endl;	
+	cout << "Lower one-sided bound: "<< lower_bound << endl;		
+	cout << "\n********************************************************" << endl;
+}
+
+void predictioninterval(vector<double> data, double sigma, double alpha)
+{
+	double mean, z_quantile, lower_bound, upper_bound;
+	int n = data.size();
+
+	mean = calculateMean(data);
+
+	z_quantile = zquantile(1-(0.5*alpha));
+	lower_bound = mean - z_quantile*sigma*(sqrt(1+divisiond(1,n)));
+	upper_bound = mean + z_quantile*sigma*(sqrt(1+divisiond(1,n)));
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nPrediction interval for one sample data, σ known" << endl;
+	cout << "Mean data = "<< mean << ", σ = " << sigma << ", n = " << n << endl;	
+	cout << "\nThe " << 100*(1-alpha) << "\% prediction interval is :\n" << endl;	
+	cout << lower_bound << " < X0 < " << upper_bound << endl;	
+	cout << "\n********************************************************" << endl;
+}
+
+void predictioninterval(vector<double> data, double alpha)
+{
+	double mean, sigma, t_quantile, lower_bound, upper_bound;
+	int n = data.size();
+
+	mean = calculateMean(data);
+	double sumSquaredDiff = 0.0;
+	for (double val : data) 
+	{
+		sumSquaredDiff += std::pow(val - mean, 2);
+	}
+	double variance = sumSquaredDiff / (n - 1); // Sample variance
+	sigma = sqrt(variance);
+
+	t_quantile = tquantile(1,n-1,1-(0.5*alpha));
+	lower_bound = mean - t_quantile*sigma*(sqrt(1+divisiond(1,n)));
+	upper_bound = mean + t_quantile*sigma*(sqrt(1+divisiond(1,n)));
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nPrediction interval for one sample data, σ unknown" << endl;
+	cout << "Mean data = "<< mean << ", s = " << sigma << ", n = " << n << endl;	
+	cout << "\nThe " << 100*(1-alpha) << "\% prediction interval is :\n" << endl;	
+	cout << lower_bound << " < X0 < " << upper_bound << endl;	
+	cout << "\n********************************************************" << endl;
+}
+
+
+void confidenceinterval_knownsigma(vector<double> data1, vector<double> data2, double sigma1, double sigma2, double alpha)
+{
+	double mean1, mean2, z_quantile, lower_bound, upper_bound;
+	int n1 = data1.size();
+	int n2 = data2.size();
+
+	mean1 = calculateMean(data1);
+	/*double sumSquaredDiff1 = 0.0;
+	for (double val : data1) 
+	{
+		sumSquaredDiff1 += std::pow(val - mean1, 2);
+	}*/
+	mean2 = calculateMean(data2);
+	/*double sumSquaredDiff2 = 0.0;
+	for (double val : data2) 
+	{
+		sumSquaredDiff2 += std::pow(val - mean2, 2);
+	}
+	double variance1 = sumSquaredDiff1 / (n - 1); // Sample variance
+	double sigma_sample1 = sqrt(variance1);
+	double variance2 = sumSquaredDiff2 / (n - 1); // Sample variance
+	double sigma_sample2 = sqrt(variance2);
+	*/
+
+	z_quantile = zquantile(1-(0.5*alpha));
+	lower_bound = abs(mean2 - mean1) - z_quantile*(sqrt(pow(sigma1,2)/n1 + pow(sigma2,2)/n2));
+	upper_bound = abs(mean2 - mean1) + z_quantile*(sqrt(pow(sigma1,2)/n1 + pow(sigma2,2)/n2));
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nConfidence interval with population variances known" << endl;
+	cout << "Mean data 1 = "<< mean1 << ", σ1 = " << sigma1 << ", n1 = " << n1 << endl;	
+	cout << "Mean data 2 = "<< mean2 <<  ", σ2 = " << sigma2 << ", n2 = " << n2 << endl;	
+	cout << "\nThe " << 100*(1-alpha) << "\% confidence interval is :\n" << endl;	
+	cout << lower_bound << " < μ1 - μ2 < " << upper_bound << endl;	
+	cout << "\n********************************************************" << endl;
+}
+
+void confidenceinterval_sameunknownsigma(vector<double> data1, vector<double> data2, double alpha)
+{
+	double mean1, mean2, Sp, t_quantile, lower_bound, upper_bound, sigma1, sigma2;
+	int n1 = data1.size();
+	int n2 = data2.size();
+
+	mean1 = calculateMean(data1);
+	double sumSquaredDiff1 = 0.0;
+	for (double val : data1) 
+	{
+		sumSquaredDiff1 += std::pow(val - mean1, 2);
+	}
+	double variance1 = sumSquaredDiff1 / (n1 - 1); // Sample variance
+	double s1 = sqrt(variance1);
+	
+	mean2 = calculateMean(data2);
+	double sumSquaredDiff2 = 0.0;
+	for (double val : data2) 
+	{
+		sumSquaredDiff2 += std::pow(val - mean2, 2);
+	}
+	double variance2 = sumSquaredDiff2 / (n2 - 1); // Sample variance
+	double s2 = sqrt(variance2);
+	sigma1 = s1;
+	sigma2 = s2;
+
+	Sp = ((n1-1)*pow(sigma1,2) + (n2-1)*pow(sigma2,2))/(n1+n2-2);
+	Sp = sqrt(Sp);
+	t_quantile = tquantile(1,n1+n2-2,1-(0.5*alpha));
+	lower_bound = abs(mean2 - mean1) - t_quantile*Sp*(sqrt(divisiond(1,n1) + divisiond(1,n2)));
+	upper_bound = abs(mean2 - mean1) + t_quantile*Sp*(sqrt(divisiond(1,n1) + divisiond(1,n2)));
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nConfidence interval with same population variances but both unknown" << endl;
+	cout << "Mean data 1 = "<< mean1 << ", s1 = " << s1 << ", n1 = " << n1 << endl;	
+	cout << "Mean data 2 = "<< mean2 << ", s2 = " << s2 << ", n2 = " << n2 << endl;	
+	cout << "\nThe " << 100*(1-alpha) << "\% confidence interval is :\n" << endl;	
+	cout << lower_bound << " < μ1 - μ2 < " << upper_bound << endl;	
+	cout << "\n********************************************************" << endl;
+}
+
+void confidenceinterval_unequalunknownsigma(vector<double> data1, vector<double> data2, double alpha)
+{
+	double mean1, mean2, t_quantile, lower_bound, upper_bound, sigma1, sigma2;
+	int nu;
+	int n1 = data1.size();
+	int n2 = data2.size();
+
+	mean1 = calculateMean(data1);
+	double sumSquaredDiff1 = 0.0;
+	for (double val : data1) 
+	{
+		sumSquaredDiff1 += std::pow(val - mean1, 2);
+	}
+	double variance1 = sumSquaredDiff1 / (n1 - 1); // Sample variance
+	double s1 = sqrt(variance1);
+	
+	mean2 = calculateMean(data2);
+	double sumSquaredDiff2 = 0.0;
+	for (double val : data2) 
+	{
+		sumSquaredDiff2 += std::pow(val - mean2, 2);
+	}
+	double variance2 = sumSquaredDiff2 / (n2 - 1); // Sample variance
+	double s2 = sqrt(variance2);
+	sigma1 = s1;
+	sigma2 = s2;
+
+	nu = pow((divisiond(sigma1*sigma1,n1) + divisiond(sigma2*sigma2,n2)),2)/(divisiond(pow(divisiond(sigma1*sigma1,n1),2),n1-1) + divisiond(pow(divisiond(sigma2*sigma2,n2),2),n2-1));
+	t_quantile = tquantile(1,nu,1-(0.5*alpha));
+	lower_bound = abs(mean2 - mean1) - t_quantile*(sqrt(divisiond(sigma1*sigma1,n1) + divisiond(sigma2*sigma2,n2)));
+	upper_bound = abs(mean2 - mean1) + t_quantile*(sqrt(divisiond(sigma1*sigma1,n1) + divisiond(sigma2*sigma2,n2)));
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nConfidence interval with unequal and unknown population variances" << endl;
+	cout << "Mean data 1 = "<< mean1 << ", s1 = " << sigma1 << ", n1 = " << n1 << endl;	
+	cout << "Mean data 2 = "<< mean2 << ", s2 = " << sigma2 << ", n2 = " << n2 << endl;	
+	cout << "\nThe " << 100*(1-alpha) << "\% confidence interval is :\n" << endl;	
+	cout << lower_bound << " < μ1 - μ2 < " << upper_bound << endl;	
+	cout << "\n********************************************************" << endl;
+}
+
+void confidenceinterval_paired(vector<double> data1, vector<double> data2, double alpha)
+{
+	vector<double> d;
+	double meand, t_quantile, lower_bound, upper_bound, sigmad;
+	int n1 = data1.size();
+	int n2 = data2.size();
+
+	if (n1 != n2)
+	{
+		cerr << "Error: The samples size are different." << endl;
+	}
+	else if(n1==n2)
+	{
+		for (int i = 0; i < n1; ++i) 
+		{
+			d.push_back(data1[i]-data2[i]);
+		}
+		
+		meand = calculateMean(d);
+		double sumSquaredDiff = 0.0;
+		for (double val : d) 
+		{
+			sumSquaredDiff += std::pow(val - meand, 2);
+		}
+		double variance = sumSquaredDiff / (n1 - 1); // Sample variance
+		sigmad = sqrt(variance);
+
+		t_quantile = tquantile(1,n1-1,1-(0.5*alpha));
+		lower_bound = meand - t_quantile*(divisiond(sigmad,sqrt(n1)));
+		upper_bound = meand + t_quantile*(divisiond(sigmad,sqrt(n1)));
+
+		cout << "\n********************************************************" << endl;
+		cout << "\nConfidence interval for paired observations" << endl;
+		cout << "Mean d = "<< meand << ", sd = " << sigmad << ", n = " << n1 << endl;	
+		cout << "\nThe " << 100*(1-alpha) << "\% confidence interval is :\n" << endl;	
+		cout << lower_bound << " < μD < " << upper_bound << endl;	
+		cout << "\n********************************************************" << endl;
+	}
+}
+
+void confidenceinterval_proportion(vector<string> data, const string &inputString, double alpha)
+{
+	int x_count = std::count(data.begin(), data.end(), inputString);
+	
+	double z_quantile, lower_bound, upper_bound, p, q;
+	int n = data.size();
+
+	p = divisiond(x_count,n);
+	q = 1-p;
+
+	z_quantile = zquantile(1-(0.5*alpha));
+	// method 2
+	double point_estimate = (p+divisiond(z_quantile*z_quantile,2*n))/(1+divisiond(z_quantile*z_quantile,n));
+	double margin_of_error =  divisiond(z_quantile,1+divisiond(z_quantile*z_quantile,n))*(sqrt(divisiond(p*q,n) + divisiond(z_quantile*z_quantile,4*n*n)));
+	 
+	lower_bound = point_estimate - margin_of_error ;
+	upper_bound = point_estimate + margin_of_error ;
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nConfidence interval for proportion" << endl;
+	cout << "Data size =  "<< n << endl;	
+	cout << "Amount of "<< inputString << " in the data = " << x_count << endl;		
+	cout << "Proportion for "<< inputString << ", p = " << p << ", q = " << q << endl;	
+	cout << "\nThe " << 100*(1-alpha) << "\% confidence interval is :\n" << endl;	
+	cout << lower_bound << " < p < " << upper_bound << endl;	
+	cout << "\n********************************************************" << endl;
+}
+
+void confidenceinterval_differencebetweentwoproportions(vector<string> data1, vector<string> data2, const string &inputString, double alpha)
+{
+	int x_count = std::count(data1.begin(), data1.end(), inputString);
+	int y_count = std::count(data2.begin(), data2.end(), inputString);
+	
+	double z_quantile, lower_bound, upper_bound, p1, q1, p2, q2;
+	int n1 = data1.size();
+	int n2 = data2.size();
+
+	p1 = divisiond(x_count,n1);
+	q1 = 1-p1;
+	p2 = divisiond(y_count,n2);
+	q2 = 1-p2;
+
+	z_quantile = zquantile(1-(0.5*alpha));
+	// method 2
+	double point_estimate = (p1 - p2);
+	double margin_of_error =  z_quantile*sqrt(divisiond(p1*q1,n1) +divisiond(p2*q2,n2));
+	 
+	lower_bound = point_estimate - margin_of_error ;
+	upper_bound = point_estimate + margin_of_error ;
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nConfidence interval for difference between two proportions" << endl;
+	cout << "Data 1 size =  "<< n1 << ", Data 2 size =  "<< n2 << endl;	
+	cout << "Amount of "<< inputString << " in the data 1 = " << x_count << endl;		
+	cout << "Amount of "<< inputString << " in the data 2 = " << y_count << endl;		
+	cout << "Proportion for "<< inputString << ", p1 = " << p1 << ", q1 = " << q1 << endl;	
+	cout << "Proportion for "<< inputString << ", p2 = " << p2 << ", q2 = " << q2 << endl;	
+	cout << "\nThe " << 100*(1-alpha) << "\% confidence interval is :\n" << endl;	
+	cout << lower_bound << " < p1 - p2 < " << upper_bound << endl;	
+	cout << "\n********************************************************" << endl;
+}
+
+void confidenceinterval_variance(vector<double> data, double alpha)
+{
+	double mean, chi_quantile1, chi_quantile2, lower_bound, upper_bound;
+	int n = data.size();
+	mean = calculateMean(data);
+	double sumSquaredDiff = 0.0;
+	for (double val : data) 
+	{
+		sumSquaredDiff += std::pow(val - mean, 2);
+	}
+	double variance = sumSquaredDiff / (n - 1); // Sample variance
+
+	double r = n-1;
+	chi_quantile1 = chisquaredquantile(r,1-(0.5*alpha));
+	chi_quantile2 = chisquaredquantile(r,0.5*alpha);
+	cout << chi_quantile1 << endl;
+	cout << chi_quantile2 << endl;
+	// method 
+	lower_bound = divisiond(r*variance,chi_quantile1);
+	upper_bound = divisiond(r*variance,chi_quantile2);
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nConfidence interval for variance" << endl;
+	cout << "Data size =  "<< n << endl;	
+	cout << "Mean sample =  "<< mean << ", variance sample = " << variance << endl;	
+	cout << "\nThe " << 100*(1-alpha) << "\% confidence interval is :\n" << endl;	
+	cout << lower_bound << " < σ^{2} < " << upper_bound << endl;	
+	cout << "\n********************************************************" << endl;
+}
+
+void confidenceinterval_ratiotwovariances(vector<double> data1, vector<double> data2, double alpha)
+{
+	double mean1, mean2, F_quantile1, F_quantile2, lower_bound, upper_bound;
+	int n1 = data1.size();
+	int n2 = data2.size();
+
+	mean1 = calculateMean(data1);
+	double sumSquaredDiff1 = 0.0;
+	for (double val : data1) 
+	{
+		sumSquaredDiff1 += std::pow(val - mean1, 2);
+	}
+	double variance1 = sumSquaredDiff1 / (n1 - 1); // Sample variance
+	double s1 = sqrt(variance1);
+	
+	mean2 = calculateMean(data2);
+	double sumSquaredDiff2 = 0.0;
+	for (double val : data2) 
+	{
+		sumSquaredDiff2 += std::pow(val - mean2, 2);
+	}
+	double variance2 = sumSquaredDiff2 / (n2 - 1); // Sample variance
+	double s2 = sqrt(variance2);
+	
+	F_quantile1 = Fquantile(n1-1,n2-1,1-(0.5*alpha));
+	F_quantile2 = Fquantile(n2-1,n1-1,1-(0.5*alpha));
+	lower_bound = divisiond(s1*s1,s2*s2)*(divisiond(1,F_quantile1));
+	upper_bound = divisiond(s1*s1,s2*s2)*(F_quantile2);
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nConfidence interval for the ratio of two variances" << endl;
+	cout << "Mean data 1 = "<< mean1 << ", s1 = " << s1 << ", n1 = " << n1 << endl;	
+	cout << "Mean data 2 = "<< mean2 << ", s2 = " << s2 << ", n2 = " << n2 << endl;	
+	cout << "\nThe " << 100*(1-alpha) << "\% confidence interval is :\n" << endl;	
+	cout << lower_bound << " <  σ1^{2} /  σ2^{2} < " << upper_bound << endl;	
+	cout << sqrt(lower_bound) << " <  σ1 /  σ2 < " << sqrt(upper_bound) << endl;	
+	cout << "\n********************************************************" << endl;
+}
+
 void hypothesistest(vector<double> data, double mu, double sigma, double alpha, double effect_size)
 {
 	double critical_value, critical_value2, z_quantile, z_value, z_beta, meanbeta, p_value, power, beta;
 	double t_value, t_quantile, t_beta;
 
 	int n = data.size();
-	double mean = calculateMean(data);
+	/*double mean = calculateMean(data);
 	double sumSquaredDiff = 0.0;
 	for (double val : data) 
 	{
@@ -1366,27 +2001,51 @@ void hypothesistest(vector<double> data, double mu, double sigma, double alpha, 
 	}
 	
 	double variance = sumSquaredDiff / (n - 1); // Sample variance
-	double sigma_sample = sqrt(variance);
+	double sigma_sample = sqrt(variance);*/
 
 	std::sort(data.begin(), data.end());
 
 	cout << "\n********************************************************" << endl;
-	cout << "\nHypothesis testing two-tailed" << endl;
+	cout << "\nTwo-tailed hypothesis testing" << endl;
 	cout << "\nH0: μ = " << mu << endl;
 	cout << "H1: μ != " << mu << endl;
 	
 	if (n < 30) // For small sample size we use t-statistic
 	{
-		t_value = (mean-mu)/(sigma_sample/sqrt(n));
-		p_value = tcdf(t_value,n);
+		t_value = ((mu-effect_size)-mu)/(sigma/sqrt(n));
 
-		critical_value = mu + t_quantile*(sigma_sample)/(sqrt(n)) ;
-		meanbeta = mu + effect_size; // for right-tailed
+		t_quantile = tquantile(1,n-1,1-(0.5*alpha));
 
-		t_beta = (critical_value-meanbeta)/(sigma_sample/sqrt(n));
-		beta = tcdf(t_beta,n-1);
+		critical_value = mu + abs(t_quantile)*(sigma)/(sqrt(n)) ;
+		critical_value2 = mu - abs(t_quantile)*(sigma)/(sqrt(n)) ;
+			
+		meanbeta = mu + effect_size; // for two-tailed
+		t_beta = (critical_value-meanbeta)/(sigma/sqrt(n));
+		if (t_beta > 0)
+		{
+			t_beta = -t_beta;
+		}
+		else if (t_beta < 0)
+		{
+			t_beta = t_beta;
+		}
+		beta = (1 - 2*tcdf(t_beta,n-1) );
+		power = 1-beta;
+		p_value = 2*tcdf(t_value,n-1);
 
-		p_value = 1 - tcdf(t_value,n-1);
+		cout << "\nThe probability of a type I error (alpha): " << alpha << endl;
+		cout << "The probability of a type II error (beta): " << beta << endl;
+		cout << "Power: " << power << endl;
+		cout << "\nCritical value (upper bound): " << critical_value << endl;
+		cout << "Critical value (lower bound): " << critical_value2 << endl;
+		cout << "Critical region : t < - " << t_quantile << " and t > " << t_quantile << endl;
+		cout << "Computed t : " << t_value << endl;
+		cout << "\n*Reject the null hypothesis when the sample average is greater than " << critical_value << " or less than " << critical_value2 << endl;
+		cout << "\n*Reject the null hypothesis when the computed t is greater than " << t_quantile << " or less than -" << t_quantile << endl;
+		
+		cout << "\nP-value: " << p_value << endl;
+		cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+		cout << "\n********************************************************" << endl;
 	}
 	else if (n >= 30) // For large sample size we use Z-statistic
 	{
@@ -1394,8 +2053,8 @@ void hypothesistest(vector<double> data, double mu, double sigma, double alpha, 
 		
 		z_quantile = zquantile(1-(0.5*alpha));
 
-		critical_value = mu + z_quantile*(sigma)/(sqrt(n)) ; // upper bound
-		critical_value2 = mu - z_quantile*(sigma)/(sqrt(n)) ; // lower bound
+		critical_value = mu + abs(z_quantile)*(sigma)/(sqrt(n)) ; // upper bound
+		critical_value2 = mu - abs(z_quantile)*(sigma)/(sqrt(n)) ; // lower bound
 
 		meanbeta = mu + effect_size; // for two-tailed
 		z_beta = (critical_value-meanbeta)/(sigma/sqrt(n));
@@ -1412,7 +2071,7 @@ void hypothesistest(vector<double> data, double mu, double sigma, double alpha, 
 		cout << "Critical region : z < - " << z_quantile << " and z > " << z_quantile << endl;
 		cout << "Computed z : " << z_value << endl;
 		cout << "\n*Reject the null hypothesis when the sample average is greater than " << critical_value << " or less than " << critical_value2 << endl;
-		cout << "\n*Reject the null hypothesis when the computed z is greater than " << z_quantile << " or smaller than -" << z_quantile << endl;
+		cout << "\n*Reject the null hypothesis when the computed z is greater than " << z_quantile << " or less than -" << z_quantile << endl;
 		
 		cout << "\nP-value: " << p_value << endl;
 		cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
@@ -1427,7 +2086,7 @@ void hypothesistest_righttailed(vector<double> data, double mu, double sigma, do
 	double t_value, t_quantile, t_beta;
 
 	int n = data.size();
-	double mean = calculateMean(data);
+	/*double mean = calculateMean(data);
 	double sumSquaredDiff = 0.0;
 	for (double val : data) 
 	{
@@ -1435,27 +2094,50 @@ void hypothesistest_righttailed(vector<double> data, double mu, double sigma, do
 	}
 	
 	double variance = sumSquaredDiff / (n - 1); // Sample variance
-	double sigma_sample = sqrt(variance);
+	double sigma_sample = sqrt(variance);*/
 
 	std::sort(data.begin(), data.end());
 
 	cout << "\n********************************************************" << endl;
-	cout << "\nHypothesis testing right-tailed" << endl;
+	cout << "\nRight-tailed hypothesis testing" << endl;
 	cout << "\nH0: μ = " << mu << endl;
 	cout << "H1: μ > " << mu << endl;
 	
 	if (n < 30) // For small sample size we use t-statistic
 	{
-		t_value = (mean-mu)/(sigma_sample/sqrt(n));
-		p_value = tcdf(t_value,n);
+		t_value = ((mu+effect_size)-mu)/(sigma/sqrt(n));
 
-		critical_value = mu + t_quantile*(sigma_sample)/(sqrt(n)) ;
+		t_quantile = tquantile(1,n-1,1-alpha);
+
+		critical_value = mu + abs(t_quantile)*(sigma)/(sqrt(n)) ;
+
 		meanbeta = mu + effect_size; // for right-tailed
+		t_beta = (critical_value-meanbeta)/(sigma/sqrt(n));
+		if (t_beta > 0)
+		{
+			t_beta = t_beta;
+		}
+		else if (t_beta < 0)
+		{
+			t_beta = -t_beta;
+		}
 
-		t_beta = (critical_value-meanbeta)/(sigma_sample/sqrt(n));
 		beta = tcdf(t_beta,n-1);
-
+		power = 1-beta;
 		p_value = 1 - tcdf(t_value,n-1);
+
+		cout << "\nThe probability of a type I error (alpha): " << alpha << endl;
+		cout << "The probability of a type II error (beta): " << beta << endl;
+		cout << "Power: " << power << endl;
+		cout << "\nCritical value: " << critical_value << endl;
+		cout << "Critical region : t > " << t_quantile << endl;
+		cout << "Computed t : " << t_value << endl;
+		cout << "\n*Reject the null hypothesis when the sample average is greater than " << critical_value << endl;
+		cout << "\n*Reject the null hypothesis when the computed t is greater than " << t_quantile << endl;
+		
+		cout << "\nP-value: " << p_value << endl;
+		cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+		cout << "\n********************************************************" << endl;
 	}
 	else if (n >= 30) // For large sample size we use Z-statistic
 	{
@@ -1463,7 +2145,7 @@ void hypothesistest_righttailed(vector<double> data, double mu, double sigma, do
 		
 		z_quantile = zquantile(1-alpha);
 
-		critical_value = mu + z_quantile*(sigma)/(sqrt(n)) ;
+		critical_value = mu + abs(z_quantile)*(sigma)/(sqrt(n)) ;
 
 		meanbeta = mu + effect_size; // for right-tailed
 		z_beta = (critical_value-meanbeta)/(sigma/sqrt(n));
@@ -1487,6 +2169,1596 @@ void hypothesistest_righttailed(vector<double> data, double mu, double sigma, do
 	}
 }
 
+void hypothesistest_lefttailed(vector<double> data, double mu, double sigma, double alpha, double effect_size)
+{
+	double critical_value, z_quantile, z_value, z_beta, meanbeta, p_value, power, beta;
+	double t_value, t_quantile, t_beta;
+
+	int n = data.size();
+	/*double mean = calculateMean(data);
+	double sumSquaredDiff = 0.0;
+	for (double val : data) 
+	{
+		sumSquaredDiff += std::pow(val - mean, 2);
+	}
+	
+	double variance = sumSquaredDiff / (n - 1); // Sample variance
+	double sigma_sample = sqrt(variance);*/
+
+	std::sort(data.begin(), data.end());
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nLeft-tailed Hypothesis testing" << endl;
+	cout << "\nH0: μ = " << mu << endl;
+	cout << "H1: μ < " << mu << endl;
+	
+	if (n < 30) // For small sample size we use t-statistic
+	{
+		t_value = ((mu-effect_size)-mu)/(sigma/sqrt(n));
+
+		t_quantile = tquantile(1,n-1,alpha);
+
+		critical_value = mu - abs(t_quantile)*(sigma)/(sqrt(n)) ;
+
+		meanbeta = mu - effect_size; // for left-tailed
+		t_beta = (critical_value-meanbeta)/(sigma/sqrt(n));
+		if (t_beta > 0)
+		{
+			t_beta = -t_beta;
+		}
+		else if (t_beta < 0)
+		{
+			t_beta = t_beta;
+		}
+
+		beta = 1 - tcdf(t_beta,n-1);
+		power = 1-beta;
+		p_value = tcdf(t_value,n-1);
+		
+		cout << "\nThe probability of a type I error (alpha): " << alpha << endl;
+		cout << "The probability of a type II error (beta): " << beta << endl;
+		cout << "Power: " << power << endl;
+		cout << "\nCritical value: " << critical_value << endl;
+		cout << "Critical region : t < " << t_quantile << endl;
+		cout << "Computed t : " << t_value << endl;
+		cout << "\n*Reject the null hypothesis when the sample average is less than " << critical_value << endl;
+		cout << "\n*Reject the null hypothesis when the computed t is less than " << t_quantile << endl;
+
+		cout << "\nP-value: " << p_value << endl;
+		cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+		cout << "\n********************************************************" << endl;
+		
+	}
+	else if (n >= 30) // For large sample size we use Z-statistic
+	{
+		z_value = ((mu-effect_size)-mu)/(sigma/sqrt(n));
+		
+		z_quantile = zquantile(alpha);
+
+		critical_value = mu - abs(z_quantile)*(sigma)/(sqrt(n)) ;
+
+		meanbeta = mu - effect_size; // for right-tailed
+		z_beta = (critical_value-meanbeta)/(sigma/sqrt(n));
+
+		beta = 1 - normalcdf(z_beta,0,1);	
+		power = 1-beta;
+		p_value = normalcdf(z_value,0,1);	
+		
+		cout << "\nThe probability of a type I error (alpha): " << alpha << endl;
+		cout << "The probability of a type II error (beta): " << beta << endl;
+		cout << "Power: " << power << endl;
+		cout << "\nCritical value: " << critical_value << endl;
+		cout << "Critical region : z < " << z_quantile << endl;
+		cout << "Computed z : " << z_value << endl;
+		cout << "\n*Reject the null hypothesis when the sample average is less than " << critical_value << endl;
+		cout << "\n*Reject the null hypothesis when the computed z is less than " << z_quantile << endl;
+		
+		cout << "\nP-value: " << p_value << endl;
+		cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+		cout << "\n********************************************************" << endl;
+	
+	}
+}
+
+void hypothesistest_knownvariances_righttailed(vector<double> data1, vector<double> data2, double d0, double sigma1, double sigma2, double alpha, double delta)
+{
+	double critical_value, p_value, power, beta;
+	double z_value, z_quantile, z_beta;
+
+	int n1 = data1.size();
+	int n2 = data2.size();
+
+	double mean1 = calculateMean(data1);
+	double mean2 = calculateMean(data2);
+	
+	//std::sort(data.begin(), data.end());
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nRight-tailed hypothesis testing, known variances" << endl;
+	cout << "\nH0: μ1 - μ2 = " << d0 << endl;
+	cout << "H1: μ1 - μ2 > " << d0 << endl;
+	
+	// Computation part
+	z_value = ((mean1 - mean2)-d0)/(sqrt(divisiond(sigma1*sigma1,n1) + divisiond(sigma2*sigma2,n2)));
+
+	z_quantile = zquantile(1-alpha);
+
+	critical_value = d0 + abs(z_quantile)*(0.5*( (sigma1)/(sqrt(n1)) + (sigma2)/(sqrt(n2)) ) ); // my own formula
+
+	z_beta = abs(z_quantile) - (delta)/(sqrt(divisiond(sigma1*sigma1,n1) + divisiond(sigma2*sigma2,n2)));
+	beta = normalcdf(-abs(z_beta),0,1);
+	power = 1-beta;
+	p_value = 1 - normalcdf(z_value,0,1);
+
+	cout << "\nMean data 1 = "<< mean1 << ", σ1 = " << sigma1 << ", n1 = " << n1 << endl;	
+	cout << "Mean data 2 = "<< mean2 << ", σ2 = " << sigma2 << ", n2 = " << n2 << endl;	
+	cout << "\nThe probability of a type I error (alpha): " << alpha << endl;
+	cout << "The probability of a type II error (beta): " << beta << endl;
+	cout << "Power: " << power << endl;
+	cout << "\nCritical value: " << critical_value << endl;
+	cout << "Critical region : z > " << z_quantile << endl;
+	cout << "Computed z : " << z_value << endl;
+
+	cout << "\n*Reject the null hypothesis when the computed z is greater than " << z_quantile << endl;
+		
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+}
+
+void hypothesistest_knownvariances_lefttailed(vector<double> data1, vector<double> data2, double d0, double sigma1, double sigma2, double alpha, double delta)
+{
+	double critical_value, p_value, power, beta;
+	double z_value, z_quantile, z_beta;
+
+	int n1 = data1.size();
+	int n2 = data2.size();
+
+	double mean1 = calculateMean(data1);
+	double mean2 = calculateMean(data2);
+	
+	//std::sort(data.begin(), data.end());
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nLeft-tailed hypothesis testing, known variances" << endl;
+	cout << "\nH0: μ1 - μ2 = " << d0 << endl;
+	cout << "H1: μ1 - μ2 < " << d0 << endl;
+	
+	// Computation part
+	z_value = ((mean1 - mean2)-d0)/(sqrt(divisiond(sigma1*sigma1,n1) + divisiond(sigma2*sigma2,n2)));
+
+	z_quantile = zquantile(alpha);
+
+	critical_value = d0 - abs(z_quantile)*(0.5*( (sigma1)/(sqrt(n1)) + (sigma2)/(sqrt(n2)) ) ); // my own formula
+
+	z_beta = z_quantile + (delta)/(sqrt(divisiond(sigma1*sigma1,n1) + divisiond(sigma2*sigma2,n2)));
+	beta = normalcdf(-abs(z_beta),0,1);
+	power = 1-beta;
+	p_value = normalcdf(z_value,0,1);
+
+	cout << "\nMean data 1 = "<< mean1 << ", σ1 = " << sigma1 << ", n1 = " << n1 << endl;	
+	cout << "Mean data 2 = "<< mean2 << ", σ2 = " << sigma2 << ", n2 = " << n2 << endl;	
+	cout << "\nThe probability of a type I error (alpha): " << alpha << endl;
+	cout << "The probability of a type II error (beta): " << beta << endl;
+	cout << "Power: " << power << endl;
+	cout << "\nCritical value: " << critical_value << endl;
+	cout << "Critical region : z < " << z_quantile << endl;
+	cout << "Computed z : " << z_value << endl;
+
+	cout << "\n*Reject the null hypothesis when the computed z is less than " << z_quantile << endl;
+		
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+}
+
+void hypothesistest_knownvariances_twotailed(vector<double> data1, vector<double> data2, double d0, double sigma1, double sigma2, double alpha, double delta)
+{
+	double critical_value, critical_value2, p_value, power, beta;
+	double z_value, z_quantile, z_beta;
+
+	int n1 = data1.size();
+	int n2 = data2.size();
+
+	double mean1 = calculateMean(data1);
+	double mean2 = calculateMean(data2);
+	
+	//std::sort(data.begin(), data.end());
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nTwo-tailed hypothesis testing, known variances" << endl;
+	cout << "\nH0: μ1 - μ2 = " << d0 << endl;
+	cout << "H1: μ1 - μ2 != " << d0 << endl;
+	
+	// Computation part
+	z_value = ((mean1 - mean2)-d0)/(sqrt(divisiond(sigma1*sigma1,n1) + divisiond(sigma2*sigma2,n2)));
+
+	z_quantile = zquantile(1-0.5*alpha);
+
+	critical_value = d0 + abs(z_quantile)*(0.5*( (sigma1)/(sqrt(n1)) + (sigma2)/(sqrt(n2)) ) ); // my own formula
+	critical_value2 = d0 - abs(z_quantile)*(0.5*( (sigma1)/(sqrt(n1)) + (sigma2)/(sqrt(n2)) ) ); // my own formula
+
+	z_beta = abs(z_quantile) - (delta)/(sqrt(divisiond(sigma1*sigma1,n1) + divisiond(sigma2*sigma2,n2)));
+	//z_beta2 = -abs(z_quantile) + (delta)/(sqrt(divisiond(sigma1*sigma1,n1) + divisiond(sigma2*sigma2,n2))); // the result is - z_beta
+	beta = 2*normalcdf(-abs(z_beta),0,1) ;//   + (1-normalcdf(z_beta2,0,1));
+	power = 1-beta;
+	p_value = 2*normalcdf(-abs(z_value),0,1);
+
+	cout << "\nMean data 1 = "<< mean1 << ", σ1 = " << sigma1 << ", n1 = " << n1 << endl;	
+	cout << "Mean data 2 = "<< mean2 << ", σ2 = " << sigma2 << ", n2 = " << n2 << endl;	
+	cout << "\nThe probability of a type I error (alpha): " << alpha << endl;
+	cout << "The probability of a type II error (beta): " << beta << endl;
+	cout << "Power: " << power << endl;
+	cout << "\nCritical value (upper bound): " << critical_value << endl;
+	cout << "Critical value (lower bound): " << critical_value2 << endl;
+	cout << "Critical region : z < - " << z_quantile << " and z > " << z_quantile << endl;
+	cout << "Computed z : " << z_value << endl;
+	cout << "\n*Reject the null hypothesis when the computed z is greater than " << z_quantile << " or less than -" << z_quantile << endl;
+				
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+}
+
+void hypothesistest_equalunknownvariances_righttailed(vector<double> data1, vector<double> data2, double d0, double alpha, double delta)
+{
+	double critical_value, p_value, power, beta;
+	double t_value, t_quantile, t_beta;
+
+	int n1 = data1.size();
+	int n2 = data2.size();
+	int nu = n1 + n2 - 2;
+	double mean1 = calculateMean(data1);
+	double mean2 = calculateMean(data2);
+	double sumSquaredDiff1 = 0.0;
+	double sumSquaredDiff2 = 0.0;
+	for (double val : data1) 
+	{
+		sumSquaredDiff1 += std::pow(val - mean1, 2);
+	}
+	for (double val : data2) 
+	{
+		sumSquaredDiff2 += std::pow(val - mean2, 2);
+	}
+	
+	double variance1 = sumSquaredDiff1 / (n1 - 1);
+	double variance2 = sumSquaredDiff2 / (n2 - 1);
+	
+	//std::sort(data.begin(), data.end());
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nRight-tailed hypothesis testing, equal but unknown variances" << endl;
+	cout << "\nH0: μ1 - μ2 = " << d0 << endl;
+	cout << "H1: μ1 - μ2 > " << d0 << endl;
+	
+	// Computation part
+	double sp = sqrt(divisiond((n1-1)*(variance1) + (n2-1)*(variance2),nu));
+	t_value = ((mean1 - mean2)-d0)/(sp * sqrt(divisiond(1,n1) + divisiond(1,n2)));
+
+	t_quantile = tquantile(1,n1+n2-2,1-alpha);
+
+	critical_value = d0 + abs(t_quantile)*(sp)/(sqrt(n1+n2-2)) ; // my own formula
+	
+	t_beta = abs(t_quantile) - divisiond( delta , sp * sqrt(divisiond(1,n1) + divisiond(1,n2)) );
+	
+	beta = tcdf(-abs(t_beta),n1+n2-2);
+	power = 1-beta;
+	p_value = 1 - tcdf(t_value,n1+n2-2);
+
+	cout << "\nMean data 1 = "<< mean1 << ", s1 = " << sqrt(variance1) << ", n1 = " << n1 << endl;	
+	cout << "Mean data 2 = "<< mean2 << ", s2 = " << sqrt(variance2) << ", n2 = " << n2 << endl;	
+	cout << "\nThe probability of a type I error (alpha): " << alpha << endl;
+	cout << "The probability of a type II error (beta): " << beta << endl;
+	cout << "Power: " << power << endl;
+	cout << "\nCritical value: " << critical_value << endl;
+	cout << "Critical region : t > " << t_quantile << endl;
+	cout << "Computed t : " << t_value << endl;
+
+	cout << "\n*Reject the null hypothesis when the computed t is greater than " << t_quantile << endl;
+		
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+}
+
+void hypothesistest_equalunknownvariances_lefttailed(vector<double> data1, vector<double> data2, double d0, double alpha, double delta)
+{
+	double critical_value, p_value, power, beta;
+	double t_value, t_quantile, t_beta;
+
+	int n1 = data1.size();
+	int n2 = data2.size();
+	int nu = n1 + n2 - 2;
+	double mean1 = calculateMean(data1);
+	double mean2 = calculateMean(data2);
+	double sumSquaredDiff1 = 0.0;
+	double sumSquaredDiff2 = 0.0;
+	for (double val : data1) 
+	{
+		sumSquaredDiff1 += std::pow(val - mean1, 2);
+	}
+	for (double val : data2) 
+	{
+		sumSquaredDiff2 += std::pow(val - mean2, 2);
+	}
+	
+	double variance1 = sumSquaredDiff1 / (n1 - 1);
+	double variance2 = sumSquaredDiff2 / (n2 - 1);
+	
+	//std::sort(data.begin(), data.end());
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nLeft-tailed hypothesis testing, equal but unknown variances" << endl;
+	cout << "\nH0: μ1 - μ2 = " << d0 << endl;
+	cout << "H1: μ1 - μ2 < " << d0 << endl;
+	
+	// Computation part
+	double sp = sqrt(divisiond((n1-1)*(variance1) + (n2-1)*(variance2),nu));
+	t_value = ((mean1 - mean2)-d0)/(sp * sqrt(divisiond(1,n1) + divisiond(1,n2)));
+
+	t_quantile = tquantile(1,n1+n2-2,alpha);
+
+	critical_value = d0 - abs(t_quantile)*(sp)/(sqrt(n1+n2-2)) ; // my own formula
+
+	t_beta = t_quantile + divisiond( delta , sp * sqrt(divisiond(1,n1) + divisiond(1,n2)) );
+	
+	beta = tcdf(-abs(t_beta),n1+n2-2);
+	power = 1-beta;
+	p_value = tcdf(t_value,n1+n2-2);
+
+	cout << "\nMean data 1 = "<< mean1 << ", s1 = " << sqrt(variance1) << ", n1 = " << n1 << endl;	
+	cout << "Mean data 2 = "<< mean2 << ", s2 = " << sqrt(variance2) << ", n2 = " << n2 << endl;	
+	cout << "\nThe probability of a type I error (alpha): " << alpha << endl;
+	cout << "The probability of a type II error (beta): " << beta << endl;
+	cout << "Power: " << power << endl;
+	cout << "\nCritical value: " << critical_value << endl;
+	cout << "Critical region : t < " << t_quantile << endl;
+	cout << "Computed t : " << t_value << endl;
+
+	cout << "\n*Reject the null hypothesis when the computed t is less than " << t_quantile << endl;
+		
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+}
+
+void hypothesistest_equalunknownvariances_twotailed(vector<double> data1, vector<double> data2, double d0, double alpha, double delta)
+{
+	double critical_value, critical_value2, p_value, power, beta;
+	double t_value, t_quantile, t_beta;
+
+	int n1 = data1.size();
+	int n2 = data2.size();
+	int nu = n1 + n2 - 2;
+	double mean1 = calculateMean(data1);
+	double mean2 = calculateMean(data2);
+	double sumSquaredDiff1 = 0.0;
+	double sumSquaredDiff2 = 0.0;
+	for (double val : data1) 
+	{
+		sumSquaredDiff1 += std::pow(val - mean1, 2);
+	}
+	for (double val : data2) 
+	{
+		sumSquaredDiff2 += std::pow(val - mean2, 2);
+	}
+	
+	double variance1 = sumSquaredDiff1 / (n1 - 1);
+	double variance2 = sumSquaredDiff2 / (n2 - 1);
+	
+	//std::sort(data.begin(), data.end());
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nTwo-tailed hypothesis testing, equal but unknown variances" << endl;
+	cout << "\nH0: μ1 - μ2 = " << d0 << endl;
+	cout << "H1: μ1 - μ2 != " << d0 << endl;
+	
+	// Computation part
+	double sp = sqrt(divisiond((n1-1)*(variance1) + (n2-1)*(variance2),nu));
+	t_value = ((mean1 - mean2)-d0)/(sp * sqrt(divisiond(1,n1) + divisiond(1,n2)));
+
+	t_quantile = tquantile(1,n1+n2-2,1-(0.5*alpha));
+
+	critical_value = d0 + abs(t_quantile)*(sp)/(sqrt(n1+n2-2)) ; // my own formula
+	critical_value2 = d0 - abs(t_quantile)*(sp)/(sqrt(n1+n2-2)) ; // my own formula
+
+	t_beta = abs(t_quantile) - divisiond( delta , sp * sqrt(divisiond(1,n1) + divisiond(1,n2)) );
+	
+	beta = 2*tcdf(-abs(t_beta),n1+n2-2);
+	power = 1-beta;
+	p_value = 2*tcdf(-abs(t_value),n1+n2-2);
+
+	cout << "\nMean data 1 = "<< mean1 << ", s1 = " << sqrt(variance1) << ", n1 = " << n1 << endl;	
+	cout << "Mean data 2 = "<< mean2 << ", s2 = " << sqrt(variance2) << ", n2 = " << n2 << endl;	
+	cout << "\nThe probability of a type I error (alpha): " << alpha << endl;
+	cout << "The probability of a type II error (beta): " << beta << endl;
+	cout << "Power: " << power << endl;
+	cout << "\nCritical value (upper bound): " << critical_value << endl;
+	cout << "Critical value (lower bound): " << critical_value2 << endl;
+	cout << "Critical region : t < - " << t_quantile << " and t > " << t_quantile << endl;
+	cout << "Computed t : " << t_value << endl;
+
+	cout << "\n*Reject the null hypothesis when the computed t is greater than " << t_quantile << " or less than -" << t_quantile << endl;
+				
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+}
+
+void hypothesistest_unequalunknownvariances_righttailed(vector<double> data1, vector<double> data2, double d0, double alpha, double delta)
+{
+	double critical_value, p_value, power, beta;
+	double t_value, t_quantile, t_beta, sigma1, sigma2;
+
+	int n1 = data1.size();
+	int n2 = data2.size();
+	double mean1 = calculateMean(data1);
+	double mean2 = calculateMean(data2);
+	double sumSquaredDiff1 = 0.0;
+	double sumSquaredDiff2 = 0.0;
+	for (double val : data1) 
+	{
+		sumSquaredDiff1 += std::pow(val - mean1, 2);
+	}
+	for (double val : data2) 
+	{
+		sumSquaredDiff2 += std::pow(val - mean2, 2);
+	}
+	
+	double variance1 = sumSquaredDiff1 / (n1 - 1);
+	double variance2 = sumSquaredDiff2 / (n2 - 1);
+	sigma1 = sqrt(variance1);
+	sigma2 = sqrt(variance2);
+	
+	int nu = divisiond(pow(divisiond(sigma1*sigma1,n1) + divisiond(sigma2*sigma2,n2),2), divisiond(pow(divisiond(sigma1*sigma1,n1),2),n1-1) + divisiond(pow(divisiond(sigma2*sigma2,n2),2),n2-1) );
+	
+	//std::sort(data.begin(), data.end());
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nRight-tailed hypothesis testing, unequal and unknown variances" << endl;
+	cout << "\nH0: μ1 - μ2 = " << d0 << endl;
+	cout << "H1: μ1 - μ2 > " << d0 << endl;
+	
+	// Computation part
+	t_value = ((mean1 - mean2)-d0)/(sqrt(divisiond(sigma1*sigma1,n1) + divisiond(sigma2*sigma2,n2)));
+
+	t_quantile = tquantile(1,nu,1-alpha);
+
+	critical_value = d0 + abs(t_quantile)*(0.5*( (sigma1)/(sqrt(n1)) + (sigma2)/(sqrt(n2)) ) ); // my own formula
+
+	t_beta = abs(t_quantile) - divisiond(delta, sqrt(divisiond(sigma1*sigma1,n1) + divisiond(sigma2*sigma2,n2)));
+	beta = tcdf(-abs(t_beta),nu);
+	power = 1-beta;
+	p_value = 1 - tcdf(t_value,nu);
+
+	cout << "\nMean data 1 = "<< mean1 << ", s1 = " << sigma1 << ", n1 = " << n1 << endl;	
+	cout << "Mean data 2 = "<< mean2 << ", s2 = " << sigma2 << ", n2 = " << n2 << endl;	
+	cout << "\nThe probability of a type I error (alpha): " << alpha << endl;
+	cout << "The probability of a type II error (beta): " << beta << endl;
+	cout << "Power: " << power << endl;
+	cout << "\nCritical value: " << critical_value << endl;
+	cout << "Critical region : t > " << t_quantile << endl;
+	cout << "Computed t : " << t_value << endl;
+
+	cout << "\n*Reject the null hypothesis when the computed t is greater than " << t_quantile << endl;
+		
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+}
+
+void hypothesistest_unequalunknownvariances_lefttailed(vector<double> data1, vector<double> data2, double d0, double alpha, double delta)
+{
+	double critical_value, p_value, power, beta;
+	double t_value, t_quantile, t_beta, sigma1, sigma2;
+
+	int n1 = data1.size();
+	int n2 = data2.size();
+	double mean1 = calculateMean(data1);
+	double mean2 = calculateMean(data2);
+	double sumSquaredDiff1 = 0.0;
+	double sumSquaredDiff2 = 0.0;
+	for (double val : data1) 
+	{
+		sumSquaredDiff1 += std::pow(val - mean1, 2);
+	}
+	for (double val : data2) 
+	{
+		sumSquaredDiff2 += std::pow(val - mean2, 2);
+	}
+	
+	double variance1 = sumSquaredDiff1 / (n1 - 1);
+	double variance2 = sumSquaredDiff2 / (n2 - 1);
+	sigma1 = sqrt(variance1);
+	sigma2 = sqrt(variance2);
+	
+	int nu = divisiond(pow(divisiond(sigma1*sigma1,n1) + divisiond(sigma2*sigma2,n2),2), divisiond(pow(divisiond(sigma1*sigma1,n1),2),n1-1) + divisiond(pow(divisiond(sigma2*sigma2,n2),2),n2-1) );
+	
+	//std::sort(data.begin(), data.end());
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nLeft-tailed hypothesis testing, unequal and unknown variances" << endl;
+	cout << "\nH0: μ1 - μ2 = " << d0 << endl;
+	cout << "H1: μ1 - μ2 < " << d0 << endl;
+	
+	// Computation part
+	t_value = ((mean1 - mean2)-d0)/(sqrt(divisiond(sigma1*sigma1,n1) + divisiond(sigma2*sigma2,n2)));
+
+	t_quantile = tquantile(1,nu,alpha);
+
+	critical_value = d0 - abs(t_quantile)*(0.5*( (sigma1)/(sqrt(n1)) + (sigma2)/(sqrt(n2)) ) ); // my own formula
+	
+	t_beta = t_quantile + divisiond(delta, sqrt(divisiond(sigma1*sigma1,n1) + divisiond(sigma2*sigma2,n2)) );
+	beta = tcdf(-abs(t_beta),nu);
+	power = 1-beta;
+	p_value = tcdf(t_value,nu);
+
+	cout << "\nMean data 1 = "<< mean1 << ", s1 = " << sigma1 << ", n1 = " << n1 << endl;	
+	cout << "Mean data 2 = "<< mean2 << ", s2 = " << sigma2 << ", n2 = " << n2 << endl;	
+	cout << "\nThe probability of a type I error (alpha): " << alpha << endl;
+	cout << "The probability of a type II error (beta): " << beta << endl;
+	cout << "Power: " << power << endl;
+	cout << "\nCritical value: " << critical_value << endl;
+	cout << "Critical region : t < " << t_quantile << endl;
+	cout << "Computed t : " << t_value << endl;
+
+	cout << "\n*Reject the null hypothesis when the computed t is less than " << t_quantile << endl;
+		
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+}
+
+void hypothesistest_unequalunknownvariances_twotailed(vector<double> data1, vector<double> data2, double d0, double alpha, double delta)
+{
+	double critical_value, critical_value2, p_value, power, beta;
+	double t_value, t_quantile, t_beta, sigma1, sigma2;
+
+	int n1 = data1.size();
+	int n2 = data2.size();
+	double mean1 = calculateMean(data1);
+	double mean2 = calculateMean(data2);
+	double sumSquaredDiff1 = 0.0;
+	double sumSquaredDiff2 = 0.0;
+	for (double val : data1) 
+	{
+		sumSquaredDiff1 += std::pow(val - mean1, 2);
+	}
+	for (double val : data2) 
+	{
+		sumSquaredDiff2 += std::pow(val - mean2, 2);
+	}
+	
+	double variance1 = sumSquaredDiff1 / (n1 - 1);
+	double variance2 = sumSquaredDiff2 / (n2 - 1);
+	sigma1 = sqrt(variance1);
+	sigma2 = sqrt(variance2);
+	
+	int nu = divisiond(pow(divisiond(sigma1*sigma1,n1) + divisiond(sigma2*sigma2,n2),2), divisiond(pow(divisiond(sigma1*sigma1,n1),2),n1-1) + divisiond(pow(divisiond(sigma2*sigma2,n2),2),n2-1) );
+	
+	//std::sort(data.begin(), data.end());
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nTwo-tailed hypothesis testing, unequal and unknown variances" << endl;
+	cout << "\nH0: μ1 - μ2 = " << d0 << endl;
+	cout << "H1: μ1 - μ2 != " << d0 << endl;
+	
+	// Computation part
+	t_value = ((mean1 - mean2)-d0)/(sqrt(divisiond(sigma1*sigma1,n1) + divisiond(sigma2*sigma2,n2)));
+
+	t_quantile = tquantile(1,nu,1-(0.5*alpha));
+
+	critical_value = d0 + abs(t_quantile)*(0.5*( (sigma1)/(sqrt(n1)) + (sigma2)/(sqrt(n2)) ) ); // my own formula
+	critical_value2 = d0 - abs(t_quantile)*(0.5*( (sigma1)/(sqrt(n1)) + (sigma2)/(sqrt(n2)) ) ); // my own formula
+	
+	t_beta = abs(t_quantile) - divisiond(delta, sqrt(divisiond(sigma1*sigma1,n1) + divisiond(sigma2*sigma2,n2)) );
+	beta = 2*tcdf(-abs(t_beta),nu);
+	power = 1-beta;
+	p_value = 2*tcdf(-abs(t_value),nu);
+
+	cout << "\nMean data 1 = "<< mean1 << ", s1 = " << sigma1 << ", n1 = " << n1 << endl;	
+	cout << "Mean data 2 = "<< mean2 << ", s2 = " << sigma2 << ", n2 = " << n2 << endl;	
+	cout << "\nThe probability of a type I error (alpha): " << alpha << endl;
+	cout << "The probability of a type II error (beta): " << beta << endl;
+	cout << "Power: " << power << endl;
+	cout << "\nCritical value (upper bound): " << critical_value << endl;
+	cout << "Critical value (lower bound): " << critical_value2 << endl;
+	cout << "Critical region : t < - " << t_quantile << " and t > " << t_quantile << endl;
+	cout << "Computed t : " << t_value << endl;
+
+	cout << "\n*Reject the null hypothesis when the computed t is greater than " << t_quantile << " or less than -" << t_quantile << endl;
+		
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+}
+
+void hypothesistest_paired_righttailed(vector<double> data1, vector<double> data2, double d0, double alpha, double delta)
+{
+	double critical_value, p_value, power, beta, sigmad ;
+	double t_value, t_quantile, t_beta, sigma1, sigma2;
+	vector<double> datad;
+	int n1 = data1.size();
+	int n2 = data2.size();
+	if (n1 != n2)
+	{
+		cerr << "Error: The samples size are different." << endl;
+	}
+	for (int i = 0; i <n1 ; ++i)
+	{
+		datad.push_back(data1[i] - data2[i]);
+	}
+	double mean1 = calculateMean(data1);
+	double mean2 = calculateMean(data2);
+	double meand = calculateMean(datad);
+	double sumSquaredDiff1 = 0.0;
+	double sumSquaredDiff2 = 0.0;
+	double sumSquaredDiffd = 0.0;
+	for (double val : data1) 
+	{
+		sumSquaredDiff1 += std::pow(val - mean1, 2);
+	}
+	for (double val : data2) 
+	{
+		sumSquaredDiff2 += std::pow(val - mean2, 2);
+	}
+	for (double val : datad) 
+	{
+		sumSquaredDiffd += std::pow(val - meand, 2);
+	}
+	double variance1 = sumSquaredDiff1 / (n1 - 1);
+	double variance2 = sumSquaredDiff2 / (n2 - 1);
+	double varianced = sumSquaredDiffd / (n1 - 1);
+	sigma1 = sqrt(variance1);
+	sigma2 = sqrt(variance2);
+	sigmad = sqrt(varianced);
+
+	int nu = n1-1;
+	//std::sort(data.begin(), data.end());
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nRight tailed hypothesis testing, paired observations" << endl;
+	cout << "\nH0: μd = μ1 - μ2 = " << d0 << endl;
+	cout << "H1: μd = μ1 - μ2 > " << d0 << endl;
+	
+	// Computation part
+	t_value = (meand - d0)/(divisiond(sigmad,sqrt(n1)));
+
+	t_quantile = tquantile(1,nu,1-alpha);
+
+	critical_value = d0 + abs(t_quantile)*divisiond(sigmad,sqrt(n1)); // my own formula
+	
+	t_beta = abs(t_quantile) - divisiond(delta*sqrt(n1),sigmad);
+	beta = tcdf(-abs(t_beta),nu);
+	power = 1-beta;
+	p_value = 1 - tcdf(t_value,nu);
+
+	cout << "\nMean data 1 = "<< mean1 << ", s1 = " << sigma1 << ", n1 = " << n1 << endl;	
+	cout << "Mean data 2 = "<< mean2 << ", s2 = " << sigma2 << ", n2 = " << n2 << endl;	
+	cout << "Mean d = "<< meand << ", sd = " << sigmad << ", nd = " << n1 << endl;	
+	cout << "\nThe probability of a type I error (alpha): " << alpha << endl;
+	cout << "The probability of a type II error (beta): " << beta << endl;
+	cout << "Power: " << power << endl;
+	cout << "\nCritical value (upper bound): " << critical_value << endl;
+	cout << "Critical region : t > " << t_quantile << endl;
+	cout << "Computed t : " << t_value << endl;
+
+	cout << "\n*Reject the null hypothesis when the computed t is greater than " << t_quantile << endl;
+		
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+}
+
+void hypothesistest_paired_lefttailed(vector<double> data1, vector<double> data2, double d0, double alpha, double delta)
+{
+	double critical_value, p_value, power, beta, sigmad ;
+	double t_value, t_quantile, t_beta, sigma1, sigma2;
+	vector<double> datad;
+	int n1 = data1.size();
+	int n2 = data2.size();
+	if (n1 != n2)
+	{
+		cerr << "Error: The samples size are different." << endl;
+	}
+	for (int i = 0; i <n1 ; ++i)
+	{
+		datad.push_back(data1[i] - data2[i]);
+	}
+	double mean1 = calculateMean(data1);
+	double mean2 = calculateMean(data2);
+	double meand = calculateMean(datad);
+	double sumSquaredDiff1 = 0.0;
+	double sumSquaredDiff2 = 0.0;
+	double sumSquaredDiffd = 0.0;
+	for (double val : data1) 
+	{
+		sumSquaredDiff1 += std::pow(val - mean1, 2);
+	}
+	for (double val : data2) 
+	{
+		sumSquaredDiff2 += std::pow(val - mean2, 2);
+	}
+	for (double val : datad) 
+	{
+		sumSquaredDiffd += std::pow(val - meand, 2);
+	}
+	double variance1 = sumSquaredDiff1 / (n1 - 1);
+	double variance2 = sumSquaredDiff2 / (n2 - 1);
+	double varianced = sumSquaredDiffd / (n1 - 1);
+	sigma1 = sqrt(variance1);
+	sigma2 = sqrt(variance2);
+	sigmad = sqrt(varianced);
+
+	int nu = n1-1;
+	//std::sort(data.begin(), data.end());
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nLeft-tailed hypothesis testing, paired observations" << endl;
+	cout << "\nH0: μd = μ1 - μ2 = " << d0 << endl;
+	cout << "H1: μd = μ1 - μ2 < " << d0 << endl;
+	
+	// Computation part
+	t_value = (meand - d0)/(divisiond(sigmad,sqrt(n1)));
+
+	t_quantile = tquantile(1,nu,alpha);
+
+	critical_value = d0 - abs(t_quantile)*divisiond(sigmad,sqrt(n1)); // my own formula
+	
+	t_beta = abs(t_quantile) + divisiond(delta*sqrt(n1),sigmad);
+	beta = tcdf(-abs(t_beta),nu);
+	power = 1-beta;
+	p_value = tcdf(t_value,nu);
+
+	cout << "\nMean data 1 = "<< mean1 << ", s1 = " << sigma1 << ", n1 = " << n1 << endl;	
+	cout << "Mean data 2 = "<< mean2 << ", s2 = " << sigma2 << ", n2 = " << n2 << endl;	
+	cout << "Mean d = "<< meand << ", sd = " << sigmad << ", nd = " << n1 << endl;	
+	cout << "\nThe probability of a type I error (alpha): " << alpha << endl;
+	cout << "The probability of a type II error (beta): " << beta << endl;
+	cout << "Power: " << power << endl;
+	cout << "\nCritical value (upper bound): " << critical_value << endl;
+	cout << "Critical region : t > " << t_quantile << endl;
+	cout << "Computed t : " << t_value << endl;
+
+	cout << "\n*Reject the null hypothesis when the computed t is greater than " << t_quantile << endl;
+		
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+}
+
+void hypothesistest_paired_twotailed(vector<double> data1, vector<double> data2, double d0, double alpha, double delta)
+{
+	double critical_value, critical_value2, p_value, power, beta, sigmad ;
+	double t_value, t_quantile, t_beta, sigma1, sigma2;
+	vector<double> datad;
+	int n1 = data1.size();
+	int n2 = data2.size();
+	if (n1 != n2)
+	{
+		cerr << "Error: The samples size are different." << endl;
+	}
+	for (int i = 0; i <n1 ; ++i)
+	{
+		datad.push_back(data1[i] - data2[i]);
+	}
+	double mean1 = calculateMean(data1);
+	double mean2 = calculateMean(data2);
+	double meand = calculateMean(datad);
+	double sumSquaredDiff1 = 0.0;
+	double sumSquaredDiff2 = 0.0;
+	double sumSquaredDiffd = 0.0;
+	for (double val : data1) 
+	{
+		sumSquaredDiff1 += std::pow(val - mean1, 2);
+	}
+	for (double val : data2) 
+	{
+		sumSquaredDiff2 += std::pow(val - mean2, 2);
+	}
+	for (double val : datad) 
+	{
+		sumSquaredDiffd += std::pow(val - meand, 2);
+	}
+	double variance1 = sumSquaredDiff1 / (n1 - 1);
+	double variance2 = sumSquaredDiff2 / (n2 - 1);
+	double varianced = sumSquaredDiffd / (n1 - 1);
+	sigma1 = sqrt(variance1);
+	sigma2 = sqrt(variance2);
+	sigmad = sqrt(varianced);
+
+	int nu = n1-1;
+	//std::sort(data.begin(), data.end());
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nTwo-tailed hypothesis testing, paired observations" << endl;
+	cout << "\nH0: μd = μ1 - μ2 = " << d0 << endl;
+	cout << "H1: μd = μ1 - μ2 != " << d0 << endl;
+	
+	// Computation part
+	t_value = (meand - d0)/(divisiond(sigmad,sqrt(n1)));
+
+	t_quantile = tquantile(1,nu,1-(0.5*alpha));
+
+	critical_value = d0 + abs(t_quantile)*divisiond(sigmad,sqrt(n1)); // my own formula
+	critical_value2 = d0 - abs(t_quantile)*divisiond(sigmad,sqrt(n1)); // my own formula
+	
+	t_beta = abs(t_quantile) - divisiond(delta*sqrt(n1),sigmad);
+	beta = 2*tcdf(-abs(t_beta),nu);
+	power = 1-beta;
+	p_value = 2*tcdf(-abs(t_value),nu);
+
+	cout << "\nMean data 1 = "<< mean1 << ", s1 = " << sigma1 << ", n1 = " << n1 << endl;	
+	cout << "Mean data 2 = "<< mean2 << ", s2 = " << sigma2 << ", n2 = " << n2 << endl;	
+	cout << "Mean d = "<< meand << ", sd = " << sigmad << ", nd = " << n1 << endl;	
+	cout << "\nThe probability of a type I error (alpha): " << alpha << endl;
+	cout << "The probability of a type II error (beta): " << beta << endl;
+	cout << "Power: " << power << endl;
+	cout << "\nCritical value (upper bound): " << critical_value << endl;
+	cout << "Critical value (lower bound): " << critical_value2 << endl;
+	cout << "Critical region : t < - " << t_quantile << " and t > " << t_quantile << endl;
+	cout << "Computed t : " << t_value << endl;
+
+	cout << "\n*Reject the null hypothesis when the computed t is greater than " << t_quantile << " or less than -" << t_quantile << endl;
+		
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+}
+
+void hypothesistest_proportion_righttailed(vector<string> data, const string &inputString, double p0, double alpha)
+{
+	double p_value, p, q, q0;
+	double z_value, z_quantile;
+
+	int x_count = std::count(data.begin(), data.end(), inputString);
+	int n = data.size();
+	p = divisiond(x_count,n);
+	q = 1-p;
+	q0 = 1 - p0;
+
+	if(n < 30)
+	{
+		cout << "\n********************************************************" << endl;
+		cout << "\nRight-tailed hypothesis testing on a single proportion" << endl;
+		cout << "\nH0: p = " << p0 << endl;
+		cout << "H1: p > " << p0 << endl;
+		cout << "Data size =  "<< n << endl;	
+		cout << "Amount of "<< inputString << " in the data = " << x_count << endl;		
+		cout << "Proportion for "<< inputString << ", p = " << p << ", q = " << q << endl;	
+
+		p_value = 1 - binomialcdf(x_count,n,p0);
+		
+		cout << "\nP-value: " << p_value << endl;
+		cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+		cout << "\n********************************************************" << endl;	
+	}
+	else if(n >= 30)
+	{
+		cout << "\n********************************************************" << endl;
+		cout << "\nRight-tailed hypothesis testing on a single proportion" << endl;
+		cout << "\nH0: p = " << p0 << endl;
+		cout << "H1: p > " << p0 << endl;
+		cout << "Data size =  "<< n << endl;	
+		cout << "Amount of "<< inputString << " in the data = " << x_count << endl;		
+		cout << "Proportion for "<< inputString << ", p = " << p << ", q = " << q << endl;	
+
+		z_quantile = zquantile(1-alpha);
+		z_value = divisiond(p - p0,sqrt(divisiond(p0*q0,n))) ;
+		p_value = 1 - normalcdf(z_value,0,1);
+
+		cout << "Critical region : z > " << z_quantile << endl;
+		cout << "Computed z : " << z_value << endl;
+		cout << "\n********************************************************" << endl;
+
+		cout << "\n*Reject the null hypothesis when the computed z is greater than " << z_quantile << endl;
+		
+		cout << "\nP-value: " << p_value << endl;
+		cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+		cout << "\n********************************************************" << endl;
+	}
+}
+
+void hypothesistest_proportion_lefttailed(vector<string> data, const string &inputString, double p0, double alpha)
+{
+	double p_value, p, q, q0;
+	double z_value, z_quantile;
+
+	int x_count = std::count(data.begin(), data.end(), inputString);
+	int n = data.size();
+	p = divisiond(x_count,n);
+	q = 1-p;
+	q0 = 1 - p0;
+
+	if(n < 30)
+	{
+		cout << "\n********************************************************" << endl;
+		cout << "\nLeft-tailed hypothesis testing on a single proportion" << endl;
+		cout << "\nH0: p = " << p0 << endl;
+		cout << "H1: p < " << p0 << endl;
+		cout << "Data size =  "<< n << endl;	
+		cout << "Amount of "<< inputString << " in the data = " << x_count << endl;		
+		cout << "Proportion for "<< inputString << ", p = " << p << ", q = " << q << endl;	
+		p_value = binomialcdf(x_count,n,p0);
+		cout << "\nP-value: " << p_value << endl;
+		cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+		cout << "\n********************************************************" << endl;	
+	}
+	else if(n >=30)
+	{
+		cout << "\n********************************************************" << endl;
+		cout << "\nLeft-tailed hypothesis testing on a single proportion" << endl;
+		cout << "\nH0: p = " << p0 << endl;
+		cout << "H1: p < " << p0 << endl;
+		cout << "Data size =  "<< n << endl;	
+		cout << "Amount of "<< inputString << " in the data = " << x_count << endl;		
+		cout << "Proportion for "<< inputString << ", p = " << p << ", q = " << q << endl;	
+
+		z_quantile = zquantile(alpha);
+		z_value = divisiond(p - p0,sqrt(divisiond(p0*q0,n))) ;
+		p_value = normalcdf(z_value,0,1);
+
+		cout << "Critical region : z < " << z_quantile << endl;
+		cout << "Computed z : " << z_value << endl;
+		cout << "\n********************************************************" << endl;
+
+		cout << "\n*Reject the null hypothesis when the computed z is less than " << z_quantile << endl;
+		
+		cout << "\nP-value: " << p_value << endl;
+		cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+		cout << "\n********************************************************" << endl;	
+	}
+}
+
+void hypothesistest_proportion_twotailed(vector<string> data, const string &inputString, double p0, double alpha)
+{
+	double p_value, p, q, q0;
+	double z_value, z_quantile;
+
+	int x_count = std::count(data.begin(), data.end(), inputString);
+	int n = data.size();
+	double x_compare = n*p0;
+	p = divisiond(x_count,n);
+	q = 1-p;
+	q0 = 1 - p0;
+
+	if(n < 30)
+	{
+		
+		cout << "\n********************************************************" << endl;
+		cout << "\nTwo-tailed hypothesis testing on a single proportion" << endl;
+		cout << "\nH0: p = " << p0 << endl;
+		cout << "H1: p != " << p0 << endl;
+		cout << "Data size =  "<< n << endl;	
+		cout << "Amount of "<< inputString << " in the data = " << x_count << endl;		
+		cout << "Proportion for "<< inputString << ", p = " << p << ", q = " << q << endl;
+		if(x_count < x_compare)
+		{			
+			p_value = 2*binomialcdf(x_count,n,p0);
+		}
+		else if(x_count >= x_compare)
+		{
+			p_value = 2*(1-binomialcdf(x_count,n,p0));
+		}	
+		cout << "\nP-value: " << p_value << endl;
+		cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+		cout << "\n********************************************************" << endl;	
+	}
+	else if(n >= 30)
+	{
+		cout << "\n********************************************************" << endl;
+		cout << "\nTwo-tailed hypothesis testing on a single proportion" << endl;
+		cout << "\nH0: p = " << p0 << endl;
+		cout << "H1: p != " << p0 << endl;
+		cout << "Data size =  "<< n << endl;	
+		cout << "Amount of "<< inputString << " in the data = " << x_count << endl;		
+		cout << "Proportion for "<< inputString << ", p = " << p << ", q = " << q << endl;	
+
+		z_quantile = zquantile(1-0.5*(alpha));
+		z_value = divisiond(p - p0,sqrt(divisiond(p0*q0,n))) ;
+		if(x_count < x_compare)
+		{
+			p_value = 2*normalcdf(z_value,0,1);
+		}
+		else if(x_count >= x_compare)
+		{
+			p_value = 2*(1-normalcdf(z_value,0,1));
+		}
+
+		cout << "Critical region : z < - " << z_quantile << " or > " << z_quantile << endl;
+		cout << "Computed z : " << z_value << endl;
+		cout << "\n********************************************************" << endl;
+
+		cout << "\n*Reject the null hypothesis when the computed z is greater than " << z_quantile << " or less than -" << z_quantile << endl;
+		
+		cout << "\nP-value: " << p_value << endl;
+		cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+		cout << "\n********************************************************" << endl;	
+	}
+}
+
+void hypothesistest_twoproportions_righttailed(vector<string> data1, vector<string> data2, const string &inputString, double alpha)
+{
+	double p_value, p1, p2, q1, q2, p_pooled, q_pooled;
+	double z_value, z_quantile;
+
+	int x1_count = std::count(data1.begin(), data1.end(), inputString);
+	int n1 = data1.size();
+	int x2_count = std::count(data2.begin(), data2.end(), inputString);
+	int n2 = data2.size();
+	p1 = divisiond(x1_count,n1);
+	q1 = 1 - p1;
+	p2 = divisiond(x2_count,n2);
+	q2 = 1 - p2;
+	p_pooled = divisiond(x1_count + x2_count, n1 + n2);
+	q_pooled = 1 - p_pooled;
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nRight-tailed hypothesis testing on two proportions" << endl;
+	cout << "\nH0: p1 = p2" << endl;
+	cout << "H1: p1 > p2" << endl;
+	cout << "Data 1 size =  "<< n1 << ", Data 2 size =  "<< n2 << endl;	
+	cout << "Amount of "<< inputString << " in the data 1 = " << x1_count << endl;		
+	cout << "Amount of "<< inputString << " in the data 2 = " << x2_count << endl;		
+	cout << "Proportion for "<< inputString << "\np1 = " << p1 << ", q1 = " << q1 << endl;	
+	cout << "p2 = " << p2 << ", q2 = " << q2 << endl;	
+	cout << "pooled estimate of p = " << p_pooled << ", pooled estimate of q = " << q_pooled << endl;	
+
+	z_quantile = zquantile(1-alpha);
+	z_value = divisiond(p1 - p2,sqrt(p_pooled*q_pooled*(divisiond(1,n1) + divisiond(1,n2)))) ;
+	p_value = 1 - normalcdf(z_value,0,1);
+
+	cout << "Critical region : z > " << z_quantile << endl;
+	cout << "Computed z : " << z_value << endl;
+	cout << "\n********************************************************" << endl;
+
+	cout << "\n*Reject the null hypothesis when the computed z is greater than " << z_quantile << endl;
+		
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+	
+}
+
+void hypothesistest_twoproportions_lefttailed(vector<string> data1, vector<string> data2, const string &inputString, double alpha)
+{
+	double p_value, p1, p2, q1, q2, p_pooled, q_pooled;
+	double z_value, z_quantile;
+
+	int x1_count = std::count(data1.begin(), data1.end(), inputString);
+	int n1 = data1.size();
+	int x2_count = std::count(data2.begin(), data2.end(), inputString);
+	int n2 = data2.size();
+	p1 = divisiond(x1_count,n1);
+	q1 = 1 - p1;
+	p2 = divisiond(x2_count,n2);
+	q2 = 1 - p2;
+	p_pooled = divisiond(x1_count + x2_count, n1 + n2);
+	q_pooled = 1 - p_pooled;
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nLeft-tailed hypothesis testing on two proportions" << endl;
+	cout << "\nH0: p1 = p2" << endl;
+	cout << "H1: p1 < p2" << endl;
+	cout << "Data 1 size =  "<< n1 << ", Data 2 size =  "<< n2 << endl;	
+	cout << "Amount of "<< inputString << " in the data 1 = " << x1_count << endl;		
+	cout << "Amount of "<< inputString << " in the data 2 = " << x2_count << endl;		
+	cout << "Proportion for "<< inputString << "\np1 = " << p1 << ", q1 = " << q1 << endl;	
+	cout << "p2 = " << p2 << ", q2 = " << q2 << endl;	
+	cout << "pooled estimate of p = " << p_pooled << ", pooled estimate of q = " << q_pooled << endl;	
+
+	z_quantile = zquantile(alpha);
+	z_value = divisiond(p1 - p2,sqrt(p_pooled*q_pooled*(divisiond(1,n1) + divisiond(1,n2)))) ;
+	p_value = normalcdf(z_value,0,1);
+
+	cout << "Critical region : z < " << z_quantile << endl;
+	cout << "Computed z : " << z_value << endl;
+	cout << "\n********************************************************" << endl;
+
+	cout << "\n*Reject the null hypothesis when the computed z is less than " << z_quantile << endl;
+		
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+	
+}
+
+void hypothesistest_twoproportions_twotailed(vector<string> data1, vector<string> data2, const string &inputString, double alpha)
+{
+	double p_value, p1, p2, q1, q2, p_pooled, q_pooled;
+	double z_value, z_quantile;
+
+	int x1_count = std::count(data1.begin(), data1.end(), inputString);
+	int n1 = data1.size();
+	int x2_count = std::count(data2.begin(), data2.end(), inputString);
+	int n2 = data2.size();
+	p1 = divisiond(x1_count,n1);
+	q1 = 1 - p1;
+	p2 = divisiond(x2_count,n2);
+	q2 = 1 - p2;
+	p_pooled = divisiond(x1_count + x2_count, n1 + n2);
+	q_pooled = 1 - p_pooled;
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nTwo-tailed hypothesis testing on two proportions" << endl;
+	cout << "\nH0: p1 = p2" << endl;
+	cout << "H1: p1 != p2" << endl;
+	cout << "Data 1 size =  "<< n1 << ", Data 2 size =  "<< n2 << endl;	
+	cout << "Amount of "<< inputString << " in the data 1 = " << x1_count << endl;		
+	cout << "Amount of "<< inputString << " in the data 2 = " << x2_count << endl;		
+	cout << "Proportion for "<< inputString << "\np1 = " << p1 << ", q1 = " << q1 << endl;	
+	cout << "p2 = " << p2 << ", q2 = " << q2 << endl;	
+	cout << "pooled estimate of p = " << p_pooled << ", pooled estimate of q = " << q_pooled << endl;	
+
+	z_quantile = zquantile(1-(0.5*alpha));
+	z_value = divisiond(p1 - p2,sqrt(p_pooled*q_pooled*(divisiond(1,n1) + divisiond(1,n2)))) ;
+	p_value = 2*normalcdf(-abs(z_value),0,1);
+
+	cout << "Critical region : z < -" << z_quantile << " or > " << z_quantile << endl;
+	cout << "Computed z : " << z_value << endl;
+	cout << "\n********************************************************" << endl;
+
+	cout << "\n*Reject the null hypothesis when the computed z is greater than " << z_quantile << " or less than -" << z_quantile << endl;
+		
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+	
+}
+
+void hypothesistest_onesamplevariance_righttailed(vector<double> data, double sigma, double alpha)
+{
+	double p_value;
+	double chi_value, chi_quantile;
+	int n = data.size();
+	int nu = n-1;
+	double variance = sigma*sigma;
+
+	double mean = calculateMean(data);
+	double sumSquaredDiff = 0.0;
+	for (double val : data) 
+	{
+		sumSquaredDiff += std::pow(val - mean, 2);
+	}
+	double variance_sample = sumSquaredDiff / (n - 1);
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nRight-tailed hypothesis testing on one-sample variance" << endl;
+	cout << "\nH0: σ^{2} = " << sigma*sigma << endl;
+	cout << "H1: σ^{2} > " << sigma*sigma << endl;
+	cout <<  "Mean data = " << mean << ", s^{2} = " << variance_sample << ", n =  "<< n << endl;	
+
+	chi_quantile = chisquaredquantile(nu,1-alpha);
+	chi_value = divisiond(nu*variance_sample,variance) ;
+	p_value = 1 - chisquaredcdf(chi_value,nu);
+
+	cout << "Critical region : χ^{2} > " << chi_quantile << endl;
+	cout << "Computed χ^{2} : " << chi_value << endl;
+	cout << "\n********************************************************" << endl;
+
+	cout << "\n*Reject the null hypothesis when the computed χ^{2} is greater than " << chi_quantile << endl;
+		
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+	
+}
+
+void hypothesistest_onesamplevariance_lefttailed(vector<double> data, double sigma, double alpha)
+{
+	double p_value;
+	double chi_value, chi_quantile;
+	int n = data.size();
+	int nu = n-1;
+	double variance = sigma*sigma;
+
+	double mean = calculateMean(data);
+	double sumSquaredDiff = 0.0;
+	for (double val : data) 
+	{
+		sumSquaredDiff += std::pow(val - mean, 2);
+	}
+	double variance_sample = sumSquaredDiff / (n - 1);
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nLeft-tailed hypothesis testing on one-sample variance" << endl;
+	cout << "\nH0: σ^{2} = " << sigma*sigma << endl;
+	cout << "H1: σ^{2} < " << sigma*sigma << endl;
+	cout <<  "Mean data = " << mean << ", s^{2} = " << variance_sample << ", n =  "<< n << endl;	
+
+	chi_quantile = chisquaredquantile(nu,alpha);
+	chi_value = divisiond(nu*variance_sample,variance) ;
+	p_value = chisquaredcdf(chi_value,nu);
+
+	cout << "Critical region : χ^{2} < " << chi_quantile << endl;
+	cout << "Computed χ^{2} : " << chi_value << endl;
+	cout << "\n********************************************************" << endl;
+
+	cout << "\n*Reject the null hypothesis when the computed χ^{2} is less than " << chi_quantile << endl;
+		
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+	
+}
+
+void hypothesistest_onesamplevariance_twotailed(vector<double> data, double sigma, double alpha)
+{
+	double p_value;
+	double chi_value, chi_quantile, chi_quantile2;
+	int n = data.size();
+	int nu = n-1;
+	double variance = sigma*sigma;
+
+	double mean = calculateMean(data);
+	double sumSquaredDiff = 0.0;
+	for (double val : data) 
+	{
+		sumSquaredDiff += std::pow(val - mean, 2);
+	}
+	double variance_sample = sumSquaredDiff / (n - 1);
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nTwo-tailed hypothesis testing on one-sample variance" << endl;
+	cout << "\nH0: σ^{2} = " << sigma*sigma << endl;
+	cout << "H1: σ^{2} != " << sigma*sigma << endl;
+	cout <<  "Mean data = " << mean << ", s^{2} = " << variance_sample << ", n =  "<< n << endl;	
+
+	chi_quantile = chisquaredquantile(nu,0.5*alpha);
+	chi_quantile2 = chisquaredquantile(nu,1 - (0.5*alpha));
+	chi_value = divisiond(nu*variance_sample,variance) ;
+	p_value = chisquaredcdf(chi_value,nu);
+
+	cout << "Critical region : χ^{2} < " << chi_quantile << " or  χ^{2} > " << chi_quantile2 << endl;
+	cout << "Computed χ^{2} : " << chi_value << endl;
+	cout << "\n********************************************************" << endl;
+
+	cout << "\n*Reject the null hypothesis when the computed χ^{2} is less than " << chi_quantile << " or  computed χ^{2} is greater than " << chi_quantile2 << endl;
+		
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+	
+}
+
+void hypothesistest_twosamplesvariances_righttailed(vector<double> data1,  vector<double> data2, double alpha)
+{
+	double p_value;
+	double F_value, F_quantile;
+	int n1 = data1.size();
+	int nu1 = n1-1;
+	int n2 = data2.size();
+	int nu2 = n2-1;
+
+	double mean1 = calculateMean(data1);
+	double sumSquaredDiff1 = 0.0;
+	for (double val : data1) 
+	{
+		sumSquaredDiff1 += std::pow(val - mean1, 2);
+	}
+	double variance_sample1 = sumSquaredDiff1 / (n1 - 1);
+
+	double mean2 = calculateMean(data2);
+	double sumSquaredDiff2 = 0.0;
+	for (double val : data2) 
+	{
+		sumSquaredDiff2 += std::pow(val - mean2, 2);
+	}
+	double variance_sample2 = sumSquaredDiff2 / (n2 - 1);
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nRight-tailed hypothesis testing on two-samples variances" << endl;
+	cout << "\nH0: σ1^{2} = σ2^{2}" << endl;
+	cout << "H1: σ1^{2} > σ2^{2}" << endl;
+	cout <<  "Mean data 1 = " << mean1 << ", s1^{2} = " << variance_sample1 << ", n1 =  "<< n1 << endl;	
+	cout <<  "Mean data 2 = " << mean2 << ", s2^{2} = " << variance_sample2 << ", n2 =  "<< n2 << endl;	
+
+	F_quantile = Fquantile(nu1,nu2,1-alpha);
+	F_value = divisiond(variance_sample1,variance_sample2) ;
+	p_value = 1 - Fcdf(F_value,nu1, nu2);
+
+	cout << "Critical region : f > " << F_quantile << endl;
+	cout << "Computed f : " << F_value << endl;
+	cout << "\n********************************************************" << endl;
+
+	cout << "\n*Reject the null hypothesis when the computed f is greater than " << F_quantile << endl;
+		
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+	
+}
+
+void hypothesistest_twosamplesvariances_lefttailed(vector<double> data1,  vector<double> data2, double alpha)
+{
+	double p_value;
+	double F_value, F_quantile;
+	int n1 = data1.size();
+	int nu1 = n1-1;
+	int n2 = data2.size();
+	int nu2 = n2-1;
+
+	double mean1 = calculateMean(data1);
+	double sumSquaredDiff1 = 0.0;
+	for (double val : data1) 
+	{
+		sumSquaredDiff1 += std::pow(val - mean1, 2);
+	}
+	double variance_sample1 = sumSquaredDiff1 / (n1 - 1);
+
+	double mean2 = calculateMean(data2);
+	double sumSquaredDiff2 = 0.0;
+	for (double val : data2) 
+	{
+		sumSquaredDiff2 += std::pow(val - mean2, 2);
+	}
+	double variance_sample2 = sumSquaredDiff2 / (n2 - 1);
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nLeft-tailed hypothesis testing on two-samples variances" << endl;
+	cout << "\nH0: σ1^{2} = σ2^{2}" << endl;
+	cout << "H1: σ1^{2} < σ2^{2}" << endl;
+	cout <<  "Mean data 1 = " << mean1 << ", s1^{2} = " << variance_sample1 << ", n1 =  "<< n1 << endl;	
+	cout <<  "Mean data 2 = " << mean2 << ", s2^{2} = " << variance_sample2 << ", n2 =  "<< n2 << endl;	
+
+	F_quantile = Fquantile(nu1,nu2,alpha);
+	F_value = divisiond(variance_sample1,variance_sample2) ;
+	p_value = Fcdf(F_value,nu1, nu2);
+
+	cout << "Critical region : f < " << F_quantile << endl;
+	cout << "Computed f : " << F_value << endl;
+	cout << "\n********************************************************" << endl;
+
+	cout << "\n*Reject the null hypothesis when the computed f is less than " << F_quantile << endl;
+		
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+	
+}
+
+void hypothesistest_twosamplesvariances_twotailed(vector<double> data1,  vector<double> data2, double alpha)
+{
+	double p_value;
+	double F_value, F_quantile, F_quantile2;
+	int n1 = data1.size();
+	int nu1 = n1-1;
+	int n2 = data2.size();
+	int nu2 = n2-1;
+
+	double mean1 = calculateMean(data1);
+	double sumSquaredDiff1 = 0.0;
+	for (double val : data1) 
+	{
+		sumSquaredDiff1 += std::pow(val - mean1, 2);
+	}
+	double variance_sample1 = sumSquaredDiff1 / (n1 - 1);
+
+	double mean2 = calculateMean(data2);
+	double sumSquaredDiff2 = 0.0;
+	for (double val : data2) 
+	{
+		sumSquaredDiff2 += std::pow(val - mean2, 2);
+	}
+	double variance_sample2 = sumSquaredDiff2 / (n2 - 1);
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nTwo-tailed hypothesis testing on two-samples variances" << endl;
+	cout << "\nH0: σ1^{2} = σ2^{2}" << endl;
+	cout << "H1: σ1^{2} != σ2^{2}" << endl;
+	cout <<  "Mean data 1 = " << mean1 << ", s1^{2} = " << variance_sample1 << ", n1 =  "<< n1 << endl;	
+	cout <<  "Mean data 2 = " << mean2 << ", s2^{2} = " << variance_sample2 << ", n2 =  "<< n2 << endl;	
+
+	F_quantile = Fquantile(nu1,nu2,1-(0.5*alpha));
+	F_quantile2 = Fquantile(nu1,nu2,0.5*alpha);
+	F_value = divisiond(variance_sample1,variance_sample2) ;
+	p_value = 2*(1-Fcdf(F_value,nu1, nu2));
+
+	cout << "Critical region : f > " << F_quantile << " and f < " << F_quantile2 << endl;
+	cout << "Computed f : " << F_value << endl;
+	cout << "\n********************************************************" << endl;
+
+	cout << "\n*Reject the null hypothesis when the computed f is greater than " << F_quantile << " or less than " << F_quantile2 << endl;
+		
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+	
+}
+
+void hypothesistest_categoricaldata(vector<vector<double>> data, double alpha)
+{
+	double p_value, Total_sum;
+	double chi_value, chi_quantile;
+	int n = data.size();
+	int C = data[0].size();
+	int nu = (n-1)*(C-1);
+	vector<double> total_column;
+	vector<double> total_row;
+	vector<vector<double>> expected_frequencies(n, vector<double>(C, 0.0));
+
+	for(int i = 0 ; i < C ; ++i)
+	{
+		double sum = 0;
+		for (int j = 0 ; j < n ; ++j)
+		{
+			sum += data[j][i]; // sum of the column
+		}
+			total_column.push_back(sum);
+			cout << "sum of column " << i << " = " << total_column[i] << endl;	
+	}
+	for(int i = 0 ; i < n ; ++i)
+	{
+		double sum = 0;
+		for (int j = 0 ; j < C ; ++j)
+		{
+			sum += data[i][j]; // sum of the column
+		}
+			total_row.push_back(sum);
+			cout << "sum of row " << i << " = " << total_row[i] << endl;	
+	}
+	Total_sum = std::accumulate(total_row.begin(), total_row.end(), 0.0) ;
+	
+	for(int i = 0 ; i < n ; ++i)
+	{
+		for (int j = 0 ; j < C ; ++j)
+		{
+			expected_frequencies[i][j] = divisiond(total_row[i]*total_column[j],Total_sum); 
+		}
+	}
+	for(int i = 0 ; i < n ; ++i)
+	{
+		for (int j = 0 ; j < C ; ++j)
+		{
+			chi_value += divisiond((data[i][j] - expected_frequencies[i][j])*(data[i][j] - expected_frequencies[i][j]), expected_frequencies[i][j]);
+		}
+	}
+	chi_quantile = chisquaredquantile(nu,1 - alpha);
+	p_value = 1 - chisquaredcdf(chi_value,nu);
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nHypothesis testing on categorical data" << endl;
+	cout << "\nH0: Independent" << endl;
+	cout << "H1: Not independent" << endl;
+	cout << "Number of rows =  "<< n << ", number of columns = " << C << endl;	
+	cout << "Degrees of freedom =  "<< nu << endl;	
+	
+	cout << "\nObserved Frequencies:" << endl;
+	printMatrix(data);
+	cout << "\nExpected Frequencies:" << endl;
+	printMatrix(expected_frequencies);
+	
+	cout << "Critical region : χ^{2} > " << chi_quantile << endl;
+	cout << "Computed χ^{2} : " << chi_value << endl;
+	cout << "\n********************************************************" << endl;
+
+	cout << "\n*Reject the null hypothesis when the computed χ^{2} is greater than " << chi_quantile << endl;
+		
+	cout << "\nP-value: " << p_value << endl;
+	cout << "\n*Reject null hypothesis if P-value <= "<< alpha << " , we fail to reject the null hypothesis if P-value > " << alpha << endl;
+	cout << "\n********************************************************" << endl;
+	
+}
+
+void countstring(vector<string> data, const string &inputString)
+{
+	int x_count = std::count(data.begin(), data.end(), inputString);
+	
+	cout << "The string \"" << inputString << "\" appears " << x_count << " times in the data." << endl;
+}
+
+void addstring(vector<string> &data, const string &inputString)
+{
+	data.push_back(inputString);
+}
+
+void regressionline(vector<vector<double>> matrix, double alpha)
+{
+	vector<double> x;
+	vector<double> y;
+	vector<double> y_fit;
+	
+	double x_mean, y_mean, b0,b1;
+	double sum_xy, sum_x, sum_y, sum_xsquared, Sxy, Sxx, Syy;
+	double SSE, SSR, SST, R_Squared, computed_f, p_value;
+	double s, variance_estimate, b1_lowerconfidenceinterval, b1_upperconfidenceinterval, b0_lowerconfidenceinterval, b0_upperconfidenceinterval ;
+	double fit, SE_fit, CI_lower, CI_upper, PI_lower, PI_upper;
+	sum_xy = 0;
+	sum_x = 0;
+	sum_y = 0;
+	sum_xsquared = 0;
+	Sxx = 0;
+	Syy = 0;
+	Sxy = 0;
+	int n = matrix.size(); // number of row
+	double t_quantile = tquantile(1,n-2,1-(0.5*alpha));
+
+	for(int i = 0; i < n; ++i)
+	{
+		x.push_back(matrix[i][0]);
+		y.push_back(matrix[i][1]);
+	}
+	x_mean = calculateMean(x);
+	y_mean = calculateMean(y);
+	
+	for(int i=0; i < n; ++i)
+	{
+		sum_x = sum_x + x[i];
+		sum_y = sum_y + y[i];
+		sum_xy = sum_xy +(x[i]*y[i]);
+		sum_xsquared = sum_xsquared + (x[i]*x[i]);	
+		Sxx = Sxx + (x[i] - x_mean)*(x[i] - x_mean);
+		Syy = Syy + (y[i] - y_mean)*(y[i] - y_mean);
+		Sxy = Sxy + (x[i] - x_mean)*(y[i] - y_mean);
+	}	
+	b1 = divisiond((n*sum_xy) - (sum_x*sum_y),(n*sum_xsquared)-(sum_x*sum_x));
+	b0 = divisiond(sum_y-(b1*sum_x),n);
+	SSE = Syy - (b1*Sxy);
+	SSR = b1*Sxy;
+	SST = SSR + SSE;
+	R_Squared = divisiond(SSR,SST);
+	variance_estimate = divisiond(SSE,n-2);
+	s = sqrt(variance_estimate) ;
+	computed_f = divisiond(SSR,variance_estimate);
+	int df_model = 1;
+	int df_total = n-1;
+	int df_error = df_total - df_model;
+	p_value = 1 - Fcdf(computed_f,df_model,df_error);
+	
+	for(int i = 0; i < n; ++i)
+	{
+		y_fit.push_back(b1*x[i] +b0);	
+	}
+	
+	//for(int i = 0; i < n; ++i)
+	//{
+	//	SE_fit = SE_fit + sqrt(divisiond((y[i] - y_fit[i])*(y[i] - y_fit[i]),n-2));	
+	//}
+	
+	b1_lowerconfidenceinterval = b1 - abs(t_quantile)*divisiond(sqrt(variance_estimate),sqrt(Sxx));
+	b1_upperconfidenceinterval = b1 + abs(t_quantile)*divisiond(sqrt(variance_estimate),sqrt(Sxx));
+	b0_lowerconfidenceinterval = b0 - abs(t_quantile)*divisiond(sqrt(variance_estimate),sqrt(n*Sxx))*sqrt(sum_xsquared);
+	b0_upperconfidenceinterval = b0 + abs(t_quantile)*divisiond(sqrt(variance_estimate),sqrt(n*Sxx))*sqrt(sum_xsquared);
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nSimple Linear Regression" << endl;
+	cout << "\nSxx = " << Sxx << " , Syy = "<< Syy << " , Sxy = " << Sxy << endl;
+	cout << "SSE = " << SSE << ", SSR = " << SSR << ", SST = " << SST << endl;
+	cout << "R-Squared = " << 100*R_Squared << " %" << endl;
+	cout << "Computed f = " << computed_f << ", P-value = " << p_value << endl;
+	cout << "\nAn unbiased estimate of σ^{2} is : \ns^{2} = " << variance_estimate << endl; 	
+	cout << "The estimated regression line is given by: \ny = " << b0 << " + " << b1 << "x" << endl;
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nAnalysis of Variance" << endl;
+	
+	cout << "\nSource" << setw(10) << "\t\t" << "DF" << setw(10) << "\t" << "SS" << setw(10) << "\t\t" << "MS" << setw(10) << "\t\t" << "F" << setw(10) << "\t" << "P" << endl;
+	cout << "Regression" << setw(10) << "\t" <<  df_model << setw(10) << "\t"  << SSR << setw(10) << "\t" << SSR << setw(10) << "\t" << computed_f << setw(10) << "\t" << p_value << endl;
+	cout << "Residual Error" << setw(10) << "\t" << df_error << setw(10) << "\t" << SSE << setw(10) << "\t" << variance_estimate << endl;
+	cout << "Total" << setw(10) << "\t\t" << df_total << setw(10) << "\t" << SST << endl;
+	
+	cout << "\nR-Squared"<< setw(10) << "\t" << "S" <<  endl;
+	cout << 100*R_Squared << " %" << setw(10) << "\t" << s << endl;
+
+	cout << "\nIf P value is less than the level of significance " << alpha << " then reject H0: β1 = 0"<< endl;
+	cout << "\nRejection of H0 may suggest that the relationship is, indeed, linear."<< endl;
+	cout << "The failure to reject H0: β1 = 0 suggests that there is no linear relationship between Y and x."<< endl;
+	cout << "\n********************************************************" << endl;
+	cout << "\nA "<< 100*(1-alpha) << "% confidence interval for the parameter β1 is : \n" << b1_lowerconfidenceinterval << " < β1 < " << b1_upperconfidenceinterval << endl; 	
+	cout << "A "<< 100*(1-alpha) << "% confidence interval for the parameter β0 is : \n" << b0_lowerconfidenceinterval << " < β0 < " << b0_upperconfidenceinterval << endl; 	
+	
+	cout << setprecision(6) << "\nObs" << setw(10) << "y_data"  << "\t\t" << "Fit" << "\t\t"<< "SE Fit" << setw(21) << 100*(1-alpha) << "% CI" << setw(27) << 100*(1-alpha) << "% PI" << endl;
+	for(int i=0; i < n; ++i)
+	{
+		fit = b1*x[i] +b0;
+		SE_fit = s*sqrt(divisiond(1,n) + divisiond((x[i]- x_mean)*(x[i] - x_mean),Sxx));
+		CI_lower = fit - abs(t_quantile)*sqrt(variance_estimate)*sqrt(divisiond(1,n) + divisiond((x[i]-x_mean)*(x[i]-x_mean),Sxx));
+		CI_upper = fit + abs(t_quantile)*sqrt(variance_estimate)*sqrt(divisiond(1,n) + divisiond((x[i]-x_mean)*(x[i]-x_mean),Sxx));
+		PI_lower = fit - abs(t_quantile)*sqrt(variance_estimate)*sqrt(1 + divisiond(1,n) + divisiond((x[i]-x_mean)*(x[i]-x_mean),Sxx));
+		PI_upper = fit + abs(t_quantile)*sqrt(variance_estimate)*sqrt(1 + divisiond(1,n) + divisiond((x[i]-x_mean)*(x[i]-x_mean),Sxx)) ;
+		cout << i+1 << "\t"<< y[i]  << "\t\t"<< fit << "\t\t" << SE_fit << setw(14) << "\t" << "("<< CI_lower <<" , " << CI_upper << ")" << "\t\t" << "("<< PI_lower <<" , " << PI_upper << ")" << endl;		
+	}
+}
 
 void ANOVA(vector<vector<double>> matrix)
 {

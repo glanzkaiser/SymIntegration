@@ -65,8 +65,18 @@ int fibonacciseries(int);
 double rising_pochhammer(double, int);
 double falling_pochhammer(double, int);
 
+Symbolic divisions(Symbolic, Symbolic);
+Symbolic factorialsym(Symbolic);
+Symbolic factorials(int);
+Symbolic combinationss(int, int);
+double divisionint(double, double);
+
 double factoriald(int);
 double combinationsd(int, int);
+
+vector<string> loadStringVector(const string&);
+void printStringVector(vector<string>);
+void saveVectordouble(vector<double>, const string&);
 
 double binomialpmf(int, int, double);
 double binomialcdf(int, int, double);
@@ -108,6 +118,9 @@ double normalmean(double, double, double);
 double normalvar(double, double, double);
 
 double zquantile(double);
+double tquantile(double, double, double);
+double Fquantile(double, double, double);
+double chisquaredquantile(double, double);
 
 double gammapdf(double, double, double);
 double gammacdf(double, double, double);
@@ -189,9 +202,57 @@ double calculateMean(vector<double>);
 double calculateCovariance(vector<double>, vector<double>); 
 SymbolicMatrix covariancematrix(vector<vector<double>>);
 
+vector<double> normalquantile(vector<double>, double);
+
+void confidenceinterval_onesampletwosides(vector<double>, double, double);
+void confidenceinterval_onesampleonesided(vector<double>, double, double);
+void confidenceinterval_onesampletwosides(vector<double>, double);
+void confidenceinterval_onesampleonesided(vector<double>, double);
+void predictioninterval(vector<double>, double, double);
+void predictioninterval(vector<double>, double);
+
+void confidenceinterval_knownsigma(vector<double>, vector<double>, double, double, double);
+void confidenceinterval_sameunknownsigma(vector<double>, vector<double>, double);
+void confidenceinterval_unequalunknownsigma(vector<double>, vector<double>, double);
+void confidenceinterval_paired(vector<double>, vector<double>, double);
+void confidenceinterval_proportion(vector<string>, const string&, double);
+void confidenceinterval_differencebetweentwoproportions(vector<string>, vector<string>, const string&, double);
+void confidenceinterval_variance(vector<double>, double);
+void confidenceinterval_ratiotwovariances(vector<double>, vector<double>, double);
+
 void hypothesistest(vector<double>, double, double, double, double);
 void hypothesistest_lefttailed(vector<double>, double, double, double, double);
 void hypothesistest_righttailed(vector<double>, double, double, double, double);
+
+void hypothesistest_knownvariances_righttailed(vector<double>, vector<double>, double, double, double, double, double);
+void hypothesistest_knownvariances_lefttailed(vector<double>, vector<double>, double, double, double, double, double);
+void hypothesistest_knownvariances_twotailed(vector<double>, vector<double>, double, double, double, double, double);
+void hypothesistest_equalunknownvariances_righttailed(vector<double>, vector<double>, double, double, double);
+void hypothesistest_equalunknownvariances_lefttailed(vector<double>, vector<double>, double, double, double);
+void hypothesistest_equalunknownvariances_twotailed(vector<double>, vector<double>, double, double, double);
+void hypothesistest_unequalunknownvariances_righttailed(vector<double>, vector<double>, double, double, double);
+void hypothesistest_unequalunknownvariances_lefttailed(vector<double>, vector<double>, double, double, double);
+void hypothesistest_unequalunknownvariances_twotailed(vector<double>, vector<double>, double, double, double);
+void hypothesistest_paired_righttailed(vector<double>, vector<double>, double, double, double);
+void hypothesistest_paired_lefttailed(vector<double>, vector<double>, double, double, double);
+void hypothesistest_paired_twotailed(vector<double>, vector<double>, double, double, double);
+void hypothesistest_proportion_righttailed(vector<string>, const string&, double, double);
+void hypothesistest_proportion_lefttailed(vector<string>, const string&, double, double);
+void hypothesistest_proportion_twotailed(vector<string>, const string&, double, double);
+void hypothesistest_twoproportions_righttailed(vector<string>, vector<string>, const string&, double);
+void hypothesistest_twoproportions_lefttailed(vector<string>, vector<string>, const string&, double);
+void hypothesistest_twoproportions_twotailed(vector<string>, vector<string>, const string&, double);
+void hypothesistest_onesamplevariance_righttailed(vector<double>, double, double);
+void hypothesistest_onesamplevariance_lefttailed(vector<double>, double, double);
+void hypothesistest_onesamplevariance_twotailed(vector<double>, double, double);
+void hypothesistest_twosamplesvariances_righttailed(vector<double>, vector<double>, double);
+void hypothesistest_twosamplesvariances_lefttailed(vector<double>, vector<double>, double);
+void hypothesistest_twosamplesvariances_twotailed(vector<double>, vector<double>, double);
+void hypothesistest_categoricaldata(vector<vector<double>>, double);
+
+void countstring(vector<string>, const string&);
+void addstring(vector<string>, const string&);
+void regressionline(vector<vector<double>>, double);
 void ANOVA(vector<vector<double>>);
 #endif
 #endif

@@ -8,11 +8,6 @@
 #ifndef SYMINTEGRATION_CPLUSPLUS_DSOLVE_DEFINE
 #define SYMINTEGRATION_CPLUSPLUS_DSOLVE_DEFINE
 
-double division(double x, double y)
-{
-	return x/y;
-}
-
 Symbolic dsolve(const Symbolic &fx, const Symbolic &y, const Symbolic &x)
 {
 	Symbolic dsol, mu, C("C");
