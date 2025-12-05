@@ -175,10 +175,6 @@ Symbolic logisticvar(double, double);
 
 double descriptivestatistics(vector<double>);
 
-double rpearson(const SymbolicMatrix&, int);
-Symbolic regressionline(const SymbolicMatrix&, int);
-vector<vector<double>> multipleregression(vector<vector<double>> &, vector<vector<double>> &);
-
 int randomnumberint(int, int, int);
 double randomnumberreal(double, double, int);
 
@@ -252,8 +248,15 @@ void hypothesistest_categoricaldata(vector<vector<double>>, double);
 
 void countstring(vector<string>, const string&);
 void addstring(vector<string>, const string&);
+double rpearson(const SymbolicMatrix&, int);
+Symbolic regressionline(const SymbolicMatrix&, int);
+vector<vector<double>> multipleregression(vector<vector<double>> &, vector<vector<double>> &);
+vector<vector<double>> multipleregressionfull(vector<vector<double>> &, vector<vector<double>> &, double);
 void regressionline(vector<vector<double>>, double);
 void ANOVA(vector<vector<double>>);
+void twoway_ANOVA(vector<vector<double>>, int, int);
+void threeway_ANOVA(vector<vector<double>>, int, int, int);
+
 #endif
 #endif
 

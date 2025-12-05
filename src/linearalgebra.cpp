@@ -106,6 +106,81 @@ void printVector(vector<double> vectorx)
 	}
 }
 
+vector<double> createVector(int n, double k)
+{
+	vector<double> resultVector(n, k);
+	
+	return resultVector;
+}
+
+vector<vector<double>> createMatrix(int R, int C, double k)
+{
+	vector<vector<double>> resultMatrix(R, vector<double>(C, k));
+	
+	return resultMatrix;
+}
+
+vector<vector<double>> addRow(vector<vector<double>> matrix, vector<double> vector_x, int k)
+{
+	int R = matrix.size();
+	int C = matrix[0].size();
+	vector<vector<double>> newMatrix(R, vector<double>(C));
+
+	// Check if the number of new column elements matches the number of rows
+	if (vector_x.size() != matrix.size()) 
+	{
+		cerr << "Error: Number of new row elements does not match the number of rows in the matrix." << endl;
+	}
+	for (int i = 0; i < R; ++i) 
+	{
+		for (int j = 0; j < C; ++j) 
+		{
+			newMatrix[i][j] = matrix[i][j];
+		}
+	}
+
+	// Insert another row at a specific index (e.g., after the first row)
+	// data.begin() + k points to the second element
+	newMatrix.insert(newMatrix.begin() + k, vector_x);
+	
+	return newMatrix;
+}
+
+vector<vector<double>> addColumn(vector<vector<double>> matrix, vector<double> vector_x, int k)
+{
+	int R = matrix.size();
+	int C = matrix[0].size();
+	vector<vector<double>> newMatrix(R, vector<double>(C+1));
+
+	// Check if the number of new column elements matches the number of rows
+	if (vector_x.size() != matrix.size()) 
+	{
+		cerr << "Error: Number of new column elements does not match the number of columns in the matrix." << endl;
+		 // Indicate an error
+	}
+	// Add the new column elements at index k
+	for (int i = 0; i < R; ++i) 
+	{
+		for (int j = 0; j < C+1; ++j) 
+		{
+			if (j < k)
+			{
+				newMatrix[i][j] = matrix[i][j];
+			}
+			if (j == k)
+			{
+				newMatrix[i][j] = vector_x[i];
+			}
+			if (j > k)
+			{
+				newMatrix[i][j] = matrix[i][j-1];
+			}
+		}
+	}
+
+	return newMatrix;
+}
+
 // Function to extract a column vector
 vector<double> getColumn(vector<vector<double>> matrix, int columnIndex) 
 {

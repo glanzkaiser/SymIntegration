@@ -1,4 +1,5 @@
 /*
+Thanks Freya, Berlin and Sentinel!
 #include <boost/math/distributions/beta.hpp> 
 #include <boost/math/distributions/gamma.hpp> 
 #include <boost/math/distributions/students_t.hpp>    
@@ -1428,89 +1429,7 @@ vector<double> normalquantile(vector<double> vector_x, double scale)
 	return nquantile;
 }
 
-double rpearson(const SymbolicMatrix &A, int N)
-{
-	double sum_xy, sum_x, sum_y, x_bar, y_bar, sum_xsquared, sum_ysquared, Sxy, Sx, Sy, r_pearson;
-	sum_xy = 0;
-	sum_x = 0;
-	sum_y = 0;
-	sum_xsquared = 0;
-	sum_ysquared = 0;
-	for(int i=0; i < N; ++i)
-	{
-		sum_x = sum_x + A[i][0];
-		sum_y = sum_y + A[i][1];
-		sum_xy = sum_xy +(A[i][0]*A[i][1]);
-		sum_xsquared = sum_xsquared + (A[i][0]*A[i][0]);
-		sum_ysquared = sum_ysquared + (A[i][1]*A[i][1]);
-		
-	}	
 
-	x_bar = sum_x/N;
-	y_bar = sum_y/N;
-
-	Sxy = (sum_xy/N) - (x_bar*y_bar);
-	Sx = sqrt(sum_xsquared/N - (x_bar*x_bar));
-	Sy = sqrt(sum_ysquared/N - (y_bar*y_bar));
-	r_pearson = Sxy/(Sx*Sy);
-
-	cout << "x bar: " << x_bar <<endl;
-	cout << "y bar: " << y_bar <<endl;
-	cout << "sum x: " << sum_x <<endl;
-	cout << "sum y: " << sum_y <<endl;
-	cout << "sum xy: " << sum_xy <<endl;
-	cout << "sum x^2: " << sum_xsquared <<endl;
-	cout << "sum y^2: " << sum_ysquared <<endl;
-
-	cout << "\nPearson's correlation coefficient, r : " << endl;
-
-	return r_pearson;
-}
-
-Symbolic regressionline(const SymbolicMatrix &A, int N)
-{
-	Symbolic x("x"), y("y");
-	double sum_xy, sum_x, sum_y, x_bar, y_bar, sum_xsquared, Sxy, Sx;
-	sum_xy = 0;
-	sum_x = 0;
-	sum_y = 0;
-	sum_xsquared = 0;
-	for(int i=0; i < N; ++i)
-	{
-		sum_x = sum_x + A[i][0];
-		sum_y = sum_y + A[i][1];
-		sum_xy = sum_xy +(A[i][0]*A[i][1]);
-		sum_xsquared = sum_xsquared + (A[i][0]*A[i][0]);	
-	}	
-
-	x_bar = sum_x/N;
-	y_bar = sum_y/N;
-
-	Sxy = (sum_xy/N) - (x_bar*y_bar);
-	Sx = sqrt(sum_xsquared/N - (x_bar*x_bar));
-	
-	Symbolic regression_line = (Sxy/(Sx*Sx))*(x-x_bar) + y_bar;
-
-	return regression_line;
-}
-
-vector<vector<double>> multipleregression(vector<vector<double>> &X, vector<vector<double>> &y)
-{
-	dmat X_t = transpose(X);
-	dmat XtX= multiply(X_t,X);
-	dmat inv = inverse(XtX);
-	dmat A = multiply(inv,X_t);
-	dmat b = multiply(A,y);
-
-	cout << endl;
-
-	int n = b.size();
-	for(int i = 0; i < n ; ++i)
-	{
-		cout <<"b["<< i <<"] = " << b[i][0] << endl;
-	}
-	return b;
-}
 // Function to calculate the mean of a vector
 double calculateMean(vector<double> data) 
 {
@@ -3652,6 +3571,75 @@ void addstring(vector<string> &data, const string &inputString)
 	data.push_back(inputString);
 }
 
+
+double rpearson(const SymbolicMatrix &A, int N)
+{
+	double sum_xy, sum_x, sum_y, x_bar, y_bar, sum_xsquared, sum_ysquared, Sxy, Sx, Sy, r_pearson;
+	sum_xy = 0;
+	sum_x = 0;
+	sum_y = 0;
+	sum_xsquared = 0;
+	sum_ysquared = 0;
+	for(int i=0; i < N; ++i)
+	{
+		sum_x = sum_x + A[i][0];
+		sum_y = sum_y + A[i][1];
+		sum_xy = sum_xy +(A[i][0]*A[i][1]);
+		sum_xsquared = sum_xsquared + (A[i][0]*A[i][0]);
+		sum_ysquared = sum_ysquared + (A[i][1]*A[i][1]);
+		
+	}	
+
+	x_bar = sum_x/N;
+	y_bar = sum_y/N;
+
+	Sxy = (sum_xy/N) - (x_bar*y_bar);
+	Sx = sqrt(sum_xsquared/N - (x_bar*x_bar));
+	Sy = sqrt(sum_ysquared/N - (y_bar*y_bar));
+	r_pearson = Sxy/(Sx*Sy);
+
+	cout << "x bar: " << x_bar <<endl;
+	cout << "y bar: " << y_bar <<endl;
+	cout << "sum x: " << sum_x <<endl;
+	cout << "sum y: " << sum_y <<endl;
+	cout << "sum xy: " << sum_xy <<endl;
+	cout << "sum x^2: " << sum_xsquared <<endl;
+	cout << "sum y^2: " << sum_ysquared <<endl;
+
+	cout << "\nPearson's correlation coefficient, r : " << endl;
+
+	return r_pearson;
+}
+
+Symbolic regressionline(const SymbolicMatrix &A, int N)
+{
+	Symbolic x("x"), y("y");
+	double sum_xy, sum_x, sum_y, x_bar, y_bar, sum_xsquared, Sxy, Sx;
+	sum_xy = 0;
+	sum_x = 0;
+	sum_y = 0;
+	sum_xsquared = 0;
+	for(int i=0; i < N; ++i)
+	{
+		sum_x = sum_x + A[i][0];
+		sum_y = sum_y + A[i][1];
+		sum_xy = sum_xy +(A[i][0]*A[i][1]);
+		sum_xsquared = sum_xsquared + (A[i][0]*A[i][0]);	
+	}	
+
+	x_bar = sum_x/N;
+	y_bar = sum_y/N;
+
+	Sxy = (sum_xy/N) - (x_bar*y_bar);
+	Sx = sqrt(sum_xsquared/N - (x_bar*x_bar));
+	
+	Symbolic regression_line = (Sxy/(Sx*Sx))*(x-x_bar) + y_bar;
+
+	return regression_line;
+}
+
+
+
 void regressionline(vector<vector<double>> matrix, double alpha)
 {
 	vector<double> x;
@@ -3760,9 +3748,138 @@ void regressionline(vector<vector<double>> matrix, double alpha)
 	}
 }
 
+vector<vector<double>> multipleregression(vector<vector<double>> &X, vector<vector<double>> &y)
+{
+	dmat X_t = transpose(X);
+	dmat XtX= multiply(X_t,X);
+	dmat inv = inverse(XtX);
+	dmat A = multiply(inv,X_t);
+	dmat b = multiply(A,y);
+
+	cout << endl;
+
+	int n = b.size();
+	for(int i = 0; i < n ; ++i)
+	{
+		cout <<"b["<< i <<"] = " << b[i][0] << endl;
+	}
+	return b;
+}
+
+vector<vector<double>> multipleregressionfull(vector<vector<double>> &X, vector<vector<double>> &y, double alpha)
+{
+	dmat X_t = transpose(X);
+	dmat XtX= multiply(X_t,X);
+	dmat inv = inverse(XtX);
+	dmat A = multiply(inv,X_t);
+	dmat b = multiply(A,y);
+	vector<double> vec_b = getColumn(b,0);
+	double SSE, SSR, SST, y_bar, MSR, MSE;
+	double t_quantile, computed_f, p_value;
+	int df_model, df_error, df_total;
+	double RMSE, r_square, r_square_adj;
+	double fit, SE_fit, CI_lower, CI_upper, PI_lower, PI_upper;
+
+	cout << endl;
+	int N = X.size();
+	int n = b.size();
+	for(int i = 0; i < n ; ++i)
+	{
+		cout <<"b["<< i <<"] = " << b[i][0] << endl;
+	}
+	
+	cout << "\ny = " << b[0][0] ;
+	for(int i = 1; i < n ; ++i)
+	{
+		cout << " +  " << b[i][0] << " x"<< i ;
+	}
+	
+	for(int i = 0; i < N; ++i)
+	{	
+		y_bar += y[i][0];
+	}	
+	y_bar = divisiond(y_bar,N);
+
+	for(int i = 0; i < N; ++i)
+	{	
+		double yi_hat = dot(getRow(X,i),vec_b);
+		SSE += (yi_hat-y[i][0])*(yi_hat-y[i][0]);
+		SST += (y[i][0] - y_bar)*(y[i][0] - y_bar);
+	}
+	SSR = SST - SSE;
+	df_model = X[0].size() - 1 ;
+	df_error = N - (df_model+1);
+	df_total = N-1;
+	MSR = divisiond(SSR,df_model);
+	MSE = divisiond(SSE,df_error);
+	computed_f = divisiond(MSR,MSE);
+	p_value = 1 - Fcdf(computed_f,df_model,df_error);
+	cout << "\n********************************************************" << endl;
+	cout << "\nAnalysis of Variance" << endl;
+	
+	cout << "\nSource" << setw(10) << "\t\t" << "DF" << setw(10) << "\t" << "SS" << setw(10) << "\t\t" << "MS" << setw(10) << "\t\t" << "F" << setw(10) << "\t\t" << "P-value" << endl;
+	cout << "Regression" << setw(10) << "\t" <<  df_model << setw(10) << "\t"  << SSR << setw(10) << "\t" << MSR << setw(10) << "\t" << computed_f << setw(10) << "\t" << p_value << endl;
+	cout << "Residual Error" << setw(10) << "\t" << df_error << setw(10) << "\t" << SSE << setw(10) << "\t" << MSE << endl;
+	cout << "Total" << setw(10) << "\t\t" << df_total << setw(10) << "\t" << SST << endl;
+	
+	cout << "\nRejection of H0 implies that the regression equation differs from a constant\n"<< endl;
+	
+	t_quantile = tquantile(1,df_error,1-(0.5*alpha));
+	r_square = 1 - SSE/SST;
+	r_square_adj = 1 - divisiond(SSE/df_error,SST/df_total);
+	RMSE = sqrt(MSE);
+
+	cout << "\nR-Square"<< setw(23) << "R-Square adjusted" << setw(23)  << "Grand Mean" << setw(23) << "Root MSE" << endl;
+	cout << r_square << setw(23) << r_square_adj <<setw(23) << y_bar << setw(23) << RMSE << endl;
+
+	// Compute the standard error from variable intercept to x1, x2, ..., xn
+	// Compute the t value from variable intercept to x1, x2, ..., xn
+	// Compute the P value from variable intercept to x1, x2, ..., xn
+	dmat se = scalarmultiplication(inv,MSE);
+	vector<double> v_stderror;
+	vector<double> v_tvalue;
+	vector<double> v_pvalue;
+	for(int i = 0; i < n ; ++i)
+	{
+		v_stderror.push_back(sqrt(se[i][i]));
+		v_tvalue.push_back(divisiond(vec_b[i],RMSE*sqrt(inv[i][i])));
+		v_pvalue.push_back(1-tcdf(abs(v_tvalue[i]),df_error));
+	}
+
+	cout << "\nVariable" << setw(10) << "DF"  << "\t\t" << "Parameter Estimate" << "\t\t"<< "Standard Error" << setw(10) << "\t\t"<< " t value" << "\t\t" << "P-value" << endl;
+	
+	cout << "Intercept" << setprecision(6) << "\t"<< 1  << "\t\t"<< vec_b[0] << "\t\t\t" << v_stderror[0] << setw(14) << "\t\t" << v_tvalue[0] << "\t\t" << v_pvalue[0] << endl;			
+	for(int i=0; i < n-1; ++i)
+	{
+		cout << "x" << i+1 << "\t\t"<< 1  << "\t\t"<< vec_b[i+1] << "\t\t\t" << v_stderror[i+1] << setw(14) << "\t\t" << v_tvalue[i+1]  << "\t\t" << v_pvalue[i+1] << endl;		
+	}
+
+	cout << "\nObs" << setw(11) << "y_data"  << "\t\t\t" << "Fit" << "\t\t\t"<< "SE Fit" << setw(11) << "\t"<< int(100*(1-alpha)) << "% CI" << setw(17) << "\t\t" << int(100*(1-alpha))<< "% PI" << setw(17)  << "\t\t" << "Residual" << endl;
+	for(int i=0; i < N; ++i)
+	{
+		vector<vector<double>> x0 ;
+		x0.push_back(getRow(X,i));
+		dmat x0_t = transpose(x0);
+		dmat r_mat = multiply(inv,x0_t);
+		
+		dvec v1 = getColumn(r_mat,0);
+		dvec v2 = getColumn(x0_t,0);
+		double std_error = dot(v1,v2);
+		
+		fit = dot(vec_b,v2);
+
+		SE_fit = abs(t_quantile)*RMSE*sqrt( std_error );
+		CI_lower = fit - abs(t_quantile)*RMSE*sqrt( std_error );
+		CI_upper = fit + abs(t_quantile)*RMSE*sqrt( std_error );
+		PI_lower = fit - abs(t_quantile)*RMSE*sqrt( 1 + std_error );
+		PI_upper = fit + abs(t_quantile)*RMSE*sqrt( 1 + std_error );
+		cout << i+1 << setprecision(6) << "\t"<< y[i][0]  << "\t\t"<< fit << "\t\t" << SE_fit << setw(14) << "\t" << "("<< CI_lower <<" , " << CI_upper << ")" << "\t\t" << "("<< PI_lower <<" , " << PI_upper << ")" << "\t\t" <<  y[i][0] - fit << endl;		
+	}
+	return b;
+}
+
 void ANOVA(vector<vector<double>> matrix)
 {
-	vector<vector<double>> anovamatrix;
 	vector<double> total_column;
 	vector<double> mean_column;
 	vector<double> sst_column;
@@ -3860,6 +3977,695 @@ void ANOVA(vector<vector<double>> matrix)
 	
 	cout << "\nR-Square"<< setw(23) << "Grand Mean" << setw(23) << "Root MSE" << endl;
 	cout << r_square << setw(23) << y_bar << setw(23) << sqrt(s1) << endl;
+	
+}
+
+void twoway_ANOVA(vector<vector<double>> matrix, int a, int b)
+{
+	vector<double> total_column;
+	vector<double> mean_column;
+	vector<double> total_row;
+	vector<double> total_row_a;
+	vector<double> mean_row;
+	vector<double> sst_column;
+	vector<double> ssa_column;
+
+	double mean_total;
+	double SST, SSA, SSB, SSAB, SSE, SSModel;
+
+	int R = matrix.size();
+	int C = matrix[0].size();
+	int N = 0; // computing total data
+
+	for(int i = 0 ; i < C ; ++i)
+	{
+		double sum = 0;
+		int R = matrix.size();		
+		for (int j = 0 ; j < R ; ++j)
+		{
+			sum += matrix[j][i]; // sum of the column
+		
+			if(matrix[j][i] !=0 )		
+			{
+				N = N+1;
+			}
+			else if(matrix[j][i] == 0 )		
+			{
+				N = N;
+			}
+
+		}
+			total_column.push_back(sum);
+			mean_column.push_back(sum/(R));			
+	}
+	for(int i = 0 ; i < R ; ++i)
+	{
+		double sum = 0;
+		for (int j = 0 ; j < C ; ++j)
+		{
+			sum += matrix[i][j]; // sum of the row
+		}
+			total_row.push_back(sum);
+	}
+	int n = N/(a*b);
+	int n_a = N/a; // number of samples per factor A
+	for(int i = 0 ; i < R ;)
+	{
+		double sum = 0;
+		for (int j = i ; j < i+n ; ++j)
+		{
+			sum += total_row[j]; // sum of the row for factor A level 1, 2, ..., a
+		}
+		total_row_a.push_back(sum);
+		mean_row.push_back(sum/(n_a));		
+		i = i+n;	
+		
+	}
+	/*for(int i = 0 ; i < a ; ++i)
+	{
+		cout << "\nsum of row" << i << " = " << total_row_a[i] << endl;
+		cout << "mean sum of row " << i << " = " << mean_row[i] << endl;
+	}*/
+	mean_total = std::accumulate(total_column.begin(), total_column.end(), 0.0) / N;
+	
+	// Compute SSA
+	for(int i = 0 ; i < a ; ++i)
+	{
+		SSA += (mean_row[i] - mean_total)*(mean_row[i] - mean_total);
+	}
+	SSA = SSA*b*n;
+
+	// Compute SSB	
+	for(int i = 0 ; i < b ; ++i)
+	{
+		SSB += (mean_column[i] - mean_total)*(mean_column[i] - mean_total);
+	}
+	SSB = SSB*a*n;
+
+	vector<vector<double>> mean_ij(a, vector<double>(C, 0.0));
+	//cout << mean_ij.size() << endl;
+	//cout << mean_ij[0].size() << endl;
+	
+	// To compute mean of the observations in the (ij)th cell
+	int index = 0;
+	for(int k = 0 ; k < a ; ++k)
+	{
+		for(int i = 0 ; i < C ; ++i)
+		{
+			double sum = 0;	
+			for (int j = index ; j < index+n ; ++j)
+			{
+				sum += matrix[j][i]; 
+			}
+			mean_ij[k][i] = sum/n;
+			//cout << "sum of  " << k << ","<< i << "cell = "<< mean_ij[k][i]<< endl;
+		}
+		index = index + n;
+	}
+
+	// Compute the marginal averages
+	vector<double> column_marginalaverages;
+	vector<double> row_marginalaverages;
+	for(int i = 0 ; i < a ; ++i)
+	{
+		vector<double> row_marginal = getRow(mean_ij,i);
+		row_marginalaverages.push_back(std::accumulate(row_marginal.begin(), row_marginal.end(), 0.0) / b);		
+	}
+	for(int i = 0 ; i < b ; ++i)
+	{
+		vector<double> column_marginal = getColumn(mean_ij,i);
+		column_marginalaverages.push_back(std::accumulate(column_marginal.begin(), column_marginal.end(), 0.0) / a);		
+	}
+
+	// Show the two-way table of averages
+	cout << "\n********************************************************" << endl;
+	cout << "\nTwo-way table of averages" << endl;
+	for (int i = 0 ; i < a ; ++i)
+	{
+		for (int j = 0 ; j < b ; ++j)
+		{
+			cout << std::fixed << setw(23) << setprecision(6) << mean_ij[i][j] ;
+		}
+		cout << setw(23) << " | " <<row_marginalaverages[i]<< endl;
+	}
+	for (int i = 0 ; i < b ; ++i)
+	{
+		cout << "--------------------------------" ;
+	}
+	cout << endl;
+	for (int i = 0 ; i < b ; ++i)
+	{
+		cout << std::fixed << setw(23) << setprecision(6) <<  column_marginalaverages[i] ;
+	}
+	
+	// Compute SSE
+	index = 0;
+	for(int k = 0 ; k < a ; ++k)
+	{
+		for(int i = 0 ; i < C ; ++i)
+		{	
+			for (int j = index ; j < index+n ; ++j)
+			{
+				SSE += (matrix[j][i] - mean_ij[k][i])*(matrix[j][i] - mean_ij[k][i]); 
+			}
+		}
+		index = index + n;
+	}
+	
+	// Compute SST
+	for(int i = 0 ; i < R ; ++i)
+	{	
+		for (int j = 0 ; j < C ; ++j)
+		{
+			SST += (matrix[i][j] - mean_total)*(matrix[i][j] - mean_total); 
+		}
+	}
+
+	SSAB = SST - SSA - SSB - SSE;
+	SSModel = SST - SSE;
+	int df_total = N-1;
+	int df_error = a*b*(n-1);
+	int df_model= df_total - df_error;
+	double MS_Model = divisiond(SSModel,df_model);
+	double MSE = divisiond(SSE,df_error);
+	double computed_f = divisiond(MS_Model,MSE);
+	double p_value = 1 - Fcdf(abs(computed_f),df_model,df_error);
+	double r_square = 1 - SSE/SST;
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nHypotheses for the Two-Factor Problem" << endl;
+	cout << "\nH0': α_{1} = α_{2} = ... = α_{a} = 0" << endl;
+	cout << "H1':  At least one of the α_{i} is not equal to zero" << endl;
+	cout << "\nH0'': β_{1} = β_{2} = ... = β_{b} = 0" << endl;
+	cout << "H1'':  At least one of the β_{j} is not equal to zero" << endl;
+	cout << "\nH0''': (αβ)_{11} = (αβ)_{12} = ... = (αβ)_{ab} = 0" << endl;
+	cout << "H1''':  At least one of the (αβ)_{ij} is not equal to zero" << endl;
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nAnalysis of Variance" << endl;
+	
+	cout << "\nSource" << setw(10) << "\t" << "DF" << setw(10) << "\t" << "SS" << setw(10) << "\t" << "MS" << "\t\t" << "F" << setw(10) << "\t" << "P" << endl;
+	cout << "Model" << setw(10) << "\t" <<  df_model << setw(10) << "\t" << SSModel << setw(5) << "\t" << MS_Model << setw(5) << "\t" << computed_f << setw(5) << "\t" << p_value << endl;
+	cout << "Error" << setw(10) << "\t" << df_error << setw(10) << "\t" << SSE << setw(5) << "\t" << MSE << endl;
+	cout << "Total" << setw(10) << "\t" << df_total << setw(10) << "\t" << SST << endl;
+	
+	cout << "\nR-Square"<< setw(23) << "Grand Mean" << setw(23) << "Root MSE" << endl;
+	cout << r_square << setw(23) << mean_total << setw(23) << sqrt(MSE) << endl;
+
+	int df_A = a-1;
+	int df_B = b-1;
+	int df_AB = (a-1)*(b-1);
+	double MS_A = divisiond(SSA,df_A);
+	double MS_B = divisiond(SSB,df_B);
+	double MS_AB = divisiond(SSAB,df_AB);
+	double computed_f_A = divisiond(MS_A,MSE);
+	double computed_f_B = divisiond(MS_B,MSE);
+	double computed_f_AB = divisiond(MS_AB,MSE);
+	double p_value_A = 1 - Fcdf(computed_f_A,df_A,df_error);
+	double p_value_B = 1 - Fcdf(computed_f_B,df_B,df_error);
+	double p_value_AB = 1 - Fcdf(computed_f_AB,df_AB,df_error);
+	cout << "\nAnalysis of Variance for the Two-Factor Experiment with n replications" << endl;
+	
+	cout << "\nSource" << setw(10) << "\t" << "DF" << setw(10) << "\t" << "Type III SS" << setw(10) << "\t" << "MS" << setw(10) << "\t\t" << "F" << setw(10) << "\t\t" << "P" << endl;
+	cout << "A" << setprecision(6) << setw(10) << "\t" <<  df_A << setw(10) << "\t" << SSA << setw(10) << "\t" << MS_A << setw(10) << "\t" << computed_f_A << setw(10) << "\t" << p_value_A << endl;
+	cout << "B" << setw(10) << "\t" << df_B << setw(10) << "\t" << SSB << setw(10) << "\t" <<  MS_B << setw(10) << "\t" << computed_f_B << setw(10) << "\t" << p_value_B << endl;
+	cout << "A * B" << setw(10) << "\t" << df_AB << setw(10) << "\t" << SSAB << setw(10) << "\t" << MS_AB << setw(10) << "\t" << computed_f_AB << setw(5) << "\t\t" << p_value_AB << endl;
+	
+}
+
+void threeway_ANOVA(vector<vector<double>> matrix, int a, int b, int c)
+{
+	vector<double> total_column;
+	vector<double> mean_column;
+	vector<double> total_row;
+	vector<double> total_factor_A;
+	vector<double> mean_factor_A;
+	vector<double> mean_factor_B;
+	vector<double> total_factor_C;
+	vector<double> mean_factor_C;
+	vector<double> sst_column;
+	vector<double> ssa_column;
+
+	double mean_total;
+	double SST, SSA, SSB, SSC, SSAB, SSAC, SSBC, SSABC, SSE, SSModel;
+
+	int R = matrix.size();
+	int C = matrix[0].size();
+	int N = 0; // computing total data
+
+	for(int i = 0 ; i < C ; ++i)  // Compute the average for the j-th level of factor B 
+	{
+		double sum = 0;
+		int R = matrix.size();		
+		for (int j = 0 ; j < R ; ++j)
+		{
+			sum += matrix[j][i]; // sum of the column
+		
+			if(matrix[j][i] !=0 )		
+			{
+				N = N+1;
+			}
+			else if(matrix[j][i] == 0 )		
+			{
+				N = N;
+			}
+
+		}
+			total_column.push_back(sum);
+			mean_column.push_back(sum/(R));			
+	}
+	for(int i = 0 ; i < R ; ++i)
+	{
+		double sum = 0;
+		for (int j = 0 ; j < C ; ++j)
+		{
+			sum += matrix[i][j]; // sum of the row
+		}
+			total_row.push_back(sum);
+	}
+
+	int n = N/(a*b*c);
+	int n_a = N/a; // number of samples per factor A
+	for(int i = 0 ; i < R ;) // Compute the average for the i-th level of factor A 
+	{
+		double sum = 0;
+		for (int j = i ; j < i+n ; ++j)
+		{
+			sum += total_row[j]; // sum of the row for factor A level 1, 2, ..., a
+		}
+		total_factor_A.push_back(sum);
+		mean_factor_A.push_back(sum/(n_a));		
+		i = i+n;	
+		
+	}
+	int n_c = N/c;
+	for(int i = 0 ; i < C ;)// Compute the average for the k-th level of factor C
+	{
+		double sum = 0;
+		for (int j = i ; j < i+b ; ++j)
+		{
+			sum += total_column[j]; // sum of the columns for factor C level 1, 2, ..., c
+		}
+		total_factor_C.push_back(sum);
+		mean_factor_C.push_back(sum/(n_c));		
+		i = i+b;	
+		
+	}
+
+	/*
+	for(int i = 0 ; i < a ; ++i) // Compute the average for the i-th level of factor A 
+	{
+		cout << "\nsum of row" << i << " = " << total_factor_a[i] << endl;
+		cout << "mean sum of row " << i << " = " << mean_factor_A[i] << endl;
+	}
+	for(int i = 0 ; i < C ; ++i) // Compute the average for the j-th level of factor B 
+	{
+		cout << "\nsum of column" << i << " = " << total_column[i] << endl;
+		cout << "mean sum of column " << i << " = " << mean_column[i] << endl;
+	}
+	for(int i = 0 ; i < c ; ++i) // Compute the average for the k-th level of factor C
+	{
+		cout << "\nsum of factor C" << i << " = " << total_factor_C[i] << endl;
+		cout << "mean sum of factor C " << i << " = " << mean_factor_C[i] << endl;
+	}
+	*/
+
+
+	mean_total = std::accumulate(total_column.begin(), total_column.end(), 0.0) / N;
+	
+	// Compute SSA
+	for(int i = 0 ; i < a ; ++i)
+	{
+		SSA += (mean_factor_A[i] - mean_total)*(mean_factor_A[i] - mean_total);
+	}
+	
+	SSA = SSA*b*c*n;
+	
+	// Compute SSB	
+	for(int i = 0 ; i < b ; ++i)
+	{
+		double sum = 0;
+		for (int j = 0; j < c; ++j)
+		{
+			sum += mean_column[i+b*j] ; // sum of the columns for factor B level 1, 2, ..., b 
+		}
+		mean_factor_B.push_back(sum/(c));		
+	}
+	for(int i = 0 ; i < b ; ++i)
+	{
+		SSB += (mean_factor_B[i] - mean_total)*(mean_factor_B[i] - mean_total);
+		
+	}
+	SSB = SSB*a*c*n;
+	
+	// Compute SSC
+	for(int i = 0 ; i < c ; ++i)
+	{
+		SSC += (mean_factor_C[i] - mean_total)*(mean_factor_C[i] - mean_total);
+	}
+	SSC = SSC*a*b*n;
+	
+	// Compute SST
+	for(int i = 0 ; i < R ; ++i)
+	{	
+		for (int j = 0 ; j < C ; ++j)
+		{
+			SST += (matrix[i][j] - mean_total)*(matrix[i][j] - mean_total); 
+		}
+	}
+	vector<vector<double>> mean_ij(a, vector<double>(C, 0.0));
+	
+	// To compute mean of the observations in the (ij)th cell
+	int index = 0;
+	for(int k = 0 ; k < a ; ++k)
+	{
+		for(int i = 0 ; i < C ; ++i)
+		{
+			double sum = 0;	
+			for (int j = index ; j < index+n ; ++j)
+			{
+				sum += matrix[j][i]; 
+			}
+			mean_ij[k][i] = sum/n;
+		}
+		index = index + n;
+	}
+	
+
+	vector<vector<double>> mean_ij_final(a, vector<double>(b, 0.0));
+	
+	for(int k = 0 ; k < a ; ++k)
+	{
+		for(int i = 0 ; i < b ; ++i)
+		{
+			double sum = 0;	
+			for (int j = 0 ; j < c ; ++j)
+			{
+				sum += mean_ij[k][i+b*j]; 
+			}
+			mean_ij_final[k][i] = sum/c;
+		}
+	}
+	//printMatrix(mean_ij_final);
+
+	vector<vector<double>> mean_jk(b, vector<double>(c, 0.0));
+	for(int i = 0 ; i < b ; ++i)
+	{
+		for(int j = 0 ; j < c ; ++j)
+		{
+			vector<double> column_marginal = getColumn(matrix,i+j*b);		
+			mean_jk[i][j] = std::accumulate(column_marginal.begin(), column_marginal.end(), 0.0) / R ; 
+		}
+	}
+	//printMatrix(mean_jk);
+	
+	vector<vector<double>> mean_ik(a, vector<double>(c, 0.0));
+
+	int n_ik = N/(a*c);
+	int row_A = R/a;
+	int col_C = C/c;
+	for(int k_row = 0 ; k_row < a ; ++k_row)
+	{
+		for(int k_col = 0 ; k_col < c ; ++k_col)
+		{
+			double sum = 0;	
+			for(int i = 0 ; i < row_A ; ++i)
+			{
+				for (int j = 0 ; j < col_C ; ++j)
+				{
+					sum += matrix[i+ k_row*row_A][j + k_col*col_C]; 
+				}				
+			}			
+			mean_ik[k_row][k_col] = sum/n_ik;
+		}		
+	}
+	//printMatrix(mean_ik);
+
+	vector<vector<double>> mean_ijk(a, vector<double>(b*c, 0.0));
+
+	int col_BC = b*c;
+	for(int k_row = 0 ; k_row < a ; ++k_row)
+	{
+		for(int k_col = 0 ; k_col < col_BC ; ++k_col)
+		{
+			double sum = 0;	
+			for(int i = 0 ; i < n ; ++i)
+			{
+				sum += matrix[i+ k_row*row_A][k_col]; 				
+			}			
+			mean_ijk[k_row][k_col] = sum/n;
+		}		
+	}
+	//printMatrix(mean_ijk);
+
+	// Compute SS(AB)
+	for(int i = 0 ; i < a ; ++i)
+	{	
+		for (int j = 0 ; j < b ; ++j)
+		{
+			SSAB += (mean_ij_final[i][j] - mean_factor_A[i] - mean_factor_B[j] + mean_total)*(mean_ij_final[i][j] - mean_factor_A[i] - mean_factor_B[j] + mean_total); 
+		}
+	}
+	SSAB = c*n*SSAB;
+	
+	// Compute SS(AC)
+	for(int i = 0 ; i < a ; ++i)
+	{	
+		for (int j = 0 ; j < c ; ++j)
+		{
+			SSAC += (mean_ik[i][j] - mean_factor_A[i] - mean_factor_C[j] + mean_total)*(mean_ik[i][j] - mean_factor_A[i] - mean_factor_C[j] + mean_total); 
+		}
+	}
+	SSAC = b*n*SSAC;
+
+	// Compute SS(BC)
+	for(int i = 0 ; i < b ; ++i)
+	{	
+		for (int j = 0 ; j < c ; ++j)
+		{
+			SSBC += (mean_jk[i][j] - mean_factor_B[i] - mean_factor_C[j] + mean_total)*(mean_jk[i][j] - mean_factor_B[i] - mean_factor_C[j] + mean_total); 
+		}
+	}
+	SSBC = a*n*SSBC;
+
+	// Compute SSE
+	index = 0;
+	for(int k = 0 ; k < a ; ++k)
+	{
+		for(int i = 0 ; i < col_BC ; ++i)
+		{	
+			for (int j = index ; j < index+n ; ++j)
+			{
+				SSE += (matrix[j][i] - mean_ijk[k][i])*(matrix[j][i] - mean_ijk[k][i]); 
+			}
+		}
+		index = index + n;
+	}
+
+	// Compute SS(ABC)
+	SSABC = SST - SSA - SSB - SSC - SSAB - SSAC- SSBC - SSE;
+	
+	
+	// Compute the marginal averages
+	vector<double> column_marginalaverages;
+	vector<double> row_marginalaverages;
+	for(int i = 0 ; i < a ; ++i)
+	{
+		vector<double> row_marginal = getRow(mean_ij_final,i);
+		row_marginalaverages.push_back(std::accumulate(row_marginal.begin(), row_marginal.end(), 0.0) / b);		
+	}
+	for(int i = 0 ; i < b ; ++i)
+	{
+		vector<double> column_marginal = getColumn(mean_ij_final,i);
+		column_marginalaverages.push_back(std::accumulate(column_marginal.begin(), column_marginal.end(), 0.0) / a);		
+	}
+
+	
+	//	************************AB table of averages************************
+	
+	vector<double> column_marginalaverages_ij;
+	vector<double> row_marginalaverages_ij;
+	for(int i = 0 ; i < a ; ++i)
+	{
+		vector<double> row_marginal_ij = getRow(mean_ij_final,i);
+		row_marginalaverages_ij.push_back(std::accumulate(row_marginal_ij.begin(), row_marginal_ij.end(), 0.0) / b);		
+	}
+	for(int i = 0 ; i < b ; ++i)
+	{
+		vector<double> column_marginal_ij = getColumn(mean_ij_final,i);
+		column_marginalaverages_ij.push_back(std::accumulate(column_marginal_ij.begin(), column_marginal_ij.end(), 0.0) / a);		
+	}
+	// Show the two-way table of averages
+	cout << "\n********************************************************" << endl;
+	cout << "\nTwo-way table of averages, A (row) and B (column)" << endl;
+	for (int i = 0 ; i < a ; ++i)
+	{
+		for (int j = 0 ; j < b ; ++j)
+		{
+			cout << std::fixed << setw(23) << setprecision(6) << mean_ij_final[i][j] ;
+		}
+		cout << setw(23) << " | " <<row_marginalaverages_ij[i]<< endl;
+	}
+	for (int i = 0 ; i < a ; ++i)
+	{
+		cout << "--------------------------------" ;
+	}
+	cout << endl;
+	for (int i = 0 ; i < b ; ++i)
+	{
+		cout << std::fixed << setw(23) << setprecision(6) <<  column_marginalaverages_ij[i] ;
+	}
+	//	***********************************************************************
+
+	//	************************AC table of averages************************
+	vector<double> column_marginalaverages_ik;
+	vector<double> row_marginalaverages_ik;
+	for(int i = 0 ; i < a ; ++i)
+	{
+		vector<double> row_marginal_ik = getRow(mean_ik,i);
+		row_marginalaverages_ik.push_back(std::accumulate(row_marginal_ik.begin(), row_marginal_ik.end(), 0.0) / c);		
+	}
+	for(int i = 0 ; i < c ; ++i)
+	{
+		vector<double> column_marginal_ik = getColumn(mean_ik,i);
+		column_marginalaverages_ik.push_back(std::accumulate(column_marginal_ik.begin(), column_marginal_ik.end(), 0.0) / a);		
+	}
+	// Show the two-way table of averages
+	cout << "\n\n********************************************************" << endl;
+	cout << "\nTwo-way table of averages, A (row) and C (column)" << endl;
+	for (int i = 0 ; i < a ; ++i)
+	{
+		for (int j = 0 ; j < c ; ++j)
+		{
+			cout << std::fixed << setw(23) << setprecision(6) << mean_ik[i][j] ;
+		}
+		cout << setw(23) << " | " <<row_marginalaverages_ik[i]<< endl;
+	}
+	for (int i = 0 ; i < a ; ++i)
+	{
+		cout << "--------------------------------" ;
+	}
+	cout << endl;
+	for (int i = 0 ; i < c ; ++i)
+	{
+		cout << std::fixed << setw(23) << setprecision(6) <<  column_marginalaverages_ik[i] ;
+	}
+	//	***********************************************************************
+
+	//	************************BC table of averages************************
+	vector<double> column_marginalaverages_jk;
+	vector<double> row_marginalaverages_jk;
+	for(int i = 0 ; i < b ; ++i)
+	{
+		vector<double> row_marginal_jk = getRow(mean_jk,i);
+		row_marginalaverages_jk.push_back(std::accumulate(row_marginal_jk.begin(), row_marginal_jk.end(), 0.0) / c);		
+	}
+	for(int i = 0 ; i < c ; ++i)
+	{
+		vector<double> column_marginal_jk = getColumn(mean_jk,i);
+		column_marginalaverages_jk.push_back(std::accumulate(column_marginal_jk.begin(), column_marginal_jk.end(), 0.0) / b);		
+	}
+	// Show the two-way table of averages
+	cout << "\n\n********************************************************" << endl;
+	cout << "\nTwo-way table of averages, B (row) and C (column)" << endl;
+	for (int i = 0 ; i < b ; ++i)
+	{
+		for (int j = 0 ; j < c ; ++j)
+		{
+			cout << std::fixed << setw(23) << setprecision(6) << mean_jk[i][j] ;
+		}
+		cout << setw(23) << " | " <<row_marginalaverages_jk[i]<< endl;
+	}
+	for (int i = 0 ; i < b ; ++i)
+	{
+		cout << "--------------------------------" ;
+	}
+	cout << endl;
+	for (int i = 0 ; i < c ; ++i)
+	{
+		cout << std::fixed << setw(23) << setprecision(6) <<  column_marginalaverages_jk[i] ;
+	}
+	//	***********************************************************************
+	
+	SSModel = SST - SSE;
+	int df_total = N-1;
+	int df_error = a*b*c*(n-1);
+	int df_model= df_total - df_error;
+	double MS_Model = divisiond(SSModel,df_model);
+	double MSE = divisiond(SSE,df_error);
+	double computed_f = divisiond(MS_Model,MSE);
+	double p_value = 1 - Fcdf(abs(computed_f),df_model,df_error);
+	double r_square = 1 - SSE/SST;
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nHypotheses for the Three-Factor Problem" << endl;
+	cout << "\nH0^{(1)}: α_{1} = α_{2} = ... = α_{a} = 0" << endl;
+	cout << "H1^{(1)}:  At least one of the α_{i} is not equal to zero" << endl;
+	cout << "\nH0^{(2)}: β_{1} = β_{2} = ... = β_{b} = 0" << endl;
+	cout << "H1^{(2)}:  At least one of the β_{j} is not equal to zero" << endl;
+	cout << "\nH0^{(3)}: γ_{1} = γ_{2} = ... = γ_{c} = 0" << endl;
+	cout << "H1^{(3)}:  At least one of the γ_{k} is not equal to zero" << endl;
+	cout << "\nH0^{(4)}: (αβ)_{11} = (αβ)_{12} = ... = (αβ)_{ab} = 0" << endl;
+	cout << "H1^{(4)}:  At least one of the (αβ)_{ij} is not equal to zero" << endl;
+	cout << "\nH0^{(5)}: (αγ)_{11} = (αγ)_{12} = ... = (αγ)_{ac} = 0" << endl;
+	cout << "H1^{(5)}:  At least one of the (αγ)_{ik} is not equal to zero" << endl;
+	cout << "\nH0^{(6)}: (βγ)_{11} = (βγ)_{12} = ... = (βγ)_{bc} = 0" << endl;
+	cout << "H1^{(6)}:  At least one of the (βγ)_{jk} is not equal to zero" << endl;
+	cout << "\nH0^{(7)}: (αβγ)_{111} = (αβγ)_{112} = ... = (αβγ)_{abc} = 0" << endl;
+	cout << "H1^{(7)}:  At least one of the (αβγ)_{ijk} is not equal to zero" << endl;
+
+	cout << "\n********************************************************" << endl;
+	cout << "\nAnalysis of Variance" << endl;
+	
+	cout << "\nSource" << setw(10) << "\t" << "DF" << setw(10) << "\t" << "SS" << setw(10) << "\t" << "MS" << "\t\t" << "F" << setw(10) << "\t" << "P" << endl;
+	cout << "Model" << setw(10) << "\t" <<  df_model << setw(10) << "\t" << SSModel << setw(5) << "\t" << MS_Model << setw(5) << "\t" << computed_f << setw(5) << "\t" << p_value << endl;
+	cout << "Error" << setw(10) << "\t" << df_error << setw(10) << "\t" << SSE << setw(5) << "\t" << MSE << endl;
+	cout << "Total" << setw(10) << "\t" << df_total << setw(10) << "\t" << SST << endl;
+	
+	cout << "\nR-Square"<< setw(23) << "Grand Mean" << setw(23) << "Root MSE" << endl;
+	cout << r_square << setw(23) << mean_total << setw(23) << sqrt(MSE) << endl;
+
+	int df_A = a-1;
+	int df_B = b-1;
+	int df_C = c-1;
+	int df_AB = (a-1)*(b-1);
+	int df_AC = (a-1)*(c-1);
+	int df_BC = (b-1)*(c-1);
+	int df_ABC = (a-1)*(b-1)*(c-1);
+	double MS_A = divisiond(SSA,df_A);
+	double MS_B = divisiond(SSB,df_B);
+	double MS_C = divisiond(SSC,df_C);
+	double MS_AB = divisiond(SSAB,df_AB);
+	double MS_AC = divisiond(SSAC,df_AC);
+	double MS_BC = divisiond(SSBC,df_BC);
+	double MS_ABC = divisiond(SSABC,df_ABC);
+	double computed_f_A = divisiond(MS_A,MSE);
+	double computed_f_B = divisiond(MS_B,MSE);
+	double computed_f_C = divisiond(MS_C,MSE);
+	double computed_f_AB = divisiond(MS_AB,MSE);
+	double computed_f_AC = divisiond(MS_AC,MSE);
+	double computed_f_BC = divisiond(MS_BC,MSE);
+	double computed_f_ABC = divisiond(MS_ABC,MSE);
+	double p_value_A = 1 - Fcdf(computed_f_A,df_A,df_error);
+	double p_value_B = 1 - Fcdf(computed_f_B,df_B,df_error);
+	double p_value_C = 1 - Fcdf(computed_f_C,df_C,df_error);
+	double p_value_AB = 1 - Fcdf(computed_f_AB,df_AB,df_error);
+	double p_value_AC = 1 - Fcdf(computed_f_AC,df_AC,df_error);
+	double p_value_BC = 1 - Fcdf(computed_f_BC,df_BC,df_error);
+	double p_value_ABC = 1 - Fcdf(computed_f_ABC,df_ABC,df_error);
+	cout << "\nAnalysis of Variance for the Three-Factor Experiment with n replications" << endl;
+	
+	cout << "\nSource" << setw(10) << "\t" << "DF" << setw(10) << "\t" << "Type III SS" << setw(10) << "\t" << "MS" << setw(10) << "\t\t" << "F" << setw(10) << "\t\t" << "P" << endl;
+	cout << "A" << setprecision(6) << setw(10) << "\t" <<  df_A << setw(10) << "\t" << SSA << setw(10) << "\t" << MS_A << setw(10) << "\t" << computed_f_A << setw(10) << "\t" << p_value_A << endl;
+	cout << "B" << setw(10) << "\t" << df_B << setw(10) << "\t" << SSB << setw(10) << "\t" <<  MS_B << setw(10) << "\t" << computed_f_B << setw(10) << "\t" << p_value_B << endl;
+	cout << "C" << setw(10) << "\t" << df_C << setw(10) << "\t" << SSC << setw(10) << "\t" <<  MS_C << setw(10) << "\t" << computed_f_C << setw(10) << "\t" << p_value_C << endl;
+	cout << "A * B" << setw(10) << "\t" << df_AB << setw(10) << "\t" << SSAB << setw(10) << "\t" << MS_AB << setw(10) << "\t" << computed_f_AB << setw(5) << "\t\t" << p_value_AB << endl;
+	cout << "A * C" << setw(10) << "\t" << df_AC << setw(10) << "\t" << SSAC << setw(10) << "\t" << MS_AC << setw(10) << "\t" << computed_f_AC << setw(5) << "\t\t" << p_value_AC << endl;
+	cout << "B * C" << setw(10) << "\t" << df_BC << setw(10) << "\t" << SSBC << setw(10) << "\t" << MS_BC << setw(10) << "\t" << computed_f_BC << setw(5) << "\t\t" << p_value_BC << endl;
+	cout << "A * B * C" << "\t" << df_ABC << setw(10) << "\t" << SSABC << setw(10) << "\t" << MS_ABC << setw(10) << "\t" << computed_f_ABC << setw(5) << "\t\t" << p_value_ABC << endl;
+	cout << "Error" << setw(10) << "\t" << df_error << setw(10) << "\t" << SSE << setw(10) << "\t" << MSE << endl;
+	cout << "-----------------------------------------------------------" << endl;
+	cout << "Total" << setw(10) << "\t" << df_total << setw(10) << "\t" << SST << endl;
 	
 }
 #endif

@@ -40,8 +40,12 @@ vector<vector<double>> loadMatrixFromFile(const string&);
 vector<double> loadVectorFromFile(const string&);
 void printMatrix(vector<vector<double>>);
 void printVector(vector<double>);
+vector<double> createVector(int, double); 
+vector<vector<double>> createMatrix(int, int, double);
 vector<double> getColumn(vector<vector<double>>, int); 
 vector<double> getRow(vector<vector<double>>, int); 
+vector<vector<double>> addColumn(vector<vector<double>>, vector<double>, int);
+vector<vector<double>> addRow(vector<vector<double>>, vector<double>, int);
 
 vector<vector<double>> multiply(vector<vector<double>>  &, vector<vector<double>> &);
 vector<vector<double>> add(vector<vector<double>>  &, vector<vector<double>> &);

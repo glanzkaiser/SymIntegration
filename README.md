@@ -47,7 +47,7 @@ It is able to compute
 16. Numerical differentiation and Richardson's Extrapolation.
 17. Matrices multiplication, addition, LU decomposition, Cholesky decomposition
 18. Generate random number that has certain distribution (uniform, gamma, beta, normal, F, chi-squared) and plot the histogram with Hamzstplot
-19. Compute One-Way ANOVA, multiple regression model.
+19. Compute one-way ANOVA, two-way ANOVA, three-way ANOVA, multiple regression model.
 20. Compute one-tailed and two-tailed hypothesis testing. One- and Two-Sample Estimation Problem, e.g. Confidence Interval and Prediction Interval.
 21. Compute cdf of Normal, student's t distribution, F distribution, chi-squared distribution, beta distribution, gamma distribution without Boost.
 22. Compute the quantile of standard normal distribution / inverse of cdf without Boost.
@@ -158,12 +158,13 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Gaussian elimination							| Done
 |:sunflower:   | Create covariance matrix						| Done
 |:sunflower:   | Create lattice and plot with Gnuplot					| Done
-|:sunflower:   | Compute one-way ANOVA							| Done
+|:sunflower:   | Compute one-way ANOVA, two-way ANOVA, three-way ANOVA			| Done
 |:sunflower:   | Compute multiple regression model					| Done
 |:sunflower:   | Compute one-tailed and two-tailed hypothesis testing			| Done
 |:sunflower:   | One- and Two-Sample Estimation Problem, e.g. Confidence Interval and Prediction Interval		| Done
 |:sunflower:   | Transcription and translation from DNA to mRNA to polypeptide (Molecular biology)			| Done
 
+We write the definitions, theorems, examples, how to run the source code and use the functions in the book. If you are curious, then read the book.
 
 # Milestone
 
@@ -421,3 +422,14 @@ We are also able to compute direction fields from input of symbolic function $`f
 The test code can be located in the folder `Examples/Test SymIntegration Compute Direction Fields/main.cpp`
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/48.png" width="60%">
+
+By December 5th, 2025: Before Christmas this year, we already have made a lot of progress.
+
+In particular, I re-read Probability and Statistics for Engineers and Scientists book by Walpole and create a lot of functions till chapter 14, ranging from confidence interval, hypothesis testing, and multiple linear regression.
+
+We have one-way ANOVA, two-way ANOVA, and three-way ANOVA functions in SymIntegration now.
+
+We will move on to Linear Algebra completely, and will come back to Statistics again one day, continuing where we have left after ANOVA: Bayesian statistics and Machine Learning is next.
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/49.png" width="60%">
+
