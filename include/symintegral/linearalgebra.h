@@ -42,16 +42,29 @@ void printMatrix(vector<vector<double>>);
 void printVector(vector<double>);
 vector<double> createVector(int, double); 
 vector<vector<double>> createMatrix(int, int, double);
+vector<vector<double>> createMatrixFromColumnVectors(const vector<vector<double>> &);
 vector<double> getColumn(vector<vector<double>>, int); 
 vector<double> getRow(vector<vector<double>>, int); 
 vector<vector<double>> addColumn(vector<vector<double>>, vector<double>, int);
 vector<vector<double>> addRow(vector<vector<double>>, vector<double>, int);
+void deleteColumn(vector<vector<double>> &, int);
+void deleteRow(vector<vector<double>> &, int);
 
 vector<vector<double>> multiply(vector<vector<double>>  &, vector<vector<double>> &);
 vector<vector<double>> add(vector<vector<double>>  &, vector<vector<double>> &);
 vector<vector<double>> transpose(const vector<vector<double>> &);
 void scalarmultiplication_alt(vector<vector<double>> &, double);
 vector<vector<double>> scalarmultiplication(vector<vector<double>>, double);
+
+void spanningtest(vector<vector<double>> &);
+void basistest(vector<vector<double>> &);
+void linearindependencetest(vector<vector<double>> &);
+void coordinatevector(vector<vector<double>> &, vector<vector<double>> &);
+void basistransition(vector<vector<double>> &, vector<vector<double>> &);
+void basistransition_withcoordinatevector(vector<vector<double>> &, vector<vector<double>> &, vector<double> &);
+void rowspacebasis(vector<vector<double>> &);
+void columnspacebasis(vector<vector<double>> &);
+void homogeneouslinearsystembasis(vector<vector<double>> &);
 
 void getCofactor(vector<vector<double>> &, vector<vector<double>> &, int, int, int);
 double determinant1(vector<vector<double>> &, int);
@@ -78,6 +91,7 @@ double scalartripleproduct(vector<double> &, vector<double> &, vector<double> &)
 SymbolicMatrix vectorequation(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
 void vectorequationdecomp(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, vector<double> &, vector<double> &, vector<double> &);
 
+void gaussianelimination(const vector<vector<double>> &);
 Symbolic gaussianelimination(const SymbolicMatrix&, int);
 Symbolic gaussianeliminationtest(const SymbolicMatrix&, int, int);
 

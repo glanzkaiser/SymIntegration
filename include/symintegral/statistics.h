@@ -75,6 +75,7 @@ double factoriald(int);
 double combinationsd(int, int);
 
 vector<string> loadStringVector(const string&);
+vector<vector<string>> loadStringMatrix(const string&);
 void printStringVector(vector<string>);
 void saveVectordouble(vector<double>, const string&);
 

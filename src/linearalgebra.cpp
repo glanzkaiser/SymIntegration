@@ -21,7 +21,7 @@ using namespace std;
 #include <bits/stdc++.h> //for setw(6) 
 #include <iomanip> // to declare the manipulator of setprecision()
 #include <map>
-#include <algorithm> // For std::max_element,  std::sort, std::reverse
+#include <algorithm> // For std::max_element,  std::sort, std::reverse ,  std::for_each
 #include <numeric> // For std::accumulate
 #include <random> // For random number generation
 
@@ -120,6 +120,42 @@ vector<vector<double>> createMatrix(int R, int C, double k)
 	return resultMatrix;
 }
 
+// Function to create a matrix from a vector of column vectors
+vector<vector<double>> createMatrixFromColumnVectors(const vector<vector<double>>& columnVectors) 
+{
+
+	if (columnVectors.empty()) 
+	{
+		return {}; // Return an empty matrix if no column vectors are provided
+	}
+
+	// Determine the number of rows (height) from the first column vector's size
+	size_t numRows = columnVectors[0].size();
+	// Determine the number of columns (width) from the number of column vectors
+	size_t numCols = columnVectors.size();
+
+	// Initialize the matrix with the correct dimensions
+	vector<vector<double>> matrix(numRows, vector<double>(numCols));
+
+	// Populate the matrix by iterating through column vectors and their elements
+	for (size_t j = 0; j < numCols; ++j) 
+	{ // Iterate through columns
+		if (columnVectors[j].size() != numRows) 
+		{
+			// Handle error: column vectors must have consistent sizes
+			// For simplicity, this example assumes consistent sizes.
+			// In a real application, you might throw an exception or return an error.
+			cerr << "Error: Column vector " << j << " has an inconsistent size." << endl;
+			return {};
+		}
+		for (size_t i = 0; i < numRows; ++i) 	
+		{ // Iterate through rows
+			matrix[i][j] = columnVectors[j][i];
+		}
+	}
+	return matrix;
+}
+
 vector<vector<double>> addRow(vector<vector<double>> matrix, vector<double> vector_x, int k)
 {
 	int R = matrix.size();
@@ -180,6 +216,48 @@ vector<vector<double>> addColumn(vector<vector<double>> matrix, vector<double> v
 
 	return newMatrix;
 }
+
+void deleteRow(vector<vector<double>>& matrix, int rowIndex) 
+{
+	if (matrix.empty()) 
+	{
+		return; // Handle empty matrix case
+	}
+	int R = matrix.size();
+	// Ensure the rowIndex is valid
+	if (rowIndex < 0 || rowIndex >= R) 
+	{
+		cerr << "Error: Invalid row index." << endl;
+		return;
+	}
+
+	else
+	{
+		matrix.erase(matrix.begin() + rowIndex);
+	}
+}
+
+void deleteColumn(vector<vector<double>>& matrix, int columnIndex) 
+{
+	if (matrix.empty()) 
+	{
+		return; // Handle empty matrix case
+	}
+	int C = matrix[0].size();
+	// Ensure the columnIndex is valid for at least the first row
+	if (columnIndex < 0 || columnIndex >= C) 
+	{
+		cerr << "Error: Invalid column index." << endl;
+		return;
+	}
+
+	// Iterate through each row and erase the element at the specified column index
+	for (auto& row : matrix) 
+	{
+		row.erase(row.begin() + columnIndex);
+	}
+}
+
 
 // Function to extract a column vector
 vector<double> getColumn(vector<vector<double>> matrix, int columnIndex) 
@@ -430,6 +508,21 @@ vector<double> subtract(vector<double> &vectorA, vector<double> &vectorB)
 	return result;
 }
 
+void spanningtest(vector<vector<double>> &matrix)
+{
+	int n = matrix.size();
+
+	cout << "\nMatrix:" << endl;
+	printMatrix(matrix);
+	if(determinant(matrix) == 0 )
+	{
+		cout << "\n The column vectors do not span R^{" << n<< "}" << endl;
+	}
+	else if(determinant(matrix) != 0 )
+	{
+		cout << "\n The column vectors span R^{" << n<< "}" << endl;
+	}
+}
 vector<double> scalarmultiplication(vector<double> &vectorA, double k) 
 {
 
@@ -972,6 +1065,1639 @@ vector<double> orthogonalprojection(vector<double> vectorx, vector<double> vecto
 		w1[i] *= scalar; // Multiply each element by the scalar	
 	}
 	return w1;
+}
+
+void linearindependencetest(vector<vector<double>> &A) 
+{
+	int n = A.size();
+	vector<vector<double>> b(n, vector<double>(1,0.0));
+	cout << "\nMatrix:" << endl;
+	printMatrix(A);
+	
+	vector<vector<double>> augmentedMatrix(n, vector<double>(n + 1));
+	for(int i = 0; i<n; i++)
+	{
+		for(int j=0; j<=n; j++)
+		{
+			augmentedMatrix[i][j] = A[i][j];
+			if(j==n)
+			{
+				augmentedMatrix[i][j] = b[i][0];
+			}
+		}
+	}
+	
+	// Forward Elimination
+	for (int i = 0; i < n; ++i) 
+	{
+		// Partial Pivoting (optional but recommended for stability)
+		int pivotRow = i;
+		for (int k = i + 1; k < n; ++k) 
+		{
+			if (abs(augmentedMatrix[k][i]) > abs(augmentedMatrix[pivotRow][i])) 
+			{
+				pivotRow = k;
+			}
+		}
+		swap(augmentedMatrix[i], augmentedMatrix[pivotRow]);
+
+		// Check for singular matrix (no unique solution)
+		if (abs(augmentedMatrix[i][i]) < 1e-9) // Using a small epsilon
+		{ 
+			cout << "No unique solution or infinite solutions exist." << endl;
+	 		
+		}
+
+		// Eliminate elements below the pivot
+		for (int k = i + 1; k < n; ++k) 
+		{
+			double factor = augmentedMatrix[k][i] / augmentedMatrix[i][i];
+			for (int j = i; j <= n; ++j) 
+			{ // Iterate up to n for the constant term
+				augmentedMatrix[k][j] -= factor * augmentedMatrix[i][j];
+			}
+		}
+	}
+	
+	// Back Substitution
+	vector<double> solution(n);
+	vector<double> x;
+	for (int i = n - 1; i >= 0; --i) 
+	{
+		double sum = 0.0;
+		for (int j = i + 1; j < n; ++j) 
+		{
+			sum += augmentedMatrix[i][j] * solution[j];
+		}
+		solution[i] = (augmentedMatrix[i][n] - sum) / augmentedMatrix[i][i];
+		x.push_back(solution[i]);
+	}	
+	
+	reverse(x.begin(),x.end());	// reverse the vector because we are using back substitution
+	
+	double x_accumulate = std::accumulate(x.begin(), x.end(), 0.0) ;
+	if(x_accumulate == 0)
+	{
+		cout << "\nThe column vectors are linearly independent." << endl;
+	}
+	else if (x_accumulate != 0)
+	{
+		cout << "\nThe column vectors are not linearly dependent." << endl;
+	}
+
+}
+
+void basistest(vector<vector<double>> &A) 
+{
+	int n = A.size();
+	vector<vector<double>> b(n, vector<double>(1,0.0));
+	cout << "\nMatrix:" << endl;
+	printMatrix(A);
+	if(determinant(A) == 0 )
+	{
+		cout << "\nThe column vectors do not span R^{" << n<< "}" << endl;
+	}
+	else if(determinant(A) != 0 )
+	{
+		cout << "\nThe column vectors span R^{" << n<< "}" << endl;
+	}
+
+	vector<vector<double>> augmentedMatrix(n, vector<double>(n + 1));
+	for(int i = 0; i<n; i++)
+	{
+		for(int j=0; j<=n; j++)
+		{
+			augmentedMatrix[i][j] = A[i][j];
+			if(j==n)
+			{
+				augmentedMatrix[i][j] = b[i][0];
+			}
+		}
+	}
+	cout << "\nAugmented Matrix:" << endl;	
+	printMatrix(augmentedMatrix);
+
+	// Forward Elimination
+	for (int i = 0; i < n; ++i) 
+	{
+		// Partial Pivoting (optional but recommended for stability)
+		int pivotRow = i;
+		for (int k = i + 1; k < n; ++k) 
+		{
+			if (abs(augmentedMatrix[k][i]) > abs(augmentedMatrix[pivotRow][i])) 
+			{
+				pivotRow = k;
+			}
+		}
+		swap(augmentedMatrix[i], augmentedMatrix[pivotRow]);
+
+		// Check for singular matrix (no unique solution)
+		if (abs(augmentedMatrix[i][i]) < 1e-9) // Using a small epsilon
+		{ 
+			cout << "No unique solution or infinite solutions exist." << endl;
+	 		
+		}
+
+		// Eliminate elements below the pivot
+		for (int k = i + 1; k < n; ++k) 
+		{
+			double factor = augmentedMatrix[k][i] / augmentedMatrix[i][i];
+			for (int j = i; j <= n; ++j) 
+			{ // Iterate up to n for the constant term
+				augmentedMatrix[k][j] -= factor * augmentedMatrix[i][j];
+			}
+		}
+	}
+	
+	// Back Substitution
+	vector<double> solution(n);
+	vector<double> x;
+	for (int i = n - 1; i >= 0; --i) 
+	{
+		double sum = 0.0;
+		for (int j = i + 1; j < n; ++j) 
+		{
+			sum += augmentedMatrix[i][j] * solution[j];
+		}
+		solution[i] = (augmentedMatrix[i][n] - sum) / augmentedMatrix[i][i];
+		x.push_back(solution[i]);
+	}	
+	
+	// Print Solution
+	reverse(x.begin(),x.end());	// reverse the vector because we are using back substitution
+	/*for (int i = 0; i < n; ++i) 
+	{
+		cout << "x" << i + 1 << " = " << fixed << setprecision(5) << x[i] << endl;
+	}*/
+
+	double x_accumulate = std::accumulate(x.begin(), x.end(), 0.0) ;
+	if(determinant(A) != 0 && x_accumulate ==0)
+	{
+		cout << "\nThe column vectors are the basis in R^{" << n<< "}" << endl;
+	}
+	else
+	{
+		cout << "\nThe column vectors are not the basis in R^{" << n<< "}" << endl;
+	}
+
+}
+
+void coordinatevector(vector<vector<double>> &A, vector<vector<double>> &b) 
+{
+	int n = A.size();
+	cout << "\nMatrix:" << endl;
+	printMatrix(A);
+	
+	vector<vector<double>> augmentedMatrix(n, vector<double>(n + 1));
+	for(int i = 0; i<n; i++)
+	{
+		for(int j=0; j<=n; j++)
+		{
+			augmentedMatrix[i][j] = A[i][j];
+			if(j==n)
+			{
+				augmentedMatrix[i][j] = b[i][0];
+			}
+		}
+	}
+	
+	// Forward Elimination
+	for (int i = 0; i < n; ++i) 
+	{
+		// Partial Pivoting (optional but recommended for stability)
+		int pivotRow = i;
+		for (int k = i + 1; k < n; ++k) 
+		{
+			if (abs(augmentedMatrix[k][i]) > abs(augmentedMatrix[pivotRow][i])) 
+			{
+				pivotRow = k;
+			}
+		}
+		swap(augmentedMatrix[i], augmentedMatrix[pivotRow]);
+
+		// Check for singular matrix (no unique solution)
+		if (abs(augmentedMatrix[i][i]) < 1e-9) // Using a small epsilon
+		{ 
+			cout << "No unique solution or infinite solutions exist." << endl;
+	 		
+		}
+
+		// Eliminate elements below the pivot
+		for (int k = i + 1; k < n; ++k) 
+		{
+			double factor = augmentedMatrix[k][i] / augmentedMatrix[i][i];
+			for (int j = i; j <= n; ++j) 
+			{ // Iterate up to n for the constant term
+				augmentedMatrix[k][j] -= factor * augmentedMatrix[i][j];
+			}
+		}
+	}
+	
+	// Back Substitution
+	vector<double> solution(n);
+	vector<double> x;
+	for (int i = n - 1; i >= 0; --i) 
+	{
+		double sum = 0.0;
+		for (int j = i + 1; j < n; ++j) 
+		{
+			sum += augmentedMatrix[i][j] * solution[j];
+		}
+		solution[i] = (augmentedMatrix[i][n] - sum) / augmentedMatrix[i][i];
+		x.push_back(solution[i]);
+	}	
+	
+	reverse(x.begin(),x.end());	// reverse the vector because we are using back substitution
+	
+	cout <<"\n(v)_{S}:" << endl;
+	printVector(x);
+	
+}
+
+void basistransition(vector<vector<double>> &oldbasis, vector<vector<double>> &newbasis) 
+{
+	int n = newbasis.size();
+	int m = oldbasis.size();
+	vector<vector<double>> transitionMatrix(n, vector<double>(n));
+	vector<vector<double>> transitionMatrix_old(n, vector<double>(n));
+	vector<vector<double>> transitionMatrix_full(n, vector<double>(2*n));
+	
+	for(int i = 0; i<n; i++)
+	{
+		for(int j=0; j<n; j++)
+		{
+			transitionMatrix[i][j] = newbasis[i][j];
+			transitionMatrix_old[i][j] = oldbasis[i][j];
+			transitionMatrix_full[i][j] = newbasis[i][j];
+		}
+		int k = 0;
+		for(int j=n; j<2*n; j++)
+		{
+			transitionMatrix_full[i][j] = oldbasis[i][k];
+			k = k+1;
+		}
+		
+	}
+	cout << "\n****************************************************************************************************************************" << endl;
+	cout << "\nNew basis:" << endl;
+	printMatrix(transitionMatrix);
+
+	cout << "\nOld basis:" << endl;
+	printMatrix(transitionMatrix_old);
+
+	cout << "\nTransition matrix from old basis to new basis:" << endl;
+	printMatrix(transitionMatrix_full);
+
+	if(m != n)
+	{
+		cerr << "Error: The old basis and new basis have different size" << endl;	
+	}		
+	else if(m == n)
+	{
+		// Forward Elimination
+		for (int i = 0; i < n; ++i) 
+		{
+			// Partial Pivoting (optional but recommended for stability)
+			int pivotRow = i;
+			for (int k = i + 1; k < n; ++k) 
+			{
+				if (abs(transitionMatrix_full[k][i]) > abs(transitionMatrix_full[pivotRow][i])) 
+				{
+					pivotRow = k;
+				}
+			}
+			swap(transitionMatrix_full[i], transitionMatrix_full[pivotRow]);
+
+			// Check for singular matrix (no unique solution)
+			if (abs(transitionMatrix_full[i][i]) < 1e-9) // Using a small epsilon
+			{ 
+				cout << "No unique solution or infinite solutions exist." << endl;
+		 		
+			}
+
+			// Eliminate elements below the pivot
+			for (int k = i + 1; k < n; ++k) 
+			{
+				double factor = transitionMatrix_full[k][i] / transitionMatrix_full[i][i];
+				for (int j = i; j < 2*n; ++j) 
+				{ // Iterate up to n for the constant term
+					transitionMatrix_full[k][j] -= factor * transitionMatrix_full[i][j];
+				}
+			}
+		}
+		
+		// eliminate -1 in the leading 1 at every row
+		for (int i = 0; i < n; ++i) 
+		{
+			if (transitionMatrix_full[i][i] < 0 || transitionMatrix_full[i][i] == -1)
+			{
+				for (int j = i; j < 2*n; ++j) 
+				{ // Iterate up to n for the constant term
+					transitionMatrix_full[i][j] = -1* transitionMatrix_full[i][j];
+				}
+			}
+		}
+		// make the leading 1
+		for (int i = 0; i < n; ++i) 
+		{
+			double pivot = transitionMatrix_full[i][i];
+			for (int j = i; j < 2*n; ++j) 
+			{ // Iterate up to n for the constant term
+				transitionMatrix_full[i][j] = transitionMatrix_full[i][j]/pivot;
+			}
+		}
+		// make zeros above all leading 1
+		for (int i = 0; i < n; ++i) 
+		{
+			if (transitionMatrix_full[i][i+1] != 0 )
+			{
+				double pivot = transitionMatrix_full[i][i+1];
+				for (int j = i; j < 2*n; ++j) 
+				{ // Iterate up to n for the constant term
+					transitionMatrix_full[i][j] = transitionMatrix_full[i][j] - (pivot* transitionMatrix_full[i+1][j]);
+				}
+			}
+		}
+		cout << "\nTransition matrix in reduced row form:" << endl;
+		printMatrix(transitionMatrix_full);
+	}
+	cout << "\n****************************************************************************************************************************" << endl;
+	
+}
+
+void basistransition_withcoordinatevector(vector<vector<double>> &oldbasis, vector<vector<double>> &newbasis, vector<double> &w) 
+{
+	int n = newbasis.size();
+	int m = oldbasis.size();
+	int n_w = w.size();
+	vector<vector<double>> transitionMatrix(n, vector<double>(n));
+	vector<vector<double>> transitionMatrix_old(n, vector<double>(n));
+	vector<vector<double>> transitionMatrix_full(n, vector<double>(2*n));
+	vector<vector<double>> identityMatrix(n, vector<double>(n, 0.0));
+	vector<vector<double>> transitionMatrix_fullwithidentity(n, vector<double>(2*n));
+	vector<vector<double>> transitionMatrix_fullwithidentity2(n, vector<double>(2*n));
+	
+	for(int i = 0; i<n; i++)
+	{
+		identityMatrix[i][i] = 1.0;
+		for(int j=0; j<n; j++)
+		{
+			transitionMatrix[i][j] = newbasis[i][j];
+			transitionMatrix_old[i][j] = oldbasis[i][j];
+			transitionMatrix_full[i][j] = newbasis[i][j];	
+			transitionMatrix_fullwithidentity[i][j] = newbasis[i][j];		
+			transitionMatrix_fullwithidentity2[i][j] = oldbasis[i][j];		
+		}
+		int k = 0;
+		for(int j=n; j<2*n; j++)
+		{
+			transitionMatrix_full[i][j] = oldbasis[i][k];
+			transitionMatrix_fullwithidentity[i][j] = identityMatrix[i][k];		
+			transitionMatrix_fullwithidentity2[i][j] = identityMatrix[i][k];	
+			k = k+1;
+		}
+		
+	}
+	cout << "\n****************************************************************************************************************************" << endl;
+	cout << "\nNew basis (B):" << endl;
+	printMatrix(transitionMatrix);
+
+	cout << "\nOld basis (B'):" << endl;
+	printMatrix(transitionMatrix_old);
+
+	cout << "\nTransition matrix from old basis to new basis:" << endl;
+	printMatrix(transitionMatrix_full);
+
+	cout << "\nTransition matrix from elementary basis to new basis:" << endl;
+	printMatrix(transitionMatrix_fullwithidentity);
+
+	cout << "\nTransition matrix from elementary basis to old basis:" << endl;
+	printMatrix(transitionMatrix_fullwithidentity2);
+
+	if(m != n && n_w != n)
+	{
+		cerr << "Error: The old basis and new basis have different size, or/and the vector w has different size with the basis" << endl;	
+	}		
+	else if(m == n)
+	{
+		// Forward Elimination
+		for (int i = 0; i < n; ++i) 
+		{
+			// Partial Pivoting (optional but recommended for stability)
+			int pivotRow = i;	
+			
+			for (int k = i + 1; k < n; ++k) 
+			{
+				if (abs(transitionMatrix_full[k][i]) > abs(transitionMatrix_full[pivotRow][i])) 
+				{
+					pivotRow = k;
+				}
+			}
+			swap(transitionMatrix_full[i], transitionMatrix_full[pivotRow]);
+
+			// Check for singular matrix (no unique solution)
+			if (abs(transitionMatrix_full[i][i]) < 1e-9) // Using a small epsilon
+			{ 
+				cout << "No unique solution or infinite solutions exist." << endl;
+		 		
+			}
+
+			// Eliminate elements below the pivot
+			for (int k = i + 1; k < n; ++k) 
+			{
+				double factor = transitionMatrix_full[k][i] / transitionMatrix_full[i][i];
+				for (int j = i; j < 2*n; ++j) 
+				{ 
+					transitionMatrix_full[k][j] -= factor * transitionMatrix_full[i][j];
+				}
+			}
+
+		}
+
+		// Forward Elimination
+		for (int i = 0; i < n; ++i) 
+		{
+			// Partial Pivoting (optional but recommended for stability)
+			int pivotRow = i;	
+			
+			for (int k = i + 1; k < n; ++k) 
+			{
+				if (abs(transitionMatrix_fullwithidentity[k][i]) > abs(transitionMatrix_fullwithidentity[pivotRow][i])) 
+				{
+					pivotRow = k;
+				}
+			}
+			swap(transitionMatrix_fullwithidentity[i], transitionMatrix_fullwithidentity[pivotRow]);
+
+			// Check for singular matrix (no unique solution)
+			if (abs(transitionMatrix_fullwithidentity[i][i]) < 1e-9) // Using a small epsilon
+			{ 
+				cout << "No unique solution or infinite solutions exist." << endl;
+		 		
+			}
+
+			// Eliminate elements below the pivot
+			for (int k = i + 1; k < n; ++k) 
+			{
+				double factor = transitionMatrix_fullwithidentity[k][i] / transitionMatrix_fullwithidentity[i][i];
+				for (int j = i; j < 2*n; ++j) 
+				{ 
+					transitionMatrix_fullwithidentity[k][j] -= factor * transitionMatrix_fullwithidentity[i][j];
+				}
+			}
+
+		}
+
+		// Forward Elimination
+		for (int i = 0; i < n; ++i) 
+		{
+			// Partial Pivoting (optional but recommended for stability)
+			int pivotRow = i;	
+			
+			for (int k = i + 1; k < n; ++k) 
+			{
+				if (abs(transitionMatrix_fullwithidentity2[k][i]) > abs(transitionMatrix_fullwithidentity2[pivotRow][i])) 
+				{
+					pivotRow = k;
+				}
+			}
+			swap(transitionMatrix_fullwithidentity2[i], transitionMatrix_fullwithidentity2[pivotRow]);
+
+			// Check for singular matrix (no unique solution)
+			if (abs(transitionMatrix_fullwithidentity2[i][i]) < 1e-9) // Using a small epsilon
+			{ 
+				cout << "No unique solution or infinite solutions exist." << endl;
+		 		
+			}
+
+			// Eliminate elements below the pivot
+			for (int k = i + 1; k < n; ++k) 
+			{
+				double factor = transitionMatrix_fullwithidentity2[k][i] / transitionMatrix_fullwithidentity2[i][i];
+				for (int j = i; j < 2*n; ++j) 
+				{ 
+					transitionMatrix_fullwithidentity2[k][j] -= factor * transitionMatrix_fullwithidentity2[i][j];
+				}
+			}
+
+		}
+		
+		// eliminate -1 in the leading 1 at every row
+		for (int i = 0; i < n; ++i) 
+		{
+			if (transitionMatrix_full[i][i] < 0 || transitionMatrix_full[i][i] == -1)
+			{
+				for (int j = i; j < 2*n; ++j) 
+				{ // Iterate up to n for the constant term
+					transitionMatrix_full[i][j] = -1* transitionMatrix_full[i][j];
+				}
+			}
+		}
+
+		for (int i = 0; i < n; ++i) 
+		{
+			if (transitionMatrix_fullwithidentity[i][i] < 0 || transitionMatrix_fullwithidentity[i][i] == -1)
+			{
+				for (int j = i; j < 2*n; ++j) 
+				{ // Iterate up to n for the constant term
+					transitionMatrix_fullwithidentity[i][j] = -1* transitionMatrix_fullwithidentity[i][j];
+				}
+			}
+		}
+
+		for (int i = 0; i < n; ++i) 
+		{
+			if (transitionMatrix_fullwithidentity2[i][i] < 0 || transitionMatrix_fullwithidentity2[i][i] == -1)
+			{
+				for (int j = i; j < 2*n; ++j) 
+				{ // Iterate up to n for the constant term
+					transitionMatrix_fullwithidentity2[i][j] = -1* transitionMatrix_fullwithidentity2[i][j];
+				}
+			}
+		}
+
+		// make the leading 1
+		for (int i = 0; i < n; ++i) 
+		{
+			double pivot = transitionMatrix_full[i][i];
+			for (int j = i; j < 2*n; ++j) 
+			{
+				transitionMatrix_full[i][j] = transitionMatrix_full[i][j]/pivot;
+			}
+		}
+		
+		for (int i = 0; i < n; ++i) 
+		{
+			double pivot = transitionMatrix_fullwithidentity[i][i];
+			for (int j = i; j < 2*n; ++j) 
+			{
+				transitionMatrix_fullwithidentity[i][j] = transitionMatrix_fullwithidentity[i][j]/pivot;
+			}
+		}
+
+		for (int i = 0; i < n; ++i) 
+		{
+			double pivot = transitionMatrix_fullwithidentity2[i][i];
+			for (int j = i; j < 2*n; ++j) 
+			{
+				transitionMatrix_fullwithidentity2[i][j] = transitionMatrix_fullwithidentity2[i][j]/pivot;
+			}
+		}
+
+		// make zeros above all leading 1
+		for (int i = 0; i < n-1; ++i) 
+		{
+			if (transitionMatrix_full[i][i+1] != 0 )
+			{
+				double pivot = transitionMatrix_full[i][i+1];
+				for (int j = i; j < 2*n; ++j) 
+				{ 
+					transitionMatrix_full[i][j] = transitionMatrix_full[i][j] - (pivot * transitionMatrix_full[i+1][j]);
+				}
+			}
+		}
+
+		for (int i = 0; i < n-1; ++i) 
+		{
+			if (transitionMatrix_fullwithidentity[i][i+1] != 0 )
+			{
+				double pivot = transitionMatrix_fullwithidentity[i][i+1];
+				
+				for (int j = i; j < 2*n; ++j) 
+				{ 
+					transitionMatrix_fullwithidentity[i][j] = transitionMatrix_fullwithidentity[i][j] - (pivot* transitionMatrix_fullwithidentity[i+1][j]);
+				}
+			}
+		}
+
+		for (int i = 0; i < n-1; ++i) 
+		{
+			if (transitionMatrix_fullwithidentity2[i][i+1] != 0 )
+			{
+				double pivot = transitionMatrix_fullwithidentity2[i][i+1];
+				
+				for (int j = i; j < 2*n; ++j) 
+				{ 
+					transitionMatrix_fullwithidentity2[i][j] = transitionMatrix_fullwithidentity2[i][j] - (pivot* transitionMatrix_fullwithidentity2[i+1][j]);
+				}
+			}
+		}
+
+		// Create P_{E -> B}
+		vector<vector<double>> P_EB(n, vector<double>(2*n));
+		for (int i = 0; i < n; ++i) 
+		{
+			for (int j = 0; j < 2*n; ++j) 
+			{ 
+				P_EB[i][j] = transitionMatrix_fullwithidentity[i][j];
+			}
+		}
+		// Create P_{E -> B'}
+		vector<vector<double>> P_EBold(n, vector<double>(2*n));
+		for (int i = 0; i < n; ++i) 
+		{
+			for (int j = 0; j < 2*n; ++j) 
+			{ 
+				P_EBold[i][j] = transitionMatrix_fullwithidentity2[i][j];
+			}
+		}
+		// Delete the first two columns for P_{E -> B}
+		for (int i = 0; i < n; ++i) 
+		{
+			for (auto& row : P_EB) 
+			{
+				row.erase(row.begin() + 0);
+			}
+		}
+		// Delete the first two columns for P_{E -> B'}
+		for (int i = 0; i < n; ++i) 
+		{
+			for (auto& row : P_EBold) 
+			{
+				row.erase(row.begin() + 0);
+			}
+		}
+		// Create P_{B -> B'}
+		vector<vector<double>> P_BoldBnew(n, vector<double>(2*n));
+		for (int i = 0; i < n; ++i) 
+		{
+			for (int j = 0; j < 2*n; ++j) 
+			{ 
+				P_BoldBnew[i][j] = transitionMatrix_full[i][j];
+			}
+		}
+		// Delete the first two columns for P_{B -> B'}
+		for (int i = 0; i < n; ++i) 
+		{
+			for (auto& row : P_BoldBnew) 
+			{
+				row.erase(row.begin() + 0);
+			}
+		}
+
+		vector<vector<double>> P_BnewBold = inverse(P_BoldBnew);
+		// Matrix vector multiplication
+		vector<double> wB;
+		for (int i = 0; i < n; ++i) 
+		{
+			double sum = 0;
+			for (int j = 0; j < n; ++j) 
+			{ 
+				sum += P_EB[i][j]*w[j];
+			}
+			wB.push_back(sum);
+		}
+		vector<double> wBnew;
+		for (int i = 0; i < n; ++i) 
+		{
+			double sum = 0;
+			for (int j = 0; j < n; ++j) 
+			{ 
+				sum += P_BnewBold[i][j]*wB[j];
+			}
+			wBnew.push_back(sum);
+		}
+		
+		cout << "\n[ I | transition from B' to B]:" << endl;
+		printMatrix(transitionMatrix_full);
+
+		cout << "\n[ I | transition from E to B]:" << endl;
+		printMatrix(transitionMatrix_fullwithidentity);
+
+		cout << "\nFrom matrix [ B | B' ],\nP_{B' -> B}:" << endl;
+		printMatrix(P_BoldBnew);
+		
+		cout << "\nFrom matrix [ B' | B ],\nP_{B -> B'}:" << endl;
+		printMatrix(P_BnewBold);
+		
+		cout << "\nP_{E -> B}:" << endl;
+		printMatrix(P_EB);
+		
+		cout << "\nP_{E -> B'}:" << endl;
+		printMatrix(P_EBold);
+
+		cout << "\nw:" << endl;
+		printVector(w);
+		
+		cout << "\nw_{B}:" << endl;
+		printVector(wB);
+
+		cout << "\nw_{B'}:" << endl;
+		printVector(wBnew);
+		
+	}
+	cout << "\n****************************************************************************************************************************" << endl;
+	
+}
+
+void rowspacebasis(vector<vector<double>> &A) 
+{
+	int r = A.size();
+	int c = A[0].size();
+	vector<vector<double>> R(r, vector<double>(c));
+	
+	for(int i = 0; i<r; i++)
+	{
+		for(int j=0; j<c; j++)
+		{
+			R[i][j] = A[i][j];
+		}		
+	}
+	cout << "\n****************************************************************************************************************************" << endl;
+	cout << "\nA:" << endl;
+	printMatrix(A);
+	
+		
+	// Forward Elimination
+	for (int i = 0; i < r; ++i) 
+	{
+		// Partial Pivoting (optional but recommended for stability)
+		int pivotRow = i;
+		for (int k = i + 1; k < r; ++k) 
+		{
+			if (abs(R[k][i]) > abs(R[pivotRow][i])) 
+			{
+				pivotRow = k;
+			}
+		}
+		swap(R[i], R[pivotRow]);
+
+		
+
+		// Eliminate elements below the pivot
+		for (int k = i + 1; k < r; ++k) 
+		{
+			if (R[i][i] != 0)
+			{
+				double factor = R[k][i] / R[i][i];
+				
+				for (int j = i; j < c; ++j) 
+				{ 
+					R[k][j] -= factor * R[i][j];
+				
+				}
+			}
+			else if (R[i][i] ==0)
+			{
+				i=i+1;
+			}
+		}
+	}
+
+	// Eliminate row that is a linear combination of other row
+	for (int i = 0; i < r; ++i) 
+	{
+		if (R[i][i] != 0)
+		{
+			for (int j = i+1; j < r; ++j) 
+			{ 
+				if(R[j][i] != 0)
+				{
+					double pivot = divisiond(R[i][i],R[j][i]);
+					for(int k=i; k<c; ++k)
+					{
+						R[j][k] = pivot*R[j][k] - R[i][k];
+					}
+				}
+				else if(R[j][i] == 0)
+				{
+					i=i+1;
+				}
+			}
+		}
+		else if (R[i][i] == 0)
+		{
+			for (int j = i+1; j < c; ++j) 
+			{ 
+				if (R[i][j] != 0)
+				{
+					for (int k = i+1; k < r; ++k) 
+					{ 
+						if(R[k][j] != 0)
+						{
+							double pivot = R[i][j]/R[k][j];
+							
+							for(int m=i; m<c; ++m)
+							{
+								R[k][m] = pivot*R[k][m] - R[i][m];
+							}
+						}
+						else if(R[k][j] == 0)
+						{
+							i=i+1;
+						}
+					}
+				}
+				else if (R[i][j] == 0)
+				{
+					i = i+1;
+				}
+			}
+		}
+	}
+	
+		
+	// eliminate -1 in the leading 1 at every row
+	for (int i = 0; i < r; ++i) 
+	{
+		if (R[i][i] < 0 || R[i][i] == -1)
+		{
+			for (int j = i; j < c; ++j) 
+			{ 
+				R[i][j] = -1* R[i][j];
+			}
+		}
+		else if (R[i][i] == 0)
+		{
+			for (int j = i+1; j < c; ++j) 
+			{ 
+				if (R[i][j] < 0 || R[i][j] == -1)
+				{
+					for(int k=j; k<c; k++)
+					{
+						R[i][k] = -1* R[i][k];
+					}
+					j = c-1;
+				}
+				else if (R[i][j] == 0)
+				{
+					i = i+1;
+				}
+			}
+		}
+	}
+	
+	// make the leading 1
+	for (int i = 0; i < r; ++i) 
+	{
+		if (R[i][i] != 0)
+		{
+			double pivot = R[i][i];
+			for (int j = i; j < c; ++j) 
+			{ 
+				R[i][j] = R[i][j]/pivot;
+			}	
+		}
+		else if(R[i][i] ==0)
+		{
+			for (int j = i+1; j < c; ++j) 
+			{
+				double pivot = R[i][j];
+				 if (R[i][j] != 0)
+				{
+					
+					for (int k = j; k < c; ++k) 
+					{
+						R[i][k] = R[i][k]/pivot;
+					}				
+					j = c-1;
+				}	
+				else if (R[i][j] ==0)
+				{
+					i = i+1;
+				}
+			}
+		}
+	}
+	
+	// Another forward elimination
+	for (int i = 0; i < r-1; ++i) 
+	{	
+		if (R[i][i] != 0)
+		{
+			for (int j = i+1; j < r; ++j) 
+			{ 
+				if (R[j][i] == 0)
+				{
+					
+				}
+				else if(R[j][i] !=0)
+				{
+					double pivot = R[i][i]/R[j][i];
+					for(int k=i; k<c; ++k)
+					{
+						R[j][k] = R[j][k] - pivot*R[i][k];
+					}
+				}
+			}
+		}
+		else if (R[i][i] == 0)
+		{
+			for (int j = i; j < c; ++j) 
+			{ 
+				if (R[i][j] != 0)
+				{
+					for (int m = i+1; m < r; ++m) 
+					{ 
+						if (R[m][j] == 0)
+						{
+							
+						}
+						else if(R[m][j] !=0)
+						{
+							double pivot = R[i][j]/R[m][j];
+							for(int k=j; k<c; ++k)
+							{
+								R[m][k] = R[m][k] - pivot*R[i][k];
+							}
+							
+						}
+					}
+					j = c-1;
+				}
+				else if (R[i][j] == 0)
+				{
+					
+				}
+			}
+		}
+	}
+	int rank = 0;
+	vector<vector<double>> rowspace;
+		
+	// Find the basis for the row space of A
+	for (int i = 0; i < r; ++i) 
+	{	
+		if (R[i][i] != 0)
+		{
+			rank = rank + 1;
+			rowspace.push_back(getRow(R,i));
+		}
+		else if (R[i][i] == 0)
+		{
+			for (int j = i; j < c; ++j) 
+			{ 
+				if (R[i][j] != 0)
+				{
+					rank = rank + 1;
+					rowspace.push_back(getRow(R,i));
+
+					j = c-1;
+				}
+				else if (R[i][j] == 0)
+				{
+					rank = rank;
+				}
+			}
+		}
+	}
+	cout << "\nR:" << endl;
+	printMatrix(R);
+	//cout << "\nrank(A):" << rank << endl;
+	cout << "\nBasis for the row space of the matrix A:" << endl;
+	printMatrix(rowspace);
+	cout << "\n****************************************************************************************************************************" << endl;
+	
+}
+
+void columnspacebasis(vector<vector<double>> &A) 
+{
+	int r = A.size();
+	int c = A[0].size();
+	vector<vector<double>> R(r, vector<double>(c));
+	
+	for(int i = 0; i<r; i++)
+	{
+		for(int j=0; j<c; j++)
+		{
+			R[i][j] = A[i][j];
+		}		
+	}
+	cout << "\n****************************************************************************************************************************" << endl;
+	cout << "\nA:" << endl;
+	printMatrix(A);
+	
+		
+	// Forward Elimination
+	for (int i = 0; i < r; ++i) 
+	{
+		// Partial Pivoting (optional but recommended for stability)
+		int pivotRow = i;
+		for (int k = i + 1; k < r; ++k) 
+		{
+			if (abs(R[k][i]) > abs(R[pivotRow][i])) 
+			{
+				pivotRow = k;
+			}
+		}
+		swap(R[i], R[pivotRow]);
+
+		
+
+		// Eliminate elements below the pivot
+		for (int k = i + 1; k < r; ++k) 
+		{
+			if (R[i][i] != 0)
+			{
+				double factor = R[k][i] / R[i][i];
+				
+				for (int j = i; j < c; ++j) 
+				{ 
+					R[k][j] -= factor * R[i][j];
+				
+				}
+			}
+			else if (R[i][i] ==0)
+			{
+				i=i+1;
+			}
+		}
+	}
+
+	// Eliminate row that is a linear combination of other row
+	for (int i = 0; i < r; ++i) 
+	{
+		if (R[i][i] != 0)
+		{
+			for (int j = i+1; j < r; ++j) 
+			{ 
+				if(R[j][i] != 0)
+				{
+					double pivot = divisiond(R[i][i],R[j][i]);
+					for(int k=i; k<c; ++k)
+					{
+						R[j][k] = pivot*R[j][k] - R[i][k];
+					}
+				}
+				else if(R[j][i] == 0)
+				{
+					i=i+1;
+				}
+			}
+		}
+		else if (R[i][i] == 0)
+		{
+			for (int j = i+1; j < c; ++j) 
+			{ 
+				if (R[i][j] != 0)
+				{
+					for (int k = i+1; k < r; ++k) 
+					{ 
+						if(R[k][j] != 0)
+						{
+							double pivot = R[i][j]/R[k][j];
+							
+							for(int m=i; m<c; ++m)
+							{
+								R[k][m] = pivot*R[k][m] - R[i][m];
+							}
+						}
+						else if(R[k][j] == 0)
+						{
+							i=i+1;
+						}
+					}
+				}
+				else if (R[i][j] == 0)
+				{
+					i = i+1;
+				}
+			}
+		}
+	}
+	
+		
+	// eliminate -1 in the leading 1 at every row
+	for (int i = 0; i < r; ++i) 
+	{
+		if (R[i][i] < 0 || R[i][i] == -1)
+		{
+			for (int j = i; j < c; ++j) 
+			{ 
+				R[i][j] = -1* R[i][j];
+			}
+		}
+		else if (R[i][i] == 0)
+		{
+			for (int j = i+1; j < c; ++j) 
+			{ 
+				if (R[i][j] < 0 || R[i][j] == -1)
+				{
+					for(int k=j; k<c; k++)
+					{
+						R[i][k] = -1* R[i][k];
+					}
+					j = c-1;
+				}
+				else if (R[i][j] == 0)
+				{
+					i = i+1;
+				}
+			}
+		}
+	}
+	
+	// make the leading 1
+	for (int i = 0; i < r; ++i) 
+	{
+		if (R[i][i] != 0)
+		{
+			double pivot = R[i][i];
+			for (int j = i; j < c; ++j) 
+			{ 
+				R[i][j] = R[i][j]/pivot;
+			}	
+		}
+		else if(R[i][i] ==0)
+		{
+			for (int j = i+1; j < c; ++j) 
+			{
+				double pivot = R[i][j];
+				 if (R[i][j] != 0)
+				{
+					
+					for (int k = j; k < c; ++k) 
+					{
+						R[i][k] = R[i][k]/pivot;
+					}				
+					j = c-1;
+				}	
+				else if (R[i][j] ==0)
+				{
+					i = i+1;
+				}
+			}
+		}
+	}
+	
+	// Another forward elimination
+	for (int i = 0; i < r-1; ++i) 
+	{	
+		if (R[i][i] != 0)
+		{
+			for (int j = i+1; j < r; ++j) 
+			{ 
+				if (R[j][i] == 0)
+				{
+					
+				}
+				else if(R[j][i] !=0)
+				{
+					double pivot = R[i][i]/R[j][i];
+					for(int k=i; k<c; ++k)
+					{
+						R[j][k] = R[j][k] - pivot*R[i][k];
+					}
+				}
+			}
+		}
+		else if (R[i][i] == 0)
+		{
+			for (int j = i; j < c; ++j) 
+			{ 
+				if (R[i][j] != 0)
+				{
+					for (int m = i+1; m < r; ++m) 
+					{ 
+						if (R[m][j] == 0)
+						{
+							
+						}
+						else if(R[m][j] !=0)
+						{
+							double pivot = R[i][j]/R[m][j];
+							for(int k=j; k<c; ++k)
+							{
+								R[m][k] = R[m][k] - pivot*R[i][k];
+							}
+							
+						}
+					}
+					j = c-1;
+				}
+				else if (R[i][j] == 0)
+				{
+					
+				}
+			}
+		}
+	}
+	int rank = 0;
+	vector<vector<double>> columnspace;
+		
+	// Find the basis for the column space of A
+	for (int i = 0; i < r; ++i) 
+	{	
+		if (R[i][i] != 0)
+		{
+			rank = rank + 1;
+			columnspace.push_back(getColumn(A,i));
+		}
+		else if (R[i][i] == 0)
+		{
+			for (int j = i; j < c; ++j) 
+			{ 
+				if (R[i][j] != 0)
+				{
+					rank = rank + 1;
+					columnspace.push_back(getColumn(A,j));
+
+					j = c-1;
+				}
+				else if (R[i][j] == 0)
+				{
+					rank = rank;
+				}
+			}
+		}
+	}
+	cout << "\nR:" << endl;
+	printMatrix(R);
+	
+	vector<vector<double>> columnspace_transpose = transpose(columnspace);
+	
+	//cout << "\nrank(A):" << rank << endl;
+	cout << "\nBasis for the column space of the matrix A:" << endl;
+	printMatrix(columnspace_transpose);
+	cout << "\n****************************************************************************************************************************" << endl;
+	
+}
+
+void homogeneouslinearsystembasis(vector<vector<double>> &A) 
+{
+	int r = A.size();
+	int c = A[0].size();
+	vector<vector<double>> R(r, vector<double>(c));
+	
+	for(int i = 0; i<r; i++)
+	{
+		for(int j=0; j<c; j++)
+		{
+			R[i][j] = A[i][j];
+		}		
+	}
+	cout << "\n****************************************************************************************************************************" << endl;
+	cout << "\nA:" << endl;
+	printMatrix(A);
+	
+		
+	// Forward Elimination
+	for (int i = 0; i < r; ++i) 
+	{
+		// Partial Pivoting (optional but recommended for stability)
+		int pivotRow = i;
+		for (int k = i + 1; k < r; ++k) 
+		{
+			if (abs(R[k][i]) > abs(R[pivotRow][i])) 
+			{
+				pivotRow = k;
+			}
+		}
+		swap(R[i], R[pivotRow]);
+
+		
+
+		// Eliminate elements below the pivot
+		for (int k = i + 1; k < r; ++k) 
+		{
+			if (R[i][i] != 0)
+			{
+				double factor = R[k][i] / R[i][i];
+				
+				for (int j = i; j < c; ++j) 
+				{ 
+					R[k][j] -= factor * R[i][j];
+				
+				}
+			}
+			else if (R[i][i] ==0)
+			{
+				i=i+1;
+			}
+		}
+	}
+
+	// Eliminate row that is a linear combination of other row
+	for (int i = 0; i < r; ++i) 
+	{
+		if (R[i][i] != 0)
+		{
+			for (int j = i+1; j < r; ++j) 
+			{ 
+				if(R[j][i] != 0)
+				{
+					double pivot = divisiond(R[i][i],R[j][i]);
+					for(int k=i; k<c; ++k)
+					{
+						R[j][k] = pivot*R[j][k] - R[i][k];
+					}
+				}
+				else if(R[j][i] == 0)
+				{
+					i=i+1;
+				}
+			}
+		}
+		else if (R[i][i] == 0)
+		{
+			for (int j = i+1; j < c; ++j) 
+			{ 
+				if (R[i][j] != 0)
+				{
+					for (int k = i+1; k < r; ++k) 
+					{ 
+						if(R[k][j] != 0)
+						{
+							double pivot = R[i][j]/R[k][j];
+							
+							for(int m=i; m<c; ++m)
+							{
+								R[k][m] = pivot*R[k][m] - R[i][m];
+							}
+						}
+						else if(R[k][j] == 0)
+						{
+							i=i+1;
+						}
+					}
+				}
+				else if (R[i][j] == 0)
+				{
+					i = i+1;
+				}
+			}
+		}
+	}
+	
+	// make the leading 1
+	for (int i = 0; i < r; ++i) 
+	{
+		if (R[i][i] != 0)
+		{
+			double pivot = R[i][i];
+			for (int j = i; j < c; ++j) 
+			{ 
+				R[i][j] = R[i][j]/pivot;
+			}	
+		}
+		else if(R[i][i] ==0)
+		{
+			for (int j = i+1; j < c; ++j) 
+			{
+				double pivot = R[i][j];
+				 if (R[i][j] != 0)
+				{	
+					for (int k = j; k < c; ++k) 
+					{
+						R[i][k] = R[i][k]/pivot;
+					}				
+					j = c-1;
+				}	
+				else if (R[i][j] ==0)
+				{
+					
+				}
+			}
+		}
+	}
+
+	// make zeros above all leading 1
+	for (int i = 0; i < r-1; ++i) 
+	{
+		if (R[i][i+1] != 0 )
+		{
+			double pivot = R[i][i+1];
+			for (int j = i; j < c; ++j) 
+			{ 
+				R[i][j] = R[i][j] - (pivot * R[i+1][j]);
+			}
+		}
+	}
+	
+	
+	// Another forward elimination
+	for (int i = 0; i < r-1; ++i) 
+	{	
+		if (R[i][i] != 0)
+		{
+			for (int j = i+1; j < r; ++j) 
+			{ 
+				if (R[j][i] == 0)
+				{
+					
+				}
+				else if(R[j][i] !=0)
+				{
+					double pivot = R[i][i]/R[j][i];
+					for(int k=i; k<c; ++k)
+					{
+						R[j][k] = R[j][k] - pivot*R[i][k];
+					}
+				}
+			}
+		}
+		else if (R[i][i] == 0)
+		{
+			for (int j = i; j < c; ++j) 
+			{ 
+				if (R[i][j] != 0)
+				{
+					for (int m = i+1; m < r; ++m) 
+					{ 
+						if (R[m][j] == 0)
+						{
+							
+						}
+						else if(R[m][j] !=0)
+						{
+							double pivot = R[i][j]/R[m][j];
+							for(int k=j; k<c; ++k)
+							{
+								R[m][k] = R[m][k] - pivot*R[i][k];
+							}
+							
+						}
+					}
+					j = c-1;
+				}
+				else if (R[i][j] == 0)
+				{
+					
+				}
+			}
+		}
+	}
+
+	// Computing rank and nullity
+	int rank = 0;
+	int dim = c;
+		
+	// Find the basis for the row space of A
+	for (int i = 0; i < r; ++i) 
+	{	
+		if (R[i][i] != 0)
+		{
+			rank = rank + 1;
+		}
+		else if (R[i][i] == 0)
+		{
+			for (int j = i; j < c; ++j) 
+			{ 
+				if (R[i][j] != 0)
+				{
+					rank = rank + 1;
+					
+					j = c-1;
+				}
+				else if (R[i][j] == 0)
+				{
+					rank = rank;
+				}
+			}
+		}
+	}
+	int null = dim-rank;
+	// Compute the basis for the solution space of Ax = 0
+	vector<vector<double>> solutionbasis;
+	vector<vector<double>> identitybasis(null,vector<double>(null,0.0));
+
+	for(int i = 0; i < null; ++i)
+	{
+		identitybasis[i][i] = 1.0;	
+	}
+
+	for(int i = 0; i < rank; ++i)
+	{
+		solutionbasis.push_back(getRow(R,i));	
+	}
+	// Multiply by -1
+	solutionbasis = scalarmultiplication(solutionbasis,-1);
+
+	// Delete column 1,2, ..., rank(A)
+	for(int i = 0; i < rank; ++i)
+	{
+		// Iterate through each row and erase the first column with the amount of rank(A)
+		for (auto& row : solutionbasis) 
+		{
+			row.erase(row.begin() + 0);
+		}	
+	}
+	//cout << "\nIdentity basis:" << endl;
+	//printMatrix(identitybasis);
+	for(int i = 0; i < null; ++i)
+	{
+		solutionbasis.push_back(getRow(identitybasis,i));	
+	}
+
+	cout << "\nRank(A) = " << rank << endl;
+	cout << "nullity(A) = " << null << endl;
+	cout << "dim(A) = " << dim << endl;
+	cout << "\nR:" << endl;
+	printMatrix(R);
+	cout << "\nBasis for the solution space of Ax = 0 :" << endl;
+	printMatrix(solutionbasis);
+	//vector<vector<double>> columnspace_transpose = transpose(columnspace);
+	
+	//cout << "\nrank(A):" << rank << endl;
+	cout << "\n****************************************************************************************************************************" << endl;
+	
+}
+
+void gaussianelimination(const vector<vector<double>> &A)
+{
+	int n = A.size();
+	vector<vector<double>> B_mat(n,vector<double>(n));
+	vector<vector<double>> augmentedMatrix(n, vector<double>(n + 1));
+
+	for(int i = 0; i<n; i++)
+	{
+		for(int j=0; j<=n; j++)
+		{
+			augmentedMatrix[i][j] = A[i][j];
+			B_mat[i][j] = A[i][j];
+		}
+	}
+	cout << "A :" << endl;
+	printMatrix(B_mat);
+	// Forward Elimination
+	for (int i = 0; i < n; ++i) 
+	{
+		// Partial Pivoting (optional but recommended for stability)
+		int pivotRow = i;
+		for (int k = i + 1; k < n; ++k) 
+		{
+			if (abs(augmentedMatrix[k][i]) > abs(augmentedMatrix[pivotRow][i])) 
+			{
+				pivotRow = k;
+			}
+		}
+		swap(augmentedMatrix[i], augmentedMatrix[pivotRow]);
+
+		// Check for singular matrix (no unique solution)
+		if (abs(augmentedMatrix[i][i]) < 1e-9) // Using a small epsilon
+		{ 
+			cout << "No unique solution or infinite solutions exist." << endl;
+		}
+
+		// Eliminate elements below the pivot
+		for (int k = i + 1; k < n; ++k) 
+		{
+			double factor = augmentedMatrix[k][i] / augmentedMatrix[i][i];
+			for (int j = i; j <= n; ++j) 
+			{ // Iterate up to n for the constant term
+				augmentedMatrix[k][j] -= factor * augmentedMatrix[i][j];
+			}
+		}
+	}
+
+	// Back Substitution
+	vector<double> solution(n,1.0);
+	for (int i = n - 1; i >= 0; --i) 
+	{
+		double sum = 0.0;
+			
+		if(augmentedMatrix[i][i] !=0)
+		{
+			if (i >=1)
+			{
+				for (int k = i - 1; k >= 0; --k) 
+				{
+					if(augmentedMatrix[i][k] == 0)
+					{
+						solution[i] = (augmentedMatrix[i][n-1] ) / augmentedMatrix[i][i];
+					}
+					else if(augmentedMatrix[i][k] != 0)
+					{
+						for(int k = i-1 ; k >=0 ; --k)
+						{
+							sum += augmentedMatrix[i][k] * solution[k];
+						}
+						solution[i] = (augmentedMatrix[i][n-1] - sum) / augmentedMatrix[i][i];
+					}
+					
+				}
+			}
+			else if(i < 1)
+			{
+				for (int j = i + 1; j < n-1; ++j) 
+				{
+					sum += augmentedMatrix[i][j] * solution[j];				
+				}
+				solution[i] = (augmentedMatrix[i][n-1] - sum) / augmentedMatrix[i][i];
+			}
+		}
+		
+	}	
+
+	for(int i = 0; i<n; i++)
+	{
+		for(int j=0; j<=n; j++)
+		{
+			B_mat[i][j] = augmentedMatrix[i][j];
+		}
+	}
+	
+	cout << "A (in row reduced echelon form) :" << endl;
+	printMatrix(B_mat);
+
+	// Print Solution
+	cout << "\nSolution:" << endl;
+	for (int i = 0; i < n-1; ++i) 
+	{
+	cout << "x" << i + 1 << " = " << fixed << setprecision(5) << solution[i] << endl;
+	}
+	cout << endl;
+
 }
 
 Symbolic gaussianelimination(const SymbolicMatrix &A, int n)

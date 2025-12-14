@@ -87,6 +87,7 @@ typedef list<Equations> PatternMatches;
 typedef vector<vector<double>> dmat;
 typedef vector<double> dvec;
 typedef vector<string> svec;
+typedef vector<vector<string>> smat;
 // declarations of classes without definitions
 #define SYMBOLIC_DECLARE
 #include "symintegral/symintegrationc++.h"

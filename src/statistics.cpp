@@ -16,6 +16,7 @@ Thanks Freya, Berlin and Sentinel!
 #include <iostream>
 #include <string>
 #include <fstream> // For file operations
+#include <typeinfo> // Required for typeid
 
 #include <random> // For random number generation
 #include <chrono>
@@ -176,6 +177,40 @@ vector<string> loadStringVector(const string& filename)
 	} 
 	inputFile.close();
 	return vecx;
+}
+
+vector<vector<string>> loadStringMatrix(const string& filename) 
+{
+	vector<vector<string>> matrix;
+	ifstream inputFile(filename);
+
+	if (!inputFile.is_open()) 
+	{
+		cerr << "Error: Could not open file " << filename << endl;
+		return matrix; // Return empty matrix on error
+	}
+
+	if (inputFile.is_open()) 
+	{
+		string line;
+		while (getline(inputFile, line)) 
+		{
+		if (line.empty()) 
+		{ // Skip empty lines
+		    continue;
+		}
+		istringstream iss(line);
+		vector<string> row;
+		string value;
+		while (iss >> value) 
+		{
+			row.push_back(value);
+		}
+		matrix.push_back(row);
+		}
+		inputFile.close();
+	} 
+	return matrix;
 }
 
 void printStringVector(vector<string> vectorx)
