@@ -42,19 +42,25 @@ void printMatrix(vector<vector<double>>);
 void printVector(vector<double>);
 vector<double> createVector(int, double); 
 vector<vector<double>> createMatrix(int, int, double);
+vector<vector<double>> createIdentityMatrix(int);
 vector<vector<double>> createMatrixFromColumnVectors(const vector<vector<double>> &);
 vector<double> getColumn(vector<vector<double>>, int); 
 vector<double> getRow(vector<vector<double>>, int); 
 vector<vector<double>> addColumn(vector<vector<double>>, vector<double>, int);
 vector<vector<double>> addRow(vector<vector<double>>, vector<double>, int);
-void deleteColumn(vector<vector<double>> &, int);
-void deleteRow(vector<vector<double>> &, int);
+vector<vector<double>> deleteColumn(vector<vector<double>> &, int);
+vector<vector<double>> deleteRow(vector<vector<double>> &, int);
+int MaxElementIndex(vector<double>);
 
+vector<vector<double>> PermutationMatrixMax(vector<double> &);
+vector<double> multiplymatrixvector(vector<vector<double>>  &, vector<double> &);
 vector<vector<double>> multiply(vector<vector<double>>  &, vector<vector<double>> &);
+vector<vector<double>> matrixsubtraction(vector<vector<double>>  &, vector<vector<double>> &);
 vector<vector<double>> add(vector<vector<double>>  &, vector<vector<double>> &);
 vector<vector<double>> transpose(const vector<vector<double>> &);
 void scalarmultiplication_alt(vector<vector<double>> &, double);
 vector<vector<double>> scalarmultiplication(vector<vector<double>>, double);
+double quadraticmultiplication(vector<vector<double>>  &, vector<double> &);
 
 void spanningtest(vector<vector<double>> &);
 void basistest(vector<vector<double>> &);
@@ -65,6 +71,36 @@ void basistransition_withcoordinatevector(vector<vector<double>> &, vector<vecto
 void rowspacebasis(vector<vector<double>> &);
 void columnspacebasis(vector<vector<double>> &);
 void homogeneouslinearsystembasis(vector<vector<double>> &);
+vector<vector<double>> normalizehomogeneouslinearsystembasis_matrix(vector<vector<double>> &); 
+
+vector<double> reflection_yaxis(vector<double> &); 
+vector<double> reflection_xaxis(vector<double> &); 
+vector<double> reflection_linex(vector<double> &); 
+vector<double> reflection_xyplane(vector<double> &); 
+vector<double> reflection_xzplane(vector<double> &); 
+vector<double> reflection_yzplane(vector<double> &); 
+vector<double> rotation_ccw(vector<double> &, double); 
+vector<double> contractiondilation(vector<double> &, double); 
+vector<double> compressionexpansion_xdirection(vector<double> &, double); 
+vector<double> compressionexpansion_ydirection(vector<double> &, double); 
+vector<double> shear_xdirection(vector<double> &, double); 
+vector<double> shear_ydirection(vector<double> &, double); 
+vector<double> orthogonalprojection_xaxis(vector<double> &); 
+vector<double> orthogonalprojection_yaxis(vector<double> &); 
+vector<double> orthogonalprojection_xyplane(vector<double> &); 
+vector<double> orthogonalprojection_xzplane(vector<double> &); 
+vector<double> orthogonalprojection_yzplane(vector<double> &); 
+vector<double> rotation3d_xaxis_ccw(vector<double> &, double); 
+vector<double> rotation3d_yaxis_ccw(vector<double> &, double); 
+vector<double> rotation3d_zaxis_ccw(vector<double> &, double); 
+vector<double> compressionexpansion3d_xdirection(vector<double> &, double); 
+vector<double> compressionexpansion3d_ydirection(vector<double> &, double); 
+vector<double> compressionexpansion3d_zdirection(vector<double> &, double); 
+
+vector<vector<double>> penrose(vector<double> &, vector<double> &);
+
+vector<vector<double>> gramschmidt(vector<vector<double>> &);
+void QRDecomposition(vector<vector<double>> &, vector<vector<double>> &, vector<vector<double>> &); 
 
 void getCofactor(vector<vector<double>> &, vector<vector<double>> &, int, int, int);
 double determinant1(vector<vector<double>> &, int);
@@ -97,6 +133,11 @@ Symbolic gaussianeliminationtest(const SymbolicMatrix&, int, int);
 
 void solve_nhsystem(vector<vector<double>> &,vector<vector<double>> &, vector<double> &);
 void LUsolve_nhsystem(vector<vector<double>> &,vector<vector<double>> &, vector<double> &);
+
+vector<double> PowerMethod(vector<vector<double>> &, int);
+vector<double> EigenvaluesEigenvectorsApproximation(vector<vector<double>> &, int);
+vector<double> diagonalization(vector<vector<double>> &);
+vector<double> SVD(vector<vector<double>> &);
 
 #endif
 #endif

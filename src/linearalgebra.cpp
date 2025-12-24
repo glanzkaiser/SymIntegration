@@ -120,6 +120,26 @@ vector<vector<double>> createMatrix(int R, int C, double k)
 	return resultMatrix;
 }
 
+vector<vector<double>> createIdentityMatrix(int n)
+{
+	vector<vector<double>> resultMatrix(n, vector<double>(n, 0.0));
+	for (int i = 0; i < n ;++i)
+	{
+		for (int j = 0; j < n ;++j)
+		{
+			if (i != j)
+			{
+				resultMatrix[i][j] = 0.0 ;
+			}
+			else if (i == j)
+			{
+				resultMatrix[i][j] = 1.0 ;
+			}
+		}
+	}
+	return resultMatrix;
+}
+
 // Function to create a matrix from a vector of column vectors
 vector<vector<double>> createMatrixFromColumnVectors(const vector<vector<double>>& columnVectors) 
 {
@@ -154,6 +174,56 @@ vector<vector<double>> createMatrixFromColumnVectors(const vector<vector<double>
 		}
 	}
 	return matrix;
+}
+
+int MaxElementIndex(vector<double> vector_x)
+{
+	// Find iterator to the maximum element
+	auto maxIt = std::max_element(vector_x.begin(), vector_x.end());
+
+	// Calculate index from iterator
+	size_t index = std::distance(vector_x.begin(), maxIt);
+
+	// Output results, if using auto, then write *maxIt
+	//cout << "Maximum value: " << *maxIt << "\n";
+	//cout << "Location (index): " << index << "\n";
+	//double h = *maxIt;
+
+	int result = index;
+
+	return result;
+}
+
+vector<vector<double>> PermutationMatrixMax(vector<double>& vector_x)
+{
+	int n = vector_x.size();
+
+	vector<vector<double>> PermutationMatrix(n, vector<double>(n,0.0));
+	for (int i = 0; i < n; ++i)
+	{
+		for (int j = 0; j < n; ++j)
+		{
+			if (i == j)
+			{
+				PermutationMatrix[i][j] = 1.0;
+			}
+			else if (i != j)
+			{
+				PermutationMatrix[i][j] = 0.0;
+			}
+		}
+	}
+	// Find iterator to the maximum element
+	auto maxIt = std::max_element(vector_x.begin(), vector_x.end());
+
+	// Calculate index from iterator
+	size_t index = std::distance(vector_x.begin(), maxIt);
+
+	int max_vector_index = index;
+	swap(PermutationMatrix[0],PermutationMatrix[max_vector_index]);
+
+	return PermutationMatrix;
+
 }
 
 vector<vector<double>> addRow(vector<vector<double>> matrix, vector<double> vector_x, int k)
@@ -217,38 +287,54 @@ vector<vector<double>> addColumn(vector<vector<double>> matrix, vector<double> v
 	return newMatrix;
 }
 
-void deleteRow(vector<vector<double>>& matrix, int rowIndex) 
+vector<vector<double>> deleteRow(vector<vector<double>>& matrix, int rowIndex) 
 {
+	int R = matrix.size();
+	int C = matrix[0].size(); 
+	vector<vector<double>> matrix_final(R-1, vector<double>(C, 0.0));
+
 	if (matrix.empty()) 
 	{
-		return; // Handle empty matrix case
+		cerr << "Error: Matrix is empty" << endl;
+		return {};
 	}
-	int R = matrix.size();
 	// Ensure the rowIndex is valid
 	if (rowIndex < 0 || rowIndex >= R) 
 	{
 		cerr << "Error: Invalid row index." << endl;
-		return;
+		return {};
 	}
 
 	else
 	{
 		matrix.erase(matrix.begin() + rowIndex);
 	}
+	for (int i = 0; i < R-1; ++i) 
+	{
+		for (int j = 0; j < C; ++j) 
+		{
+				matrix_final[i][j] = matrix[i][j];
+		}
+	}
+	return matrix_final;
 }
 
-void deleteColumn(vector<vector<double>>& matrix, int columnIndex) 
+vector<vector<double>> deleteColumn(vector<vector<double>>& matrix, int columnIndex) 
 {
+	int R = matrix.size();
+	int C = matrix[0].size(); 
+	vector<vector<double>> matrix_final(R, vector<double>(C-1, 0.0));
+	
 	if (matrix.empty()) 
 	{
-		return; // Handle empty matrix case
+		cerr << "Error: Matrix is empty" << endl;
+		return {};
 	}
-	int C = matrix[0].size();
 	// Ensure the columnIndex is valid for at least the first row
 	if (columnIndex < 0 || columnIndex >= C) 
 	{
 		cerr << "Error: Invalid column index." << endl;
-		return;
+		return {};
 	}
 
 	// Iterate through each row and erase the element at the specified column index
@@ -256,8 +342,15 @@ void deleteColumn(vector<vector<double>>& matrix, int columnIndex)
 	{
 		row.erase(row.begin() + columnIndex);
 	}
+	for (int i = 0; i < R; ++i) 
+	{
+		for (int j = 0; j < C-1; ++j) 
+		{
+				matrix_final[i][j] = matrix[i][j];
+		}
+	}
+	return matrix_final;
 }
-
 
 // Function to extract a column vector
 vector<double> getColumn(vector<vector<double>> matrix, int columnIndex) 
@@ -341,6 +434,28 @@ vector<vector<double>> transpose(const vector<vector<double>> &matrix) // Done b
 	}
 	return transposed_matrix;
 }
+vector<double> multiplymatrixvector(vector<vector<double>> &matrixA, vector<double> &vectorX) 
+{
+	int R = matrixA.size();
+	int C = matrixA[0].size();
+	
+	int n = vectorX.size();
+	if (C != n) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Matrix dimensions and the vector size are incompatible for multiplication." << endl;
+		return {};
+	}
+	vector<double> result(R, 0.0);
+	for (int i = 0; i < R; ++i)
+	{
+		for (int j = 0; j < C; ++j)
+		{
+			result[i] += matrixA[i][j]*vectorX[j];
+		}
+	}
+	return result;
+}
 
 vector<vector<double>> multiply(vector<vector<double>> &matrixA, vector<vector<double>> &matrixB) 
 {
@@ -380,6 +495,41 @@ vector<vector<double>> multiply(vector<vector<double>> &matrixA, vector<vector<d
 	return result;
 }
 
+vector<vector<double>> matrixsubtraction(vector<vector<double>> &matrixA, vector<vector<double>> &matrixB) 
+{
+
+	if (matrixA.empty() || matrixB.empty() || matrixB[0].empty()) 
+	{
+        	// Handle empty matrices or invalid dimensions
+		return {};
+	}
+
+	size_t rowsA = matrixA.size();
+	size_t colsA = matrixA[0].size();
+	size_t rowsB = matrixB.size();
+	size_t colsB = matrixB[0].size();
+
+	if (rowsA != rowsB && colsA != colsB) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Matrix dimensions are incompatible for subtraction." << endl;
+		return {};
+	}
+
+	// Initialize result matrix with appropriate dimensions
+	vector<vector<double>> result(rowsA, vector<double>(colsA, 0.0));
+
+	// Perform matrix multiplication
+	for (size_t i = 0; i < rowsA; ++i) 
+	{
+		for (size_t j = 0; j < colsA; ++j) 
+		{
+			result[i][j] = matrixA[i][j] - matrixB[i][j];
+		}
+	}
+	return result;
+}
+
 vector<vector<double>> add(vector<vector<double>> &matrixA, vector<vector<double>> &matrixB) 
 {
 
@@ -394,25 +544,55 @@ vector<vector<double>> add(vector<vector<double>> &matrixA, vector<vector<double
 	size_t rowsB = matrixB.size();
 	size_t colsB = matrixB[0].size();
 
-	if (colsA != colsB && rowsA != rowsB) 
+	if (rowsA != rowsB && colsA != colsB) 
 	{
 		// Dimensions are incompatible for multiplication
-		cerr << "Error: Matrix dimensions are incompatible." << std::endl;
+		cerr << "Error: Matrix dimensions are incompatible for addition." << endl;
 		return {};
 	}
 
 	// Initialize result matrix with appropriate dimensions
-	vector<vector<double>> result(rowsA, vector<double>(colsB, 0.0));
+	vector<vector<double>> result(rowsA, vector<double>(colsA, 0.0));
 
-	// Perform matrix addition
+	// Perform matrix multiplication
 	for (size_t i = 0; i < rowsA; ++i) 
 	{
-		for (size_t j = 0; j < colsB; ++j) 
+		for (size_t j = 0; j < colsA; ++j) 
 		{
-			result[i][j] += matrixA[i][j] + matrixB[i][j];	
+			result[i][j] = matrixA[i][j] + matrixB[i][j];
 		}
 	}
 	return result;
+}
+
+double quadraticmultiplication(vector<vector<double>> &matrixA, vector<double> &vectorX)
+{
+	int R = matrixA.size();
+	int C = matrixA[0].size();
+	int n = vectorX.size();
+	double quadraticresult = 0;
+
+	if (C != n) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Matrix dimensions and the vector size are incompatible for multiplication." << endl;
+		return {};
+	}
+	vector<double> result(R, 0.0);
+	for (int i = 0; i < R; ++i)
+	{
+		for (int j = 0; j < C; ++j)
+		{
+			result[i] += matrixA[i][j]*vectorX[j];
+		}
+	}
+	
+	for (int i = 0; i < n; ++i)
+	{
+		quadraticresult += vectorX[i]*result[i];
+	}
+
+	return quadraticresult;
 }
 
 void scalarmultiplication_alt(vector<vector<double>> &matrix, double scalar) 
@@ -794,7 +974,7 @@ vector<vector<double>> inverse(vector<vector<double>> &matrix)
 
 double norm(const vector<double> &vectorx)
 {
-	double result;
+	double result = 0;
 	int n = vectorx.size();
 		
 	for (int i=0 ; i<n ; i++) 
@@ -806,7 +986,7 @@ double norm(const vector<double> &vectorx)
 
 double dot(const vector<double> &vectorx, const vector<double> &vectory)
 {
-	double result;
+	double result = 0;
 	int n = vectorx.size();
 	int m = vectory.size();
 	if (n !=m)
@@ -2593,6 +2773,1704 @@ void homogeneouslinearsystembasis(vector<vector<double>> &A)
 	
 }
 
+
+vector<vector<double>> normalizehomogeneouslinearsystembasis_matrix(vector<vector<double>> &A) 
+{
+	int r = A.size();
+	int c = A[0].size();
+	vector<vector<double>> R(r, vector<double>(c));
+	vector<vector<double>> result;
+	
+	for(int i = 0; i<r; i++)
+	{
+		for(int j=0; j<c; j++)
+		{
+			R[i][j] = A[i][j];
+		}		
+	}
+		
+	// Forward Elimination
+	for (int i = 0; i < r; ++i) 
+	{
+		// Partial Pivoting (optional but recommended for stability)
+		int pivotRow = i;
+		for (int k = i + 1; k < r; ++k) 
+		{
+			if (abs(R[k][i]) > abs(R[pivotRow][i])) 
+			{
+				pivotRow = k;
+			}
+		}
+		swap(R[i], R[pivotRow]);
+
+		
+
+		// Eliminate elements below the pivot
+		for (int k = i + 1; k < r; ++k) 
+		{
+			if (R[i][i] != 0)
+			{
+				double factor = R[k][i] / R[i][i];
+				
+				for (int j = i; j < c; ++j) 
+				{ 
+					R[k][j] -= factor * R[i][j];
+				
+				}
+			}
+			else if (R[i][i] ==0)
+			{
+				i=i+1;
+			}
+		}
+	}
+
+	// Eliminate row that is a linear combination of other row
+	for (int i = 0; i < r; ++i) 
+	{
+		if (R[i][i] != 0)
+		{
+			for (int j = i+1; j < r; ++j) 
+			{ 
+				if(R[j][i] != 0)
+				{
+					double pivot = divisiond(R[i][i],R[j][i]);
+					for(int k=i; k<c; ++k)
+					{
+						R[j][k] = pivot*R[j][k] - R[i][k];
+					}
+				}
+				else if(R[j][i] == 0)
+				{
+					i=i+1;
+				}
+			}
+		}
+		else if (R[i][i] == 0)
+		{
+			for (int j = i+1; j < c; ++j) 
+			{ 
+				if (R[i][j] != 0)
+				{
+					for (int k = i+1; k < r; ++k) 
+					{ 
+						if(R[k][j] != 0)
+						{
+							double pivot = R[i][j]/R[k][j];
+							
+							for(int m=i; m<c; ++m)
+							{
+								R[k][m] = pivot*R[k][m] - R[i][m];
+							}
+						}
+						else if(R[k][j] == 0)
+						{
+							i=i+1;
+						}
+					}
+				}
+				else if (R[i][j] == 0)
+				{
+					i = i+1;
+				}
+			}
+		}
+	}
+	
+	// make the leading 1
+	for (int i = 0; i < r; ++i) 
+	{
+		if (R[i][i] != 0)
+		{
+			double pivot = R[i][i];
+			for (int j = i; j < c; ++j) 
+			{ 
+				R[i][j] = R[i][j]/pivot;
+			}	
+		}
+		else if(R[i][i] ==0)
+		{
+			for (int j = i+1; j < c; ++j) 
+			{
+				double pivot = R[i][j];
+				 if (R[i][j] != 0)
+				{	
+					for (int k = j; k < c; ++k) 
+					{
+						R[i][k] = R[i][k]/pivot;
+					}				
+					j = c-1;
+				}	
+				else if (R[i][j] ==0)
+				{
+					
+				}
+			}
+		}
+	}
+
+	// make zeros above all leading 1
+	for (int i = 0; i < r-1; ++i) 
+	{
+		if (R[i][i+1] != 0 )
+		{
+			double pivot = R[i][i+1];
+			for (int j = i; j < c; ++j) 
+			{ 
+				R[i][j] = R[i][j] - (pivot * R[i+1][j]);
+			}
+		}
+	}
+	
+	
+	// Another forward elimination
+	for (int i = 0; i < r-1; ++i) 
+	{	
+		if (R[i][i] != 0)
+		{
+			for (int j = i+1; j < r; ++j) 
+			{ 
+				if (R[j][i] == 0)
+				{
+					
+				}
+				else if(R[j][i] !=0)
+				{
+					double pivot = R[i][i]/R[j][i];
+					for(int k=i; k<c; ++k)
+					{
+						R[j][k] = R[j][k] - pivot*R[i][k];
+					}
+				}
+			}
+		}
+		else if (R[i][i] == 0)
+		{
+			for (int j = i; j < c; ++j) 
+			{ 
+				if (R[i][j] != 0)
+				{
+					for (int m = i+1; m < r; ++m) 
+					{ 
+						if (R[m][j] == 0)
+						{
+							
+						}
+						else if(R[m][j] !=0)
+						{
+							double pivot = R[i][j]/R[m][j];
+							for(int k=j; k<c; ++k)
+							{
+								R[m][k] = R[m][k] - pivot*R[i][k];
+							}
+							
+						}
+					}
+					j = c-1;
+				}
+				else if (R[i][j] == 0)
+				{
+					
+				}
+			}
+		}
+	}
+
+	// Computing rank and nullity
+	int rank = 0;
+	int dim = c;
+		
+	// Find the basis for the row space of A
+	for (int i = 0; i < r; ++i) 
+	{	
+		if (R[i][i] != 0)
+		{
+			rank = rank + 1;
+		}
+		else if (R[i][i] == 0)
+		{
+			for (int j = i; j < c; ++j) 
+			{ 
+				if (R[i][j] != 0)
+				{
+					rank = rank + 1;
+					
+					j = c-1;
+				}
+				else if (R[i][j] == 0)
+				{
+					rank = rank;
+				}
+			}
+		}
+	}
+	int null = dim-rank;
+	// Compute the basis for the solution space of Ax = 0
+	vector<vector<double>> solutionbasis;
+	vector<vector<double>> identitybasis(null,vector<double>(null,0.0));
+
+	for(int i = 0; i < null; ++i)
+	{
+		identitybasis[i][i] = 1.0;	
+	}
+
+	for(int i = 0; i < rank; ++i)
+	{
+		solutionbasis.push_back(getRow(R,i));	
+	}
+	// Multiply by -1
+	solutionbasis = scalarmultiplication(solutionbasis,-1);
+
+	// Delete column 1,2, ..., rank(A)
+	for(int i = 0; i < rank; ++i)
+	{
+		// Iterate through each row and erase the first column with the amount of rank(A)
+		for (auto& row : solutionbasis) 
+		{
+			row.erase(row.begin() + 0);
+		}	
+	}
+	for(int i = 0; i < null; ++i)
+	{
+		solutionbasis.push_back(getRow(identitybasis,i));
+	}
+	// normalize the solution basis
+	for(int i = 0; i < null; ++i)
+	{	
+		vector<double> vector_v = getColumn(solutionbasis,i);
+		double ssv = 0; // sum of squares of the new orthonormal basis.
+		for (int j = 0; j < c ; ++j)
+		{
+			ssv += vector_v[j]*vector_v[j];
+		}
+		double norm = std::sqrt(ssv);
+		// Normalize v (v = v / norm)
+		vector_v = scalarmultiplication(vector_v,divisiond(1,norm));
+		
+		result.push_back(vector_v);
+	}
+	return result;	 // as row vectors
+}
+
+
+vector<double> reflection_yaxis(vector<double> &vectorx) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	
+	if (n != 2) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 2." << std::endl;
+		return {};
+	}
+
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	for(int i = 0; i < n; i++)
+	{
+		for(int j=0; j < n; j++)
+		{	
+			if (i == j )
+			{
+				standardMatrix[i][j] = 1;
+			}
+			else if (i != j )
+			{
+				standardMatrix[i][j] = 0;
+			}
+		}
+	}
+	standardMatrix[0][0] = -1;
+
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> reflection_xaxis(vector<double> &vectorx) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	
+	if (n != 2) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 2." << std::endl;
+		return {};
+	}
+
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	for(int i = 0; i < n; i++)
+	{
+		for(int j=0; j < n; j++)
+		{	
+			if (i == j )
+			{
+				standardMatrix[i][j] = 1;
+			}
+			else if (i != j )
+			{
+				standardMatrix[i][j] = 0;
+			}
+		}
+	}
+	standardMatrix[1][1] = -1;
+
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> reflection_linex(vector<double> &vectorx) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	
+	if (n != 2) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 2." << std::endl;
+		return {};
+	}
+
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	for(int i = 0; i < n; i++)
+	{
+		for(int j=0; j < n; j++)
+		{	
+			if (i == j )
+			{
+				standardMatrix[i][j] = 0;
+			}
+			else if (i != j )
+			{
+				standardMatrix[i][j] = 1;
+			}
+		}
+	}
+	
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> orthogonalprojection_xaxis(vector<double> &vectorx) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	
+	if (n != 2) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 2." << std::endl;
+		return {};
+	}
+
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	for(int i = 0; i < n; i++)
+	{
+		for(int j=0; j < n; j++)
+		{	
+			if (i == j )
+			{
+				standardMatrix[i][j] = 1;
+			}
+			else if (i != j )
+			{
+				standardMatrix[i][j] = 0;
+			}
+		}
+	}
+	standardMatrix[1][1] = 0;
+
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> orthogonalprojection_yaxis(vector<double> &vectorx) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	
+	if (n != 2) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 2." << std::endl;
+		return {};
+	}
+
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	for(int i = 0; i < n; i++)
+	{
+		for(int j=0; j < n; j++)
+		{	
+			if (i == j )
+			{
+				standardMatrix[i][j] = 1;
+			}
+			else if (i != j )
+			{
+				standardMatrix[i][j] = 0;
+			}
+		}
+	}
+	standardMatrix[0][0] = 0;
+
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> rotation_ccw(vector<double> &vectorx, double angle) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	
+	if (n != 2) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 2." << std::endl;
+		return {};
+	}
+
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	for(int i = 0; i < n; i++)
+	{
+		for(int j=0; j < n; j++)
+		{	
+			if (i == j )
+			{
+				standardMatrix[i][j] = cosf(angle);
+			}
+			else if (i != j )
+			{
+				standardMatrix[i][j] = sinf(angle);
+			}
+		}
+	}
+	standardMatrix[0][1] = -sinf(angle);
+
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> contractiondilation(vector<double> &vectorx, double k) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	// works for all R^n
+
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	for(int i = 0; i < n; i++)
+	{
+		for(int j=0; j < n; j++)
+		{	
+			if (i == j )
+			{
+				standardMatrix[i][j] = k;
+			}
+			else if (i != j )
+			{
+				standardMatrix[i][j] = 0;
+			}
+		}
+	}
+
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> compressionexpansion_xdirection(vector<double> &vectorx, double k) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	
+	if (n != 2) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 2." << std::endl;
+		return {};
+	}
+
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	for(int i = 0; i < n; i++)
+	{
+		for(int j=0; j < n; j++)
+		{	
+			if (i == j )
+			{
+				standardMatrix[i][j] = 1;
+			}
+			else if (i != j )
+			{
+				standardMatrix[i][j] = 0;
+			}
+		}
+	}
+	standardMatrix[0][0] = k;
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> compressionexpansion_ydirection(vector<double> &vectorx, double k) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	
+	if (n != 2) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 2." << std::endl;
+		return {};
+	}
+
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	for(int i = 0; i < n; i++)
+	{
+		for(int j=0; j < n; j++)
+		{	
+			if (i == j )
+			{
+				standardMatrix[i][j] = 1;
+			}
+			else if (i != j )
+			{
+				standardMatrix[i][j] = 0;
+			}
+		}
+	}
+	standardMatrix[1][1] = k;
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> shear_xdirection(vector<double> &vectorx, double k) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	if (n != 2) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 2." << std::endl;
+		return {};
+	}
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	for(int i = 0; i < n; i++)
+	{
+		for(int j=0; j < n; j++)
+		{	
+			if (i == j )
+			{
+				standardMatrix[i][j] = 1;
+			}
+			else if (i != j )
+			{
+				standardMatrix[i][j] = 0;
+			}
+		}
+	}
+	standardMatrix[0][1] = k;
+
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> shear_ydirection(vector<double> &vectorx, double k) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	if (n != 2) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 2." << std::endl;
+		return {};
+	}
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	for(int i = 0; i < n; i++)
+	{
+		for(int j=0; j < n; j++)
+		{	
+			if (i == j )
+			{
+				standardMatrix[i][j] = 1;
+			}
+			else if (i != j )
+			{
+				standardMatrix[i][j] = 0;
+			}
+		}
+	}
+	standardMatrix[1][0] = k;
+
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> reflection_xyplane(vector<double> &vectorx) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	
+	if (n != 3) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 3." << std::endl;
+		return {};
+	}
+
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	for(int i = 0; i < n; i++)
+	{
+		for(int j=0; j < n; j++)
+		{	
+			if (i == j )
+			{
+				standardMatrix[i][j] = 1;
+			}
+			else if (i != j )
+			{
+				standardMatrix[i][j] = 0;
+			}
+		}
+	}
+	standardMatrix[2][2] = -1;
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> reflection_xzplane(vector<double> &vectorx) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	
+	if (n != 3) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 3." << std::endl;
+		return {};
+	}
+
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	for(int i = 0; i < n; i++)
+	{
+		for(int j=0; j < n; j++)
+		{	
+			if (i == j )
+			{
+				standardMatrix[i][j] = 1;
+			}
+			else if (i != j )
+			{
+				standardMatrix[i][j] = 0;
+			}
+		}
+	}
+	standardMatrix[1][1] = -1;
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> reflection_yzplane(vector<double> &vectorx) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	
+	if (n != 3) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 3." << std::endl;
+		return {};
+	}
+
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	for(int i = 0; i < n; i++)
+	{
+		for(int j=0; j < n; j++)
+		{	
+			if (i == j )
+			{
+				standardMatrix[i][j] = 1;
+			}
+			else if (i != j )
+			{
+				standardMatrix[i][j] = 0;
+			}
+		}
+	}
+	standardMatrix[0][0] = -1;
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> orthogonalprojection_xyplane(vector<double> &vectorx) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	
+	if (n != 3) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 3." << std::endl;
+		return {};
+	}
+
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	for(int i = 0; i < n; i++)
+	{
+		for(int j=0; j < n; j++)
+		{	
+			if (i == j )
+			{
+				standardMatrix[i][j] = 1;
+			}
+			else if (i != j )
+			{
+				standardMatrix[i][j] = 0;
+			}
+		}
+	}
+	standardMatrix[2][2] = 0;
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> orthogonalprojection_xzplane(vector<double> &vectorx) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	
+	if (n != 3) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 3." << std::endl;
+		return {};
+	}
+
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	for(int i = 0; i < n; i++)
+	{
+		for(int j=0; j < n; j++)
+		{	
+			if (i == j )
+			{
+				standardMatrix[i][j] = 1;
+			}
+			else if (i != j )
+			{
+				standardMatrix[i][j] = 0;
+			}
+		}
+	}
+	standardMatrix[1][1] = 0;
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> orthogonalprojection_yzplane(vector<double> &vectorx) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	
+	if (n != 3) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 3." << std::endl;
+		return {};
+	}
+
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	for(int i = 0; i < n; i++)
+	{
+		for(int j=0; j < n; j++)
+		{	
+			if (i == j )
+			{
+				standardMatrix[i][j] = 1;
+			}
+			else if (i != j )
+			{
+				standardMatrix[i][j] = 0;
+			}
+		}
+	}
+	standardMatrix[0][0] = 0;
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> rotation3d_xaxis_ccw(vector<double> &vectorx, double angle) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	
+	if (n != 3) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 3." << std::endl;
+		return {};
+	}
+
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	if (vectorx[0] >= 0) // rotation about positive x-axis
+	{
+		for(int i = 0; i < n; i++)
+		{
+			for(int j=0; j < n; j++)
+			{	
+				if (i == j )
+				{
+					standardMatrix[i][j] = 1;
+				}
+				else if (i != j )
+				{
+					standardMatrix[i][j] = 0;
+				}
+			}
+		}
+		standardMatrix[1][1] = cosf(angle);
+		standardMatrix[2][2] = cosf(angle);
+		standardMatrix[1][2] = -sinf(angle);
+		standardMatrix[2][1] = sinf(angle);
+	}
+	else if (vectorx[0] < 0) // rotation about negative x-axis
+	{
+		for(int i = 0; i < n; i++)
+		{
+			for(int j=0; j < n; j++)
+			{	
+				if (i == j )
+				{
+					standardMatrix[i][j] = 1;
+				}
+				else if (i != j )
+				{
+					standardMatrix[i][j] = 0;
+				}
+			}
+		}
+		standardMatrix[1][1] = cosf(angle);
+		standardMatrix[2][2] = cosf(angle);
+		standardMatrix[1][2] = sinf(angle);
+		standardMatrix[2][1] = -sinf(angle);
+	}
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> rotation3d_yaxis_ccw(vector<double> &vectorx, double angle) 
+{
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	
+	if (n != 3) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 3." << std::endl;
+		return {};
+	}
+
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	if (vectorx[1] >= 0) // rotation about positive y-axis
+	{
+		for(int i = 0; i < n; i++)
+		{
+			for(int j=0; j < n; j++)
+			{	
+				if (i == j )
+				{
+					standardMatrix[i][j] = 1;
+				}
+				else if (i != j )
+				{
+					standardMatrix[i][j] = 0;
+				}
+			}
+		}
+		standardMatrix[0][0] = cosf(angle);
+		standardMatrix[0][2] = sinf(angle);
+		standardMatrix[2][0] = -sinf(angle);
+		standardMatrix[2][2] = cosf(angle);
+	}
+	else if (vectorx[1] < 0) // rotation about negative y-axis
+	{
+		for(int i = 0; i < n; i++)
+		{
+			for(int j=0; j < n; j++)
+			{	
+				if (i == j )
+				{
+					standardMatrix[i][j] = 1;
+				}
+				else if (i != j )
+				{
+					standardMatrix[i][j] = 0;
+				}
+			}
+		}
+		standardMatrix[0][0] = cosf(angle);
+		standardMatrix[0][2] = -sinf(angle);
+		standardMatrix[2][0] = sinf(angle);
+		standardMatrix[2][2] = cosf(angle);
+	} 
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> rotation3d_zaxis_ccw(vector<double> &vectorx, double angle) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	
+	if (n != 3) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 3." << std::endl;
+		return {};
+	}
+
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	if (vectorx[2] >= 0) // rotation about positive z-axis
+	{
+		for(int i = 0; i < n; i++)
+		{
+			for(int j=0; j < n; j++)
+			{	
+				if (i == j )
+				{
+					standardMatrix[i][j] = 1;
+				}
+				else if (i != j )
+				{
+					standardMatrix[i][j] = 0;
+				}
+			}
+		}
+		standardMatrix[0][0] = cosf(angle);
+		standardMatrix[0][1] = -sinf(angle);
+		standardMatrix[1][0] = sinf(angle);
+		standardMatrix[1][1] = cosf(angle);
+	}
+	if (vectorx[2] < 0) // rotation about negative z-axis
+	{
+		for(int i = 0; i < n; i++)
+		{
+			for(int j=0; j < n; j++)
+			{	
+				if (i == j )
+				{
+					standardMatrix[i][j] = 1;
+				}
+				else if (i != j )
+				{
+					standardMatrix[i][j] = 0;
+				}
+			}
+		}
+		standardMatrix[0][0] = cosf(angle);
+		standardMatrix[0][1] = sinf(angle);
+		standardMatrix[1][0] = -sinf(angle);
+		standardMatrix[1][1] = cosf(angle);
+	}
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> compressionexpansion3d_xdirection(vector<double> &vectorx, double k) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	
+	if (n != 3) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 3." << std::endl;
+		return {};
+	}
+
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	for(int i = 0; i < n; i++)
+	{
+		for(int j=0; j < n; j++)
+		{	
+			if (i == j )
+			{
+				standardMatrix[i][j] = 1;
+			}
+			else if (i != j )
+			{
+				standardMatrix[i][j] = 0;
+			}
+		}
+	}
+	standardMatrix[0][0] = k;
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> compressionexpansion3d_ydirection(vector<double> &vectorx, double k) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	
+	if (n != 3) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 3." << std::endl;
+		return {};
+	}
+
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	for(int i = 0; i < n; i++)
+	{
+		for(int j=0; j < n; j++)
+		{	
+			if (i == j )
+			{
+				standardMatrix[i][j] = 1;
+			}
+			else if (i != j )
+			{
+				standardMatrix[i][j] = 0;
+			}
+		}
+	}
+	standardMatrix[1][1] = k;
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<double> compressionexpansion3d_zdirection(vector<double> &vectorx, double k) 
+{
+
+	if (vectorx.empty())
+	{
+        	// Handle empty vectors or invalid dimensions
+		return {};
+	}
+
+	int n = vectorx.size();
+	
+	if (n != 3) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimension has to be 3." << std::endl;
+		return {};
+	}
+
+	// Initialize result vector with appropriate dimensions
+	vector<double> result(n);
+	// Initialize the standard matrix for reflection about the y-axis
+	vector<vector<double>> standardMatrix(n, vector<double>(n));
+
+	for(int i = 0; i < n; i++)
+	{
+		for(int j=0; j < n; j++)
+		{	
+			if (i == j )
+			{
+				standardMatrix[i][j] = 1;
+			}
+			else if (i != j )
+			{
+				standardMatrix[i][j] = 0;
+			}
+		}
+	}
+	standardMatrix[2][2] = k;
+	// Perform matrix-vector multiplication
+	for (int i = 0; i < n; i++) 
+	{
+		for(int j=0; j < n; j++)
+		{
+			result[i] += standardMatrix[i][j]*vectorx[j] ;	
+		}
+	}
+	return result;
+}
+
+vector<vector<double>> penrose(vector<double>& vectorx, vector<double>& vectory) 
+{
+	int n = vectorx.size();
+	int m = vectory.size();
+	if (n != m) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimensions has to be the same." << std::endl;
+		return {};
+	}
+	vector<vector<double>> penrosematrix(n, vector<double>(n, 0.0)); // initialize penrose matrix with size n x n and entries all zero
+	double denom = dot(vectorx,vectorx);
+	for (int i = 0; i < n; ++i)
+	{
+		for (int j = 0; j < n; ++j)
+		{
+			penrosematrix[i][j] = vectory[i]*vectorx[j];
+		}
+	}
+	penrosematrix = scalarmultiplication(penrosematrix,divisiond(1,denom));
+
+	return penrosematrix;
+}
+
+vector<vector<double>> gramschmidt(vector<vector<double>> &A)
+{
+	int n = A.size();
+	int c = A[0].size();
+	vector<vector<double>> orthogonal_basis;
+
+	cout << "\nA:" << endl;
+	printMatrix(A);
+	cout << endl;
+	vector<double> v1 = getColumn(A,0);
+	orthogonal_basis.push_back(v1);
+		
+	for (int i =1; i < c ; ++i)
+	{
+		if(i <= 1)
+		{
+			vector<double> u = getColumn(A,i);
+			vector<double> v1 = getRow(orthogonal_basis,i-1);
+			double num = 0;
+			double denom = 0;
+			for (int l = 0 ; l< n; ++l)
+			{
+				num += u[l]*v1[l];
+				denom += v1[l]*v1[l];
+			}
+			double k = divisiond(num,denom);
+			vector<double> v_process = scalarmultiplication(v1,k);
+			
+			vector<double> v_new = subtract(u,v_process);
+			
+			orthogonal_basis.push_back(v_new);
+		}
+		if(i > 1)
+		{
+			vector<double> u = getColumn(A,i);
+			vector<vector<double>> proj_matrix_final;
+			for (int j = 0; j< i; ++j)
+			{
+				vector<double> v_now = getRow(orthogonal_basis,j);	
+				double num = 0;
+				double denom = 0;
+				for (int l = 0 ; l< n; ++l)
+				{
+					num += u[l]*v_now[l];
+					denom += v_now[l]*v_now[l];
+				}
+				double k_now = divisiond(num,denom);
+				
+				vector<double> v_processnow = scalarmultiplication(v_now,k_now);
+				
+				proj_matrix_final.push_back(v_processnow);
+			}
+			vector<double> v_total;
+			for (int k = 0; k < n; ++k)
+			{
+				vector<double> v_col =getColumn(proj_matrix_final,k); 
+				double sum_col = std::accumulate(v_col.begin(), v_col.end(), 0.0);
+				v_total.push_back(sum_col);
+			}
+			vector<double> v_new2 = subtract(u,v_total);
+			orthogonal_basis.push_back(v_new2);
+		}		
+	}
+	vector<vector<double>> orthogonal_basis_final = transpose(orthogonal_basis); 
+	cout << "\nOrthogonal basis:" << endl;
+	printMatrix(orthogonal_basis_final);
+
+	vector<vector<double>> orthonormal_basis;
+	for (int i = 0; i < c; ++i)
+	{
+		vector<double> basis = getRow(orthogonal_basis,i);
+		double norm_denom = norm(basis);
+		vector<double> vector_orthonormal = scalarmultiplication(basis,divisiond(1,norm_denom));
+		orthonormal_basis.push_back(vector_orthonormal);
+	}
+	vector<vector<double>> orthonormal_basis_final = transpose(orthonormal_basis); 
+	
+	cout << "\nOrthonormal basis:" << endl;
+	printMatrix(orthonormal_basis_final);
+
+	return orthonormal_basis_final;
+}
+
+void QRDecomposition(vector<vector<double>> &A, vector<vector<double>> &Q, vector<vector<double>> &R)
+{
+	int n = A.size();
+	int c = A[0].size();
+	vector<vector<double>> orthogonal_basis;
+
+	cout << "\nA:" << endl;
+	printMatrix(A);
+	cout << endl;
+	vector<double> v1 = getColumn(A,0);
+	orthogonal_basis.push_back(v1);
+		
+	for (int i =1; i < c ; ++i)
+	{
+		if(i <= 1)
+		{
+			vector<double> u = getColumn(A,i);
+			vector<double> v1 = getRow(orthogonal_basis,i-1);
+			double num = 0;
+			double denom = 0;
+			for (int l = 0 ; l< n; ++l)
+			{
+				num += u[l]*v1[l];
+				denom += v1[l]*v1[l];
+			}
+			double k = divisiond(num,denom);
+			vector<double> v_process = scalarmultiplication(v1,k);
+			
+			vector<double> v_new = subtract(u,v_process);
+			
+			orthogonal_basis.push_back(v_new);
+		}
+		if(i > 1)
+		{
+			vector<double> u = getColumn(A,i);
+			vector<vector<double>> proj_matrix_final;
+			for (int j = 0; j< i; ++j)
+			{
+				vector<double> v_now = getRow(orthogonal_basis,j);	
+				double num = 0;
+				double denom = 0;
+				for (int l = 0 ; l< n; ++l)
+				{
+					num += u[l]*v_now[l];
+					denom += v_now[l]*v_now[l];
+				}
+				double k_now = divisiond(num,denom);
+				
+				vector<double> v_processnow = scalarmultiplication(v_now,k_now);
+				
+				proj_matrix_final.push_back(v_processnow);
+			}
+			vector<double> v_total;
+			for (int k = 0; k < n; ++k)
+			{
+				vector<double> v_col =getColumn(proj_matrix_final,k); 
+				double sum_col = std::accumulate(v_col.begin(), v_col.end(), 0.0);
+				v_total.push_back(sum_col);
+			}
+			vector<double> v_new2 = subtract(u,v_total);
+			orthogonal_basis.push_back(v_new2);
+		}		
+	}
+	vector<vector<double>> orthogonal_basis_final = transpose(orthogonal_basis); 
+	
+	vector<vector<double>> orthonormal_basis;
+	for (int i = 0; i < c; ++i)
+	{
+		vector<double> basis = getRow(orthogonal_basis,i);
+		double norm_denom = norm(basis);
+		vector<double> vector_orthonormal = scalarmultiplication(basis,divisiond(1,norm_denom));
+		orthonormal_basis.push_back(vector_orthonormal);
+	}
+	vector<vector<double>> orthonormal_basis_final = transpose(orthonormal_basis); 
+	for (int i = 0; i < n; ++i)
+	{
+		for (int j = 0; j < c; ++j)
+		{
+			Q[i][j] = orthonormal_basis_final[i][j];
+		}
+	}
+	//vector<vector<double>> R_final(n, vector<double>(c,0.0));
+	for (int i = 0; i < n; ++i)
+	{
+		vector<double> q = getColumn(Q,i);
+		for (int j = 0; j < c; ++j)
+		{
+			vector<double> u_R = getColumn(A,j);
+			double inner_product = 0;
+				
+			for (int l = 0 ; l< n; ++l)
+			{
+				inner_product += u_R[l]*q[l];
+			}
+			R[i][j] = inner_product;
+		}
+	}
+
+	
+	cout << "\nQ:" << endl;
+	printMatrix(Q);
+
+	cout << "\nR:" << endl;
+	printMatrix(R);
+
+}
+
 void gaussianelimination(const vector<vector<double>> &A)
 {
 	int n = A.size();
@@ -2852,6 +4730,124 @@ void solve_nhsystem(vector<vector<double>> &A, vector<vector<double>> &b, vector
 	{
 		cout << "x" << i + 1 << " = " << fixed << setprecision(5) << x[i] << endl;
 	}
+	cout << endl;
+
+}
+
+void solve_homogeneoussystem(vector<vector<double>> &A, vector<double> &x) // not yet finished
+{
+	int n = A.size();
+	vector<vector<double>> Matrix(n, vector<double>(n));
+	for(int i = 0; i<n; i++)
+	{
+		for(int j=0; j<n; j++)
+		{
+			Matrix[i][j] = A[i][j];
+			
+		}
+	}
+	cout << "\nMatrix:" << endl;	
+	printMatrix(Matrix);
+
+	// Forward Elimination
+	for (int i = 0; i < n; ++i) 
+	{
+		// Partial Pivoting (optional but recommended for stability)
+		int pivotRow = i;
+		for (int k = i + 1; k < n; ++k) 
+		{
+			if (abs(Matrix[k][i]) > abs(Matrix[pivotRow][i])) 
+			{
+				pivotRow = k;
+			}
+		}
+		swap(Matrix[i], Matrix[pivotRow]);
+
+		// Check for singular matrix (no unique solution)
+		if (abs(Matrix[i][i]) < 1e-9) // Using a small epsilon
+		{ 
+			//cout << "No unique solution or infinite solutions exist." << endl;
+		}
+
+		// Eliminate elements below the pivot
+		for (int k = i + 1; k < n; ++k) 
+		{
+			double factor = Matrix[k][i] / Matrix[i][i];
+			for (int j = i; j < n; ++j) 
+			{ // Iterate up to n for the constant term
+				Matrix[k][j] -= factor * Matrix[i][j];
+			}
+		}
+	}
+
+	// make the leading 1
+	for (int i = 0; i < n; ++i) 
+	{
+		if (Matrix[i][i] != 0)
+		{
+			double pivot = Matrix[i][i];
+			for (int j = i; j < n; ++j) 
+			{ 
+				Matrix[i][j] = Matrix[i][j]/pivot;
+			}	
+		}
+		else if(Matrix[i][i] ==0)
+		{
+			for (int j = i+1; j < n; ++j) 
+			{
+				double pivot = Matrix[i][j];
+				 if (Matrix[i][j] != 0)
+				{	
+					for (int k = j; k < n; ++k) 
+					{
+						Matrix[i][k] = Matrix[i][k]/pivot;
+					}				
+					j = n-1;
+				}	
+				else if (Matrix[i][j] ==0)
+				{
+					
+				}
+			}
+		}
+	}
+
+	// make zeros above all leading 1
+	for (int i = 0; i < n-1; ++i) 
+	{
+		if (Matrix[i][i+1] != 0 )
+		{
+			double pivot = Matrix[i][i+1];
+			for (int j = i; j < n; ++j) 
+			{ 
+				Matrix[i][j] = Matrix[i][j] - (pivot * Matrix[i+1][j]);
+			}
+		}
+	}
+	
+	cout << "\nMatrix in reduced row form:" << endl;
+	printMatrix(Matrix);
+
+	/*// Back Substitution
+	vector<double> solution(n);
+	for (int i = n - 1; i >= 0; --i) 
+	{
+		double sum = 0.0;
+		for (int j = i + 1; j < n; ++j) 
+		{
+			sum += augmentedMatrix[i][j] * solution[j];
+		}
+		solution[i] = (augmentedMatrix[i][n] - sum) / augmentedMatrix[i][i];
+		x.push_back(solution[i]);
+	}	*/
+	
+	// Print Solution
+	cout << "\nSolution:" << endl;
+	/*reverse(x.begin(),x.end());	// reverse the vector because we are using back substitution
+	for (int i = 0; i < n; ++i) 
+	{
+		cout << "x" << i + 1 << " = " << fixed << setprecision(5) << x[i] << endl;
+	}*/
 	cout << endl;
 
 }
@@ -3118,6 +5114,577 @@ Symbolic gaussianeliminationtest(const SymbolicMatrix &A, int C, int R)
 	cout << "A (in row reduced echelon form) :\n" << B_mat << endl;
 
 	return 0;
+}
+
+vector<double> PowerMethod(vector<vector<double>>& A, int iterations) 
+{
+	int n = A.size();
+	double mu = 2; 
+	double sigma = 0.5;
+	// start with a random initial vector v that is normally distributed with mean = mu and standard deviation = sigma
+	vector<double> v = vrandn_normal(mu, sigma, n+1);
+
+	cout << "v initial vector = " << endl;
+	printVector(v);
+	// Repeatedly multiply the matrix A by the current vector v to get v_{k+1} = A v_{k}
+	// Then normalize v_{k+1} at each step to prevent the values from growing too large.
+	// The normalized vector converges to the dominant eigenvector, and the corresponding eigenvalue can be calculated from Av = λv
+	for (int i = 0; i < iterations; ++i) 
+	{
+		vector<double> w = multiplymatrixvector(A,v);
+		double ssw = 0; // sum of squares of w.
+		for (int j = 0; j < n ; ++j)
+		{
+			ssw += w[j]*w[j];
+		}
+		double norm = std::sqrt(ssw);
+		// Normalize w (w = w / norm)
+		vector<double> w_normalize = scalarmultiplication(w,divisiond(1,norm));
+		
+		for (int j = 0; j < n ; ++j)
+		{
+			v[j] = w_normalize[j];
+		}
+	}
+	// Calculate eigenvalue (lambda = (v^T * A * v) / (v^T * v))
+	double lambda = divisiond(quadraticmultiplication(A,v),dot(v,v));
+	cout << "\nEigenvalue = " << lambda << endl;
+	cout << "\nEigenvector corresponds to " << lambda << " :" << endl;
+	printVector(v);
+	
+	return v; // returns the eigenvector
+}
+
+vector<double> EigenvaluesEigenvectorsApproximation(vector<vector<double>>& A, int iterations) 
+{
+	int n = A.size();
+	int m = n;
+	vector<double> vector_eigenvalues;	
+	vector<vector<double>> matrix_eigenvectors;	
+	vector<double> v;
+	vector<vector<double>> A_original(n, vector<double>(n,0.0));	
+	for (int i = 0; i < n ; ++i) 
+	{		
+		for (int j = 0; j < n ; ++j)
+		{
+			A_original[i][j] = A[i][j];
+		}
+	}
+	cout <<"\nA: "<<endl;
+	printMatrix(A);
+	for (int k = 0; k < n; ++k)
+	{
+		double mu = 2; 
+		double sigma = 0.5;
+		// start with a random initial vector v that is normally distributed with mean = mu and standard deviation = sigma
+		v = vrandn_normal(mu, sigma, m+1);
+
+		//cout <<"\nA: "<<endl;
+		//printMatrix(A);
+		
+		//cout << "\nv initial vector = " << endl;
+		//printVector(v);
+		// Repeatedly multiply the matrix A by the current vector v to get v_{k+1} = A v_{k}
+		// Then normalize v_{k+1} at each step to prevent the values from growing too large.
+		// The normalized vector converges to the dominant eigenvector, and the corresponding eigenvalue can be calculated from Av = λv
+		for (int i = 0; i < iterations; ++i) 
+		{
+			vector<double> w = multiplymatrixvector(A,v);
+			double ssw = 0; // sum of squares of w.
+			for (int j = 0; j < n ; ++j)
+			{
+				ssw += w[j]*w[j];
+			}
+			double norm = std::sqrt(ssw);
+			// Normalize w (w = w / norm)
+			vector<double> w_normalize = scalarmultiplication(w,divisiond(1,norm));
+			
+			for (int j = 0; j < n ; ++j)
+			{
+				v[j] = w_normalize[j];
+			}
+		}
+		// Calculate eigenvalue (lambda = (v^T * A * v) / (v^T * v))
+		double lambda = divisiond(quadraticmultiplication(A,v),dot(v,v));
+		//cout << "\nEigenvalue = " << lambda << endl;
+
+		vector_eigenvalues.push_back(lambda);
+
+		//cout << "\nEigenvector corresponds to " << lambda << " :" << endl;
+		//printVector(v);
+		vector<vector<double>> P = PermutationMatrixMax(v);
+		//cout << "\nP = " << endl;
+		//printMatrix(P);
+
+		vector<double> wi = multiplymatrixvector(P,v);
+		//cout << "\nw_{1} = " << endl;
+		//printVector(wi);
+
+		vector<vector<double>> R_inv(m, vector<double>(m));
+		for (int i = 0; i < m ; ++i)
+		{
+			R_inv[i][0] = wi[i];
+		}
+		for (int i = 1; i < m ; ++i)
+		{
+			for (int j = 1; j < m ; ++j)
+			{
+				if (i != j)
+				{
+					R_inv[i][j] = 0;
+				}
+				else if (i == j)
+				{
+					R_inv[i][j] = 1;
+				}
+			}
+		}
+		vector<vector<double>> R= inverse(R_inv);
+		vector<vector<double>> RP = multiply(R,P);
+		vector<vector<double>> PiRi = multiply(P,R_inv);
+		vector<vector<double>> APiRi = multiply(A,PiRi);
+		vector<vector<double>> RPAPiRi = multiply(RP,APiRi);
+		
+		/*
+		cout << "\nR^{-1} = " << endl;
+		printMatrix(R_inv);
+
+		cout << "\nR = " << endl;
+		printMatrix(R);
+
+		cout << "\nRP = " << endl;
+		printMatrix(RP);
+
+		cout << "\nP^{-1}R^{-1} = " << endl;
+		printMatrix(PiRi);
+
+		cout << "\nAP^{-1}R^{-1} = " << endl;
+		printMatrix(APiRi);
+
+		cout << "\nB = RPAP^{-1}R^{-1}  = " << endl;
+		printMatrix(RPAPiRi);
+		*/
+
+		A = deleteColumn(RPAPiRi,0); 
+		A = deleteRow(RPAPiRi,0); 
+		m = m-1;
+	}
+	
+	
+	// to determine the whole eigenvectors from known eigenvalue
+	// we use inverse iteration with shift from power method
+	for (int i = 0; i < n ;++i)
+	{
+		double eigen = vector_eigenvalues[i];
+		vector<double> vector_eigen;
+		cout << "\nEigenvalue(" << i+1 << ") = " << eigen << endl;
+		
+		vector<vector<double>> I = createIdentityMatrix(n);
+		// why we use subtraction to 0.1? because we are using inverse iteration method and the inverse of (A - λI) does not exist 
+		vector<vector<double>> lambda_I = scalarmultiplication(I,eigen-0.1); 
+		//cout << "\nlambda I = " << endl;
+		//printMatrix(lambda_I);
+		vector<vector<double>> A_lambda_I = matrixsubtraction(A_original,lambda_I);
+		vector<vector<double>> A_lambda_I_inverse = inverse(A_lambda_I);
+		//cout << "\nA - lambda I" << endl;
+		//printMatrix(A_lambda_I);
+		double mu = 2; 
+		double sigma = 0.5;
+		vector_eigen = vrandn_normal(mu, sigma, n+1);
+		double ssv = 0; // sum of squares of w.
+		for (int j = 0; j < n ; ++j)
+		{
+			ssv += vector_eigen[j]*vector_eigen[j];
+		}
+		double norm = std::sqrt(ssv);
+		// Normalize v (v = v / norm)
+		vector_eigen = scalarmultiplication(vector_eigen,divisiond(1,norm));
+			
+		//cout << "\nv initial vector = " << endl;
+		//printVector(vector_eigen);
+		
+		for (int k = 0; k < iterations; ++k) 
+		{
+			vector<double> w_eigen = multiplymatrixvector(A_lambda_I_inverse,vector_eigen);
+			double ssw = 0; // sum of squares of w.
+			for (int j = 0; j < n ; ++j)
+			{
+				ssw += w_eigen[j]*w_eigen[j];
+			}
+			double norm_w = std::sqrt(ssw);
+			// Normalize w (w = w / norm)
+			vector<double> w_eigen_normalize = scalarmultiplication(w_eigen,divisiond(1,norm_w));
+			
+			for (int j = 0; j < n ; ++j)
+			{
+				vector_eigen[j] = w_eigen_normalize[j];
+			}
+			
+		}
+		cout << "\nCorresponding Eigenvector: " << endl;
+		printVector(vector_eigen);
+		matrix_eigenvectors.push_back(vector_eigen);
+	}
+
+	matrix_eigenvectors = transpose(matrix_eigenvectors);
+	cout << "\nEigenvectors (in column vectors): " << endl;
+	printMatrix(matrix_eigenvectors);
+
+	return vector_eigenvalues; // returns the eigenvector
+}
+
+vector<double> diagonalization(vector<vector<double>>& A) 
+{
+	int iterations = 100;
+	int n = A.size();
+	int m = n;
+	vector<double> vector_eigenvalues;	
+	vector<vector<double>> matrix_eigenvectors;	
+	vector<double> v;
+	vector<vector<double>> A_original(n, vector<double>(n,0.0));	
+	for (int i = 0; i < n ; ++i) 
+	{		
+		for (int j = 0; j < n ; ++j)
+		{
+			A_original[i][j] = A[i][j];
+		}
+	}
+	cout <<"\nA: "<<endl;
+	printMatrix(A);
+	for (int k = 0; k < n; ++k)
+	{
+		double mu = 2; 
+		double sigma = 0.5;
+		// start with a random initial vector v that is normally distributed with mean = mu and standard deviation = sigma
+		v = vrandn_normal(mu, sigma, m+1);
+
+		// Repeatedly multiply the matrix A by the current vector v to get v_{k+1} = A v_{k}
+		// Then normalize v_{k+1} at each step to prevent the values from growing too large.
+		// The normalized vector converges to the dominant eigenvector, and the corresponding eigenvalue can be calculated from Av = λv
+		for (int i = 0; i < iterations; ++i) 
+		{
+			vector<double> w = multiplymatrixvector(A,v);
+			double ssw = 0; // sum of squares of w.
+			for (int j = 0; j < n ; ++j)
+			{
+				ssw += w[j]*w[j];
+			}
+			double norm = std::sqrt(ssw);
+			// Normalize w (w = w / norm)
+			vector<double> w_normalize = scalarmultiplication(w,divisiond(1,norm));
+			
+			for (int j = 0; j < n ; ++j)
+			{
+				v[j] = w_normalize[j];
+			}
+		}
+		// Calculate eigenvalue (lambda = (v^T * A * v) / (v^T * v))
+		double lambda = divisiond(quadraticmultiplication(A,v),dot(v,v));
+	
+		vector_eigenvalues.push_back(lambda);
+
+		vector<vector<double>> P = PermutationMatrixMax(v);
+
+		vector<double> wi = multiplymatrixvector(P,v);
+		//cout << "\nw_{1} = " << endl;
+		//printVector(wi);
+
+		vector<vector<double>> R_inv(m, vector<double>(m));
+		for (int i = 0; i < m ; ++i)
+		{
+			R_inv[i][0] = wi[i];
+		}
+		for (int i = 1; i < m ; ++i)
+		{
+			for (int j = 1; j < m ; ++j)
+			{
+				if (i != j)
+				{
+					R_inv[i][j] = 0;
+				}
+				else if (i == j)
+				{
+					R_inv[i][j] = 1;
+				}
+			}
+		}
+		vector<vector<double>> R= inverse(R_inv);
+		vector<vector<double>> RP = multiply(R,P);
+		vector<vector<double>> PiRi = multiply(P,R_inv);
+		vector<vector<double>> APiRi = multiply(A,PiRi);
+		vector<vector<double>> RPAPiRi = multiply(RP,APiRi);
+		
+		A = deleteColumn(RPAPiRi,0); 
+		A = deleteRow(RPAPiRi,0); 
+		m = m-1;
+	}
+	
+	// to determine the whole eigenvectors from known eigenvalue
+	// we use inverse iteration with shift from power method
+	for (int i = 0; i < n ;++i)
+	{
+		double eigen = vector_eigenvalues[i];
+		vector<double> vector_eigen;
+		cout << "\nEigenvalue(" << i+1 << ") = " << eigen << endl;
+		
+		vector<vector<double>> I = createIdentityMatrix(n);
+		// why we use subtraction to 0.1? because we are using inverse iteration method and the inverse of (A - λI) does not exist 
+		vector<vector<double>> lambda_I = scalarmultiplication(I,eigen-0.1); 
+		vector<vector<double>> A_lambda_I = matrixsubtraction(A_original,lambda_I);
+		vector<vector<double>> A_lambda_I_inverse = inverse(A_lambda_I);
+		
+		double mu = 2; 
+		double sigma = 0.5;
+		vector_eigen = vrandn_normal(mu, sigma, n+1);
+		double ssv = 0; // sum of squares of w.
+		for (int j = 0; j < n ; ++j)
+		{
+			ssv += vector_eigen[j]*vector_eigen[j];
+		}
+		double norm = std::sqrt(ssv);
+		// Normalize v (v = v / norm)
+		vector_eigen = scalarmultiplication(vector_eigen,divisiond(1,norm));
+		
+		for (int k = 0; k < iterations; ++k) 
+		{
+			vector<double> w_eigen = multiplymatrixvector(A_lambda_I_inverse,vector_eigen);
+			double ssw = 0; // sum of squares of w.
+			for (int j = 0; j < n ; ++j)
+			{
+				ssw += w_eigen[j]*w_eigen[j];
+			}
+			double norm_w = std::sqrt(ssw);
+			// Normalize w (w = w / norm)
+			vector<double> w_eigen_normalize = scalarmultiplication(w_eigen,divisiond(1,norm_w));
+			
+			for (int j = 0; j < n ; ++j)
+			{
+				vector_eigen[j] = w_eigen_normalize[j];
+			}
+			
+		}
+		//cout << "\nCorresponding Eigenvector: " << endl;
+		//printVector(vector_eigen);
+		matrix_eigenvectors.push_back(vector_eigen);
+	}
+
+	matrix_eigenvectors = transpose(matrix_eigenvectors);
+	cout << "\nP: " << endl;
+	printMatrix(matrix_eigenvectors);
+	vector<vector<double>> P_mat (n, vector<double>(n,0.0));
+	for (int i = 0; i < n; ++i)
+	{
+		for (int j = 0; j < n ; ++j)
+		{
+			P_mat[i][j] = matrix_eigenvectors[i][j];
+		}		
+	}
+	vector<vector<double>> P_mat_inv = inverse(P_mat);
+	vector<vector<double>> AP = multiply(A_original,P_mat);
+	vector<vector<double>> PiAP = multiply(P_mat_inv,AP);
+
+	cout << "\nP^{-1}: " << endl;
+	printMatrix(P_mat_inv);
+	cout << "\nP^{-1}AP: " << endl;	
+	printMatrix(PiAP);
+	
+	return vector_eigenvalues; // returns the eigenvector
+}
+
+vector<double>SVD(vector<vector<double>>& A0) 
+{
+	int iterations = 100;
+	int row_A = A0.size();
+	int col_A = A0[0].size();
+	vector<double> vector_eigenvalues;	
+	vector<vector<double>> matrix_eigenvectors;	
+	vector<double> v;
+	vector<vector<double>> A;
+	vector<vector<double>> A_transpose = transpose(A0);
+	A = multiply(A_transpose,A0);
+	int n = A.size();
+	int m = n;
+	vector<vector<double>> A_original(n, vector<double>(n,0.0));
+	
+	// SVD decomposition matrices	
+	vector<vector<double>> sigma(row_A, vector<double>(col_A,0.0));	
+	vector<vector<double>> U;	
+	vector<vector<double>> V_transpose(col_A, vector<double>(col_A,0.0));	
+
+	for (int i = 0; i < n ; ++i) 
+	{		
+		for (int j = 0; j < n ; ++j)
+		{
+			A_original[i][j] = A[i][j];
+		}
+	}
+	
+	cout <<"\nA: "<<endl;
+	printMatrix(A0);
+	cout <<"\nA^{T}A: "<<endl;
+	printMatrix(A);
+	for (int k = 0; k < n; ++k)
+	{
+		double mu = 2; 
+		double sigma = 0.5;
+		// start with a random initial vector v that is normally distributed with mean = mu and standard deviation = sigma
+		v = vrandn_normal(mu, sigma, m+1);
+
+		// Repeatedly multiply the matrix A by the current vector v to get v_{k+1} = A v_{k}
+		// Then normalize v_{k+1} at each step to prevent the values from growing too large.
+		// The normalized vector converges to the dominant eigenvector, and the corresponding eigenvalue can be calculated from Av = λv
+		for (int i = 0; i < iterations; ++i) 
+		{
+			vector<double> w = multiplymatrixvector(A,v);
+			double ssw = 0; // sum of squares of w.
+			for (int j = 0; j < n ; ++j)
+			{
+				ssw += w[j]*w[j];
+			}
+			double norm = std::sqrt(ssw);
+			// Normalize w (w = w / norm)
+			vector<double> w_normalize = scalarmultiplication(w,divisiond(1,norm));
+			
+			for (int j = 0; j < n ; ++j)
+			{
+				v[j] = w_normalize[j];
+			}
+		}
+		// Calculate eigenvalue (lambda = (v^T * A * v) / (v^T * v))
+		double lambda = divisiond(quadraticmultiplication(A,v),dot(v,v));
+		vector_eigenvalues.push_back(lambda);
+
+		vector<vector<double>> P = PermutationMatrixMax(v);
+
+		vector<double> wi = multiplymatrixvector(P,v);
+		//cout << "\nw_{1} = " << endl;
+		//printVector(wi);
+
+		vector<vector<double>> R_inv(m, vector<double>(m));
+		for (int i = 0; i < m ; ++i)
+		{
+			R_inv[i][0] = wi[i];
+		}
+		for (int i = 1; i < m ; ++i)
+		{
+			for (int j = 1; j < m ; ++j)
+			{
+				if (i != j)
+				{
+					R_inv[i][j] = 0;
+				}
+				else if (i == j)
+				{
+					R_inv[i][j] = 1;
+				}
+			}
+		}
+		vector<vector<double>> R= inverse(R_inv);
+		vector<vector<double>> RP = multiply(R,P);
+		vector<vector<double>> PiRi = multiply(P,R_inv);
+		vector<vector<double>> APiRi = multiply(A,PiRi);
+		vector<vector<double>> RPAPiRi = multiply(RP,APiRi);
+		
+		A = deleteColumn(RPAPiRi,0); 
+		A = deleteRow(RPAPiRi,0); 
+		m = m-1;
+	}
+	
+	// to determine the whole eigenvectors from known eigenvalue
+	// we use inverse iteration with shift from power method
+	for (int i = 0; i < n ;++i)
+	{
+		double eigen = vector_eigenvalues[i];
+		vector<double> vector_eigen;
+		//cout << "\nEigenvalue(" << i+1 << ") = " << eigen << endl;
+		
+		vector<vector<double>> I = createIdentityMatrix(n);
+		// why we use subtraction to 0.1? because we are using inverse iteration method and the inverse of (A - λI) does not exist 
+		vector<vector<double>> lambda_I = scalarmultiplication(I,eigen-0.1); 
+		vector<vector<double>> A_lambda_I = matrixsubtraction(A_original,lambda_I);
+		vector<vector<double>> A_lambda_I_inverse = inverse(A_lambda_I);
+		
+		double mu = 2; 
+		double sigma = 0.5;
+		vector_eigen = vrandn_normal(mu, sigma, n+1);
+		double ssv = 0; // sum of squares of w.
+		for (int j = 0; j < n ; ++j)
+		{
+			ssv += vector_eigen[j]*vector_eigen[j];
+		}
+		double norm = std::sqrt(ssv);
+		// Normalize v (v = v / norm)
+		vector_eigen = scalarmultiplication(vector_eigen,divisiond(1,norm));
+		
+		for (int k = 0; k < iterations; ++k) 
+		{
+			vector<double> w_eigen = multiplymatrixvector(A_lambda_I_inverse,vector_eigen);
+			double ssw = 0; // sum of squares of w.
+			for (int j = 0; j < n ; ++j)
+			{
+				ssw += w_eigen[j]*w_eigen[j];
+			}
+			double norm_w = std::sqrt(ssw);
+			// Normalize w (w = w / norm)
+			vector<double> w_eigen_normalize = scalarmultiplication(w_eigen,divisiond(1,norm_w));
+			
+			for (int j = 0; j < n ; ++j)
+			{
+				vector_eigen[j] = w_eigen_normalize[j];
+			}
+			
+		}
+		matrix_eigenvectors.push_back(vector_eigen);
+	}
+
+	matrix_eigenvectors = transpose(matrix_eigenvectors);
+	
+	V_transpose = transpose(matrix_eigenvectors);
+	
+	for (int i = 0; i < row_A ; ++i) 
+	{		
+		for (int j = 0; j < col_A ; ++j)
+		{
+			if( i == j)
+			{
+				sigma[i][j] = sqrt(vector_eigenvalues[i]);
+			}
+			else if( i != j)
+			{
+				sigma[i][j] = 0;
+			}
+		}
+	}
+	for (int i = 0; i < col_A ; ++i) 
+	{		
+		double k = divisiond(1,sqrt(vector_eigenvalues[i]));
+		vector<double> vi = getColumn(matrix_eigenvectors,i);
+		vector<double> ui = multiplymatrixvector(A0,vi);
+		ui = scalarmultiplication(ui,k);
+		U.push_back(ui);
+	}
+	
+
+	vector<vector<double>> new_U = normalizehomogeneouslinearsystembasis_matrix(U);
+	int nu = new_U.size();
+	for (int i = 0; i < nu; ++i) 
+	{	
+		U.push_back(getRow(new_U,i));
+	}
+	U = transpose(U);
+
+	cout << "\nU: " << endl;	
+	printMatrix(U);
+	cout << "\nΣ: " << endl;	
+	printMatrix(sigma);
+	cout << "\nV^{T}: " << endl;	
+	printMatrix(V_transpose);
+	
+	vector<vector<double>> sigmaV = multiply(sigma,V_transpose);
+	vector<vector<double>> UsV = multiply(U,sigmaV);
+	cout << "\nUΣV^{T}: " << endl;	
+	printMatrix(UsV);
+	return vector_eigenvalues; // returns the eigenvector
 }
 
 #endif

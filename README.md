@@ -45,7 +45,7 @@ It is able to compute
 14. Compute direction fields and plot it with gnuplot.
 15. Linear programming solution with Simplex Method.
 16. Numerical differentiation and Richardson's Extrapolation.
-17. Matrices multiplication, addition, LU decomposition, Cholesky decomposition
+17. Matrices multiplication, addition, LU decomposition, SVD, eigenvalues and eigenvectors approximation, QR-decomposition, Cholesky decomposition
 18. Generate random number that has certain distribution (uniform, gamma, beta, normal, F, chi-squared) and plot the histogram with Hamzstplot
 19. Compute one-way ANOVA, two-way ANOVA, three-way ANOVA, multiple regression model.
 20. Compute one-tailed and two-tailed hypothesis testing. One- and Two-Sample Estimation Problem, e.g. Confidence Interval and Prediction Interval.
@@ -153,7 +153,9 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Linear Programming: Simplex Method					| Done
 |:sunflower:   | Generate Random Number with Mersenne Twister				| Done
 |:sunflower:   | Numerical differentiation and Richardson's Extrapolation		| Done
-|:sunflower:   | LU-decomposition and Cholesky decomposition				| Done
+|:sunflower:   | LU-decomposition, Cholesky decomposition, and Singular Value Decomposition			| Done
+|:sunflower:   | Eigenvalues and Eigenvectors approximation				| Done
+|:sunflower:   | Gram-Schmidt Process and QR-Decomposition				| Done
 |:sunflower:   | Matrices multiplication and addition					| Done
 |:sunflower:   | Gaussian elimination							| Done
 |:sunflower:   | Create covariance matrix						| Done
@@ -433,3 +435,4 @@ We will move on to Linear Algebra completely, and will come back to Statistics a
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/49.png" width="60%">
 
+By December 24th, 2025: On Christmas eve we have created functions to compute SVD, QR-decomposition, Gram-Schmidt process, eigenvalues and eigenvectors approximation for real matrix $`A`$.
