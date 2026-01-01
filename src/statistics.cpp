@@ -323,7 +323,7 @@ std::vector<double> vrandn_bernoulli(double p, int n)
 	// The constructor takes the probability 'p' of generating 'true'.
 	std::bernoulli_distribution distribution(p);
 
-	for(int i=1; i<n; i++)
+	for(int i=0; i<n; i++)
 	{
 		vec.push_back(static_cast<double>(distribution(generator))); 
 	}
@@ -341,7 +341,7 @@ std::vector<double> vrandn_binomial(double p, int n)
 	// 2. Create a binomial distribution object
 	std::binomial_distribution<> dist_binomial(n, p);
 
-	for(int i=1; i<n; i++)
+	for(int i=0; i<n; i++)
 	{
 		vec.push_back(static_cast<double>(dist_binomial(generator))); 
 	}
@@ -358,7 +358,7 @@ std::vector<double> vrandn_normal(double mu, double sigma, int n)
 	
 	std::vector<double> vec;
  	std::normal_distribution<double> distribution(mu, sigma);
-	for(int i=1; i<n; i++)
+	for(int i=0; i<n; i++)
 	{
 		vec.push_back(static_cast<double>(distribution(generator))); 
 	}
@@ -379,7 +379,7 @@ std::vector<double> vrandn_exponential(double lambda, int n)
 	// The mean of an exponential distribution is 1/lambda.
 	std::exponential_distribution<double> distribution(lambda);
 
-	for(int i=1; i<n; i++)
+	for(int i=0; i<n; i++)
 	{
 		vec.push_back(static_cast<double>(distribution(generator))); 
 	}
@@ -397,7 +397,7 @@ std::vector<double> vrandn_chisquared(double nu, int n)
 	// The constructor takes the degrees of freedom (n) as a parameter.
 	std::chi_squared_distribution<float> chi_squared_dist(nu);
 
-	for(int i=1; i<n; i++)
+	for(int i=0; i<n; i++)
 	{
 		vec.push_back(static_cast<double>(chi_squared_dist(generator))); 
 	}
@@ -417,7 +417,7 @@ std::vector<double> vrandn_fdist(double numerator_df, double denominator_df, int
  	// 2. Instantiate the F-distribution
 	std::fisher_f_distribution<> f_dist(numerator_df, denominator_df);
 
-	for(int i=1; i<n; i++)
+	for(int i=0; i<n; i++)
 	{
 		vec.push_back(static_cast<double>(f_dist(gen))); 
 	}
@@ -435,7 +435,7 @@ std::vector<double> vrandn_tdist(double nu, int n)
 	// The constructor takes the degrees of freedom (nu).
 	std::student_t_distribution<> t_dist(nu);
 
-	for(int i=1; i<n; i++)
+	for(int i=0; i<n; i++)
 	{
 		vec.push_back(static_cast<double>(t_dist(gen))); 
 	}
@@ -458,7 +458,7 @@ std::vector<double> vrandn_erlang(double k, double lambda, int n)
 	// For Erlang, the shape parameter (alpha) is 'k' and the scale parameter (beta) is '1/lambda'.
 	std::gamma_distribution<double> erlang_dist(k, beta);
 
-	for(int i=1; i<n; i++)
+	for(int i=0; i<n; i++)
 	{
 		vec.push_back(static_cast<double>(erlang_dist(engine))); 
 	}
@@ -478,7 +478,7 @@ std::vector<double> vrandn_gamma(double alpha, double beta, int n)
 	std::gamma_distribution<> distribution(alpha, beta);
 	std::vector<double> vec;
  
-	for(int i=1; i<n; i++)
+	for(int i=0; i<n; i++)
 	{
 		vec.push_back(static_cast<double>(distribution(generate))); 
 	}
@@ -509,7 +509,7 @@ std::vector<double> vrandn_beta(double alpha, double beta, int n)
 
 	std::vector<double> vec;
  	
-	for(int i=1; i<n; i++)
+	for(int i=0; i<n; i++)
 	{
 		vec.push_back(static_cast<double>(generateBeta(alpha, beta, generate))); 
 	}

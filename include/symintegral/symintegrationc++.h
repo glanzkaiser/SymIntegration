@@ -84,6 +84,9 @@
 typedef list<Equation> Equations;
 typedef list<Equations> PatternMatches;
 
+typedef complex<double> complexd;
+typedef vector<vector<complex<double>>> cmat;
+typedef vector<complex<double>> cvec;
 typedef vector<vector<double>> dmat;
 typedef vector<double> dvec;
 typedef vector<string> svec;

@@ -36,7 +36,13 @@
 #ifndef SYMINTEGRATION_CPLUSPLUS_LINEARALGEBRA_DECLARE
 #define SYMINTEGRATION_CPLUSPLUS_LINEARALGEBRA_DECLARE
 
+using Complex = std::complex<double>;
+using ComplexVector = std::vector<Complex>;
+using ComplexMatrix = std::vector<std::vector<Complex>>;
+
 vector<vector<double>> loadMatrixFromFile(const string&);
+vector<vector<complex<double>>> loadComplexMatrixFromFile(const string&);
+vector<complex<double>> loadComplexVectorFromFile(const string&); 
 vector<double> loadVectorFromFile(const string&);
 void printMatrix(vector<vector<double>>);
 void printVector(vector<double>);
@@ -44,6 +50,7 @@ vector<double> createVector(int, double);
 vector<vector<double>> createMatrix(int, int, double);
 vector<vector<double>> createIdentityMatrix(int);
 vector<vector<double>> createMatrixFromColumnVectors(const vector<vector<double>> &);
+vector<vector<double>> VandermondeMatrix(const vector<double> &, int);
 vector<double> getColumn(vector<vector<double>>, int); 
 vector<double> getRow(vector<vector<double>>, int); 
 vector<vector<double>> addColumn(vector<vector<double>>, vector<double>, int);
@@ -51,6 +58,32 @@ vector<vector<double>> addRow(vector<vector<double>>, vector<double>, int);
 vector<vector<double>> deleteColumn(vector<vector<double>> &, int);
 vector<vector<double>> deleteRow(vector<vector<double>> &, int);
 int MaxElementIndex(vector<double>);
+
+void printComplexMatrix(const ComplexMatrix &);
+void printComplexVector(const ComplexVector &);
+complex<double> complexdivision(complex<double>, double);
+vector<complex<double>> complexvecrand_normal(double, double, int);
+vector<complex<double>> complexvecrand_uniform(double, double, int);
+double complexnorm(const ComplexVector &);
+double moduluscomplex(complex<double>);
+complex<double> complexdotproduct (const ComplexVector &, const ComplexVector &);
+complex<double> conjugate(complex<double>);
+vector<complex<double>> addComplexVectors(const ComplexVector &, const ComplexVector &);
+vector<complex<double>> subtractComplexVectors(const ComplexVector &, const ComplexVector &);
+vector<complex<double>> scalarmultiplicationComplexVector(const ComplexVector &, double);
+vector<complex<double>> complexnumbermultiplicationComplexVector(const vector<complex<double>>&, complex<double> );
+vector<complex<double>> getcolumnComplexMatrix(const vector<vector<complex<double>>>& , int);
+
+ComplexMatrix addComplexMatrices(const ComplexMatrix &, const ComplexMatrix &); 
+ComplexMatrix subtractComplexMatrices(const ComplexMatrix &, const ComplexMatrix &); 
+ComplexMatrix multiplyComplexMatrices(const ComplexMatrix &, const ComplexMatrix &);
+ComplexMatrix scalarmultiplicationComplexMatrix(const ComplexMatrix &, double);
+ComplexMatrix complexnumbermultiplicationComplexMatrix(const ComplexMatrix &, complex<double> );
+ComplexVector multiplycomplexmatrixvector(const ComplexMatrix &, const ComplexVector &); 
+ComplexMatrix createIdentityComplexMatrix(int);
+ComplexMatrix TransposeComplexMatrix(ComplexMatrix &);
+ComplexMatrix ComplexMatrixInverse(ComplexMatrix &);
+complex<double> complexquadraticmultiplication(vector<vector<complex<double>>> &, vector<complex<double>> &);
 
 vector<vector<double>> PermutationMatrixMax(vector<double> &);
 vector<double> multiplymatrixvector(vector<vector<double>>  &, vector<double> &);
@@ -101,6 +134,7 @@ vector<vector<double>> penrose(vector<double> &, vector<double> &);
 
 vector<vector<double>> gramschmidt(vector<vector<double>> &);
 void QRDecomposition(vector<vector<double>> &, vector<vector<double>> &, vector<vector<double>> &); 
+void QRDecompositionComplex(vector<vector<complex<double>>> &, vector<vector<complex<double>>> &, vector<vector<complex<double>>> &); 
 
 void getCofactor(vector<vector<double>> &, vector<vector<double>> &, int, int, int);
 double determinant1(vector<vector<double>> &, int);
@@ -130,14 +164,20 @@ void vectorequationdecomp(const Symbolic &, const Symbolic &, const Symbolic &, 
 void gaussianelimination(const vector<vector<double>> &);
 Symbolic gaussianelimination(const SymbolicMatrix&, int);
 Symbolic gaussianeliminationtest(const SymbolicMatrix&, int, int);
+void GaussJordanComplexMatrix(ComplexMatrix &);
+void GaussJordanComplexMatrixTEST(ComplexMatrix &);// this can be used to compute complex eigenvectors
 
 void solve_nhsystem(vector<vector<double>> &,vector<vector<double>> &, vector<double> &);
 void LUsolve_nhsystem(vector<vector<double>> &,vector<vector<double>> &, vector<double> &);
 
 vector<double> PowerMethod(vector<vector<double>> &, int);
 vector<double> EigenvaluesEigenvectorsApproximation(vector<vector<double>> &, int);
+vector<double> RayleighQuotientIteration(vector<vector<double>>&, int, double, double);
 vector<double> diagonalization(vector<vector<double>> &);
 vector<double> SVD(vector<vector<double>> &);
+
+vector<complex<double>> ComplexEigenvaluesEigenvectorsApproximation(vector<vector<complex<double>>>& , int); // NOT YET
+vector<complex<double>> ComplexRayleighQuotientIteration(vector<vector<complex<double>>> & , int, int, double , double);
 
 #endif
 #endif
