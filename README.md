@@ -436,3 +436,7 @@ We will move on to Linear Algebra completely, and will come back to Statistics a
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/49.png" width="60%">
 
 By December 24th, 2025: On Christmas eve we have created functions to compute SVD, QR-decomposition, Gram-Schmidt process, eigenvalues and eigenvectors approximation for real matrix $`A`$.
+
+By january 1st, 2026: On new year eve we have created a function that can handle complex eigenvalues and its corresponding eigenvector approximation with Rayleigh quotient iteration.
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/50.png" width="60%">
