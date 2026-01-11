@@ -63,6 +63,7 @@ void printComplexMatrix(const ComplexMatrix &);
 void printComplexVector(const ComplexVector &);
 complex<double> complexdivision(complex<double>, double);
 vector<complex<double>> complexvecrand_normal(double, double, int);
+vector<complex<double>> complexvecrand_normal_zeroimaginary(double, double, int);
 vector<complex<double>> complexvecrand_uniform(double, double, int);
 double complexnorm(const ComplexVector &);
 double moduluscomplex(complex<double>);
@@ -130,11 +131,14 @@ vector<double> compressionexpansion3d_xdirection(vector<double> &, double);
 vector<double> compressionexpansion3d_ydirection(vector<double> &, double); 
 vector<double> compressionexpansion3d_zdirection(vector<double> &, double); 
 
+vector<double> MarkovChain(vector<vector<double>> &, vector<double> &, int);
+
 vector<vector<double>> penrose(vector<double> &, vector<double> &);
 
 vector<vector<double>> gramschmidt(vector<vector<double>> &);
 void QRDecomposition(vector<vector<double>> &, vector<vector<double>> &, vector<vector<double>> &); 
 void QRDecompositionComplex(vector<vector<complex<double>>> &, vector<vector<complex<double>>> &, vector<vector<complex<double>>> &); 
+void QRDecompositionComplexHouseholder(vector<vector<complex<double>>> &, vector<vector<complex<double>>> &, vector<vector<complex<double>>> &); 
 
 void getCofactor(vector<vector<double>> &, vector<vector<double>> &, int, int, int);
 double determinant1(vector<vector<double>> &, int);
@@ -170,14 +174,19 @@ void GaussJordanComplexMatrixTEST(ComplexMatrix &);// this can be used to comput
 void solve_nhsystem(vector<vector<double>> &,vector<vector<double>> &, vector<double> &);
 void LUsolve_nhsystem(vector<vector<double>> &,vector<vector<double>> &, vector<double> &);
 
+SymbolicMatrix IVPSolution_firstorderdiffeq(vector<vector<complex<double>>> &, vector<complex<double>> &, double, double);
+
 vector<double> PowerMethod(vector<vector<double>> &, int);
 vector<double> EigenvaluesEigenvectorsApproximation(vector<vector<double>> &, int);
 vector<double> RayleighQuotientIteration(vector<vector<double>>&, int, double, double);
 vector<double> diagonalization(vector<vector<double>> &);
 vector<double> SVD(vector<vector<double>> &);
 
-vector<complex<double>> ComplexEigenvaluesEigenvectorsApproximation(vector<vector<complex<double>>>& , int); // NOT YET
+vector<vector<complex<double>>> QRDecompositionHouseholderReflections(vector<vector<complex<double>>> &);
+vector<vector<complex<double>>> HessenbergDecomposition(vector<vector<complex<double>>> &);
+vector<complex<double>> QRAlgorithmwithShifts(vector<vector<complex<double>>>& , int);
 vector<complex<double>> ComplexRayleighQuotientIteration(vector<vector<complex<double>>> & , int, int, double , double);
+vector<vector<complex<double>>> SpectralDecomposition(vector<vector<complex<double>>> &, double, double);
 
 #endif
 #endif

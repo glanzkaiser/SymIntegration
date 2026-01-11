@@ -1,6 +1,8 @@
 /*
    Thanks Freya the Goddess, RK, Sentinel, Berlin, Mother Mary.
 */
+// Search for  // NOT YET to see which function we haven't finish yet
+
 #include "symintegral/symintegrationc++.h"
 
 using namespace std;
@@ -208,6 +210,26 @@ vector<complex<double>> complexvecrand_normal(double mu, double sigma, int n)
 	{
 		double real_part = distribution(generator);
 		double imag_part = distribution(generator);
+		complex<double> random_complex(real_part, imag_part);
+		vec.push_back(random_complex); 	
+	}
+	return vec;
+}
+
+vector<complex<double>> complexvecrand_normal_zeroimaginary(double mu, double sigma, int n)
+{
+	// 1. Obtain a seed:
+	// Seeding with std::chrono::system_clock::now().time_since_epoch().count()
+	// provides a more robust seed than a fixed value.
+	std::default_random_engine generator(
+        std::chrono::system_clock::now().time_since_epoch().count());
+	
+	std::vector<complex<double>> vec;
+ 	std::normal_distribution<double> distribution(mu, sigma);
+	for(int i=0; i<n; i++)
+	{
+		double real_part = distribution(generator);
+		double imag_part = 0;
 		complex<double> random_complex(real_part, imag_part);
 		vec.push_back(random_complex); 	
 	}
@@ -4842,6 +4864,47 @@ vector<vector<double>> penrose(vector<double>& vectorx, vector<double>& vectory)
 	return penrosematrix;
 }
 
+vector<double> MarkovChain(vector<vector<double>>& P, vector<double>& x0, int k) 
+{
+	int n = P.size(); // Rows	
+	int m = n;
+	int nv = x0.size(); // Rows	
+	if (n != m) 
+	{
+		cerr << "Error: Matrix is not square." << std::endl;
+		return {};
+	}
+	if (n != nv) 
+	{
+		cerr << "Error: Vector size is not compatible with matrix size." << std::endl;
+		return {};
+	}
+	cout << "\nP = " << endl;
+	printMatrix(P);
+	cout << "\nx_{0} = " << endl;
+	printVector(x0);
+	
+	vector<vector<double>> Pk(n, vector<double>(n));
+	for (int i = 0; i < n; ++i)
+	{
+		for (int j = 0; j < n; ++j)
+		{
+			Pk[i][j] = P[i][j];
+		}
+	}
+	for (int i = 0; i < k; ++i) 
+	{		
+		Pk = multiply(Pk,P);	
+	}
+
+	vector<double> steadystate_vector = multiplymatrixvector(Pk,x0);	
+
+	cout << "\nState vector, k = "<< k<< " : "<< endl;
+	printVector(steadystate_vector);
+
+	return steadystate_vector; 
+}
+
 vector<vector<double>> gramschmidt(vector<vector<double>> &A)
 {
 	int n = A.size();
@@ -5067,6 +5130,123 @@ void QRDecompositionComplex(vector<vector<complex<double>>>& A, vector<vector<co
 	}
 }
 
+// Function to perform QR decomposition using Householder Reflections
+void QRDecompositionComplexHouseholder(vector<vector<complex<double>>>& A, vector<vector<complex<double>>>& Q, vector<vector<complex<double>>>& R) 
+{
+	int m = A.size(); // Rows
+	int n = A[0].size(); // Columns
+
+	Q =createIdentityComplexMatrix(n);
+	R.assign(n, std::vector<complex<double>>(n, 0.0));
+
+	int iter;
+	if (m == n) // iterations is the number of column-1 of matrix A if m=n
+	{
+		iter = m-1;		
+	}
+	if (m < n) // iterations depend on the number of column of matrix A if m<n
+	{
+		iter = m;	
+	}	
+	for (int i = 0; i < iter; ++i) 
+	{		
+	
+		// compute the next vector
+		vector<complex<double>> x;  
+		vector<complex<double>> w(n, 0.0);  
+		vector<complex<double>> v;  
+			
+		for (int j = 0; j < n ; ++j) 
+		{		
+			x.push_back(A[j][i]);
+		}
+		if (i > 0)
+		{
+			for (int j = 0; j < i ; ++j) 
+			{		
+				x[j] = 0;
+			}
+			
+		}
+		double real_x= real(x[i]); // check again should we use x[i] or x[0], because x[0]  will always be 0 after iteration 1.
+		double norm_x = complexnorm(x); 
+		// w = (sgn) ||x_{i}|| e_{i}
+		if(real_x < 0 )
+		{
+			w[i] = norm_x;
+		}
+		else if(real_x >= 0 )
+		{
+			w[i] = -norm_x;
+		}
+		// v = x_{i} - ||x_{i}|| e_{i}
+		v = subtractComplexVectors(x,w);
+
+		vector<vector<complex<double>>> mat_v;
+		vector<vector<complex<double>>> mat_v_transpose;
+		mat_v.assign(n, std::vector<complex<double>>(1, 0.0));
+		mat_v_transpose.assign(1, std::vector<complex<double>>(n, 0.0));
+
+		for (int i = 0; i < n ; ++i) 
+		{		
+			mat_v[i][0] = v[i];
+			mat_v_transpose[0][i] = v[i];
+		}
+
+		vector<vector<complex<double>>> vTv = multiplyComplexMatrices(mat_v_transpose,mat_v);
+		vector<vector<complex<double>>> vvT = multiplyComplexMatrices(mat_v,mat_v_transpose);
+		vector<vector<complex<double>>> I = createIdentityComplexMatrix(n);
+		vector<vector<complex<double>>> H_hat; 
+		vector<vector<complex<double>>> R_temp; 
+		
+		double norm_v = divisiond(1,real(vTv[0][0]));
+
+		vector<vector<complex<double>>> P;
+		P = scalarmultiplicationComplexMatrix(vvT,norm_v);
+		
+		P = scalarmultiplicationComplexMatrix(P,2);
+		H_hat = subtractComplexMatrices(I,P);
+		
+		R_temp = multiplyComplexMatrices(H_hat,A);
+
+		// Rounding down those with small decimal number to 0
+		for (int i = 0; i < n ; ++i) 
+		{		
+			for (int j = 0; j < m ; ++j)
+			{
+				double real_value = real(R_temp[i][j]) ;
+				if(abs(real_value) < 1e-10)
+				{
+					R_temp[i][j] = 0;
+				}
+			}
+		}
+
+		for (int i = 0; i < n ; ++i) 
+		{		
+			for (int j = 0; j < m ; ++j)
+			{
+				R[i][j] = R_temp[i][j];
+			}
+		}
+		
+		Q = multiplyComplexMatrices(Q,H_hat);
+		// Rounding down those with small decimal number to 0
+		for (int i = 0; i < n ; ++i) 
+		{		
+			for (int j = 0; j < m ; ++j)
+			{
+				double real_value = real(Q[i][j]) ;
+				if(abs(real_value) < 1e-10)
+				{
+					//Q[i][j] = 0;
+				}
+			}
+		}
+		
+	}
+}
+
 void GaussJordanComplexMatrix(vector<vector<complex<double>>> &A)
 {
 	int n = A.size();
@@ -5204,7 +5384,7 @@ void GaussJordanComplexMatrix(vector<vector<complex<double>>> &A)
 }
 
 // this can be used to compute complex eigenvectors
-void GaussJordanComplexMatrixTEST(vector<vector<complex<double>>> &A)
+void GaussJordanComplexMatrixTEST(vector<vector<complex<double>>> &A) //NOT YET
 {
 	int n = A.size();
 	int m = A[0].size();
@@ -5945,6 +6125,634 @@ Symbolic gaussianeliminationtest(const SymbolicMatrix &A, int C, int R)
 	return 0;
 }
 
+SymbolicMatrix IVPSolution_firstorderdiffeq(vector<vector<complex<double>>> &A, vector<complex<double>> &vec_b, double a, double b) 
+// Done on Full Moon January 3rd, 2026
+{	
+	int n = A.size(); // Rows	
+	int m = n;
+
+	cout << "\nMatrix A : " << endl;
+	printComplexMatrix(A);
+	int N = 100;
+	int iterations = 100;
+
+	vector<complex<double>> vector_eigenvalues(n);		
+	vector<vector<complex<double>>> matrix_eigenvectors;	
+	vector<complex<double>> v;
+	vector<vector<complex<double>>> A_original;	
+	A_original.assign(n, std::vector<complex<double>>(n, 0.0));
+
+	for (int i = 0; i < n ; ++i) 
+	{		
+		for (int j = 0; j < n ; ++j)
+		{
+			A_original[i][j] = A[i][j];
+		}
+	}
+	int index = 0;
+	//  N =  number of the outermost iteration to obtain the correct eigenvalues.
+	for (int iter = 0; iter < N; ++iter) 
+	{
+		
+		// 1. Obtain a seed:
+		std::default_random_engine generator(
+		std::chrono::system_clock::now().time_since_epoch().count());
+		
+		// 2. Define the distribution for floating-point numbers (e.g., uniform distribution)
+		// Range [a, b)
+		std::uniform_real_distribution<double> distribution(a, b);	
+		std::uniform_real_distribution<double> distribution2(0, b);
+		double mu = distribution(generator); 
+		double sigma = distribution2(generator);
+		// start with a random initial vector v that is normally distributed with mean = mu and standard deviation = sigma
+		// mu and sigma are also random number that are generated with uniform distribution
+		v = complexvecrand_normal_zeroimaginary(mu, sigma, m); // the eigenvector won't have imaginary parts
+		double norm_v = divisiond(1,complexnorm(v));
+		v = scalarmultiplicationComplexVector(v,norm_v);
+		
+		// Calculate eigenvalue (lambda = (v^T * A * v) / (v^T * v))
+		complex<double> cdotproduct = complexdotproduct(v,v);
+		complex<double> lambda = complexquadraticmultiplication(A,v) / cdotproduct;
+		
+		// Solve (A - λ^{k-1}I)w = v^{k-1}
+		// Then multiply the reverse to obtain RQ = A^{k}
+		for (int i = 0; i < iterations; ++i) 
+		{		
+			vector<vector<complex<double>>> I = createIdentityComplexMatrix(n);
+			vector<vector<complex<double>>> lambda_I = complexnumbermultiplicationComplexMatrix(I,lambda); 
+			vector<vector<complex<double>>> A_lambda_I = subtractComplexMatrices(A_original,lambda_I);
+			vector<vector<complex<double>>> A_lambda_I_inverse = ComplexMatrixInverse(A_lambda_I);
+		
+			vector<complex<double>> w = multiplycomplexmatrixvector(A_lambda_I_inverse,v);
+
+			double norm_w = divisiond(1,complexnorm(w));
+			w = scalarmultiplicationComplexVector(w,norm_w);
+			//cout <<"\nw_{normalize} = (A - λ^{k-1}I) * v^{k-1}: "<<endl;
+			//printComplexVector(w);
+		
+			for (int i = 0; i < n ; ++i) 
+			{		
+				v[i] = w[i];
+			}
+		}
+		// Calculate eigenvalue (lambda = (v^T * A * v) / (v^T * v))
+		complex<double> dotproduct_final = complexdotproduct(v,v);
+		complex<double> lambda_final = complexquadraticmultiplication(A,v) / dotproduct_final;
+		complex<double> eigenvalue(lround(real(lambda_final)), lround(imag(lambda_final)));
+		
+		vector<complex<double>> A_x =  multiplycomplexmatrixvector(A,v);  
+		vector<complex<double>> lambda_x =  complexnumbermultiplicationComplexVector(v,eigenvalue); 
+		
+		// to obtain the whole eigenvalues and eigenvectors
+		vector<complex<double>> difference = subtractComplexVectors(A_x,lambda_x);
+		double diffnorm = complexnorm(difference);
+		if (diffnorm < 1e-9 )
+		{
+			for (int i = 0; i < n ; ++i)		
+			{		
+				if(eigenvalue != vector_eigenvalues[i])
+				{
+					if(i == n-1)	
+					{
+						vector_eigenvalues[index] = eigenvalue;
+						matrix_eigenvectors.push_back(v);
+						index= index+1;
+					}
+				}			
+				else if(eigenvalue == vector_eigenvalues[i])
+				{
+					break;
+				}			
+			}		
+		}	
+		if (index == n)
+		{
+			iter = N-1;
+		}
+		
+	}
+	cout <<"\nEigenvalues : "<<endl;	
+	printComplexVector(vector_eigenvalues);
+	cout <<"\nEigenvectors (represented by column): "<<endl;	
+	vector<vector<complex<double>>> matrix_eigenvectors_transpose = TransposeComplexMatrix(matrix_eigenvectors);
+	printComplexMatrix(matrix_eigenvectors_transpose);
+	
+	// To obtain the constants c_{1}, c_{2}, ..., c_{n}
+	vector<vector<complex<double>>> augmentedMatrix;
+	augmentedMatrix.assign(n, std::vector<complex<double>>(n+1, 0.0));
+	for(int i = 0; i<n; i++)
+	{
+		for(int j=0; j<=n; j++)
+		{
+			augmentedMatrix[i][j] = matrix_eigenvectors_transpose[i][j];
+			if(j==n)
+			{
+				augmentedMatrix[i][j] = vec_b[i];
+			}
+		}
+	}
+	
+	cout << "\nAugmented Matrix:" << endl;	
+	printComplexMatrix(augmentedMatrix);
+
+
+	// Forward Elimination
+	for (int i = 0; i < n; ++i) 
+	{
+		// Partial Pivoting (optional but recommended for stability)
+		int pivotRow = i;
+		for (int k = i + 1; k < n; ++k) 
+		{
+			if (moduluscomplex(augmentedMatrix[k][i]) > moduluscomplex(augmentedMatrix[pivotRow][i])) 
+			{
+				pivotRow = k;
+			}
+		}
+		swap(augmentedMatrix[i], augmentedMatrix[pivotRow]);
+	
+		// Check for singular matrix (no unique solution)
+		if (moduluscomplex(augmentedMatrix[i][i]) < 1e-9) // Using a small epsilon
+		{ 
+			cout << "No unique solution or infinite solutions exist." << endl;
+		}
+			
+		// Eliminate elements below the pivot
+		for (int k = i + 1; k < n; ++k) 
+		{
+			complex<double> factor = augmentedMatrix[k][i] /augmentedMatrix[i][i];
+			for (int j = 0; j <= n; ++j) 
+			{ // Iterate up to n for the constant term
+				augmentedMatrix[k][j] -= factor * augmentedMatrix[i][j];
+			}
+		}
+	}
+	//cout << "After forward elimination: \nA_{rref} :" << endl;
+	//printComplexMatrix(augmentedMatrix);
+	
+	
+	// make the leading 1
+	for (int i = 0; i < n; ++i) 
+	{
+		double realpart = real(augmentedMatrix[i][i]);
+		if (realpart != 1.0 )
+		{
+			complex<double> pivot = augmentedMatrix[i][i];
+			for (int j = 0; j <= n; ++j) 
+			{ 
+				augmentedMatrix[i][j] = augmentedMatrix[i][j]/pivot;
+			}	
+		}
+	}
+	//cout << "After creating leading 1:\nA_{rref} :" << endl;
+	//printComplexMatrix(augmentedMatrix);
+
+	int f = 2;
+	// Backward elimination
+	// make zeros above all leading 1 / make matrix A into reduced row echelon form
+	for (int i = n-2; i >= 0; --i) 
+	{
+		for (int k = 1; k < f; ++k)
+		{
+			double realpart = real(augmentedMatrix[i][i+k]);	
+			if (realpart != 0.0  )
+			{
+				complex<double> pivot = augmentedMatrix[i][i+k];
+				for (int j = 0; j <= n; ++j) 
+				{ 
+					augmentedMatrix[i][j] = augmentedMatrix[i][j] - (pivot * augmentedMatrix[i+k][j]);
+				}
+			}
+		}
+		f = f+1;
+	}
+	
+	cout << "\nAfter backward elimination:" << endl;
+	printComplexMatrix(augmentedMatrix);
+
+	vector<complex<double>> solution;
+	for (int i = 0; i <n; ++i) 
+	{
+		solution.push_back(augmentedMatrix[i][n]);
+	}	
+	//printComplexVector(solution);
+
+	Matrix<Symbolic> B_mat(n,1);
+
+	Symbolic x("x");
+	for(int i = 0; i < n; i++)
+	{
+		Symbolic sum = 0;
+		for(int j = 0; j < n; j++)
+		{
+			// we take the real part only
+			sum += real(solution[j])*real(matrix_eigenvectors_transpose[i][j])*exp(real(vector_eigenvalues[j])*x);	
+		}
+		B_mat[i][0] = sum;
+	}
+	cout << "\n The solution satisfying the initial condition is : " << endl;
+	cout <<B_mat << endl;
+	return B_mat;
+}
+
+vector<vector<complex<double>>> Arnoldi(vector<vector<complex<double>>> &A, double a, double b) // NOT YET
+// Done on Full Moon + 3: January 6th, 2026
+{	
+	int n = A.size(); // Rows	
+	int m = n;
+
+	cout << "\nMatrix A : " << endl;
+	printComplexMatrix(A);
+	int iterations = n-1;
+
+	vector<vector<complex<double>>> matrix_basisvectors;
+	matrix_basisvectors.assign(n, std::vector<complex<double>>(n, 0.0));	
+	vector<complex<double>> q;
+	vector<vector<complex<double>>> A_original;	
+	A_original.assign(n, std::vector<complex<double>>(n, 0.0));
+
+	for (int i = 0; i < n ; ++i) 
+	{		
+		for (int j = 0; j < n ; ++j)
+		{
+			A_original[i][j] = A[i][j];
+		}
+	}
+		
+		// 1. Obtain a seed:
+		std::default_random_engine generator(
+		std::chrono::system_clock::now().time_since_epoch().count());
+		
+		// 2. Define the distribution for floating-point numbers (e.g., uniform distribution)
+		// Range [a, b)
+		std::uniform_real_distribution<double> distribution(a, b);	
+		std::uniform_real_distribution<double> distribution2(0, b);
+		double mu = distribution(generator); 
+		double sigma = distribution2(generator);
+		// start with a random initial vector v that is normally distributed with mean = mu and standard deviation = sigma
+		// mu and sigma are also random number that are generated with uniform distribution
+		q= complexvecrand_normal_zeroimaginary(mu, sigma, m); // the vector won't have imaginary parts
+		double norm_q = divisiond(1,complexnorm(q));
+		q = scalarmultiplicationComplexVector(q,norm_q); // normalize to obtain the first basis vector
+
+		// Populate the first column of the matrix with the first basis vector
+		for (int i = 0; i < n ; ++i) 
+		{		
+			matrix_basisvectors[i][0] = q[i];
+		}
+		int col = 1;
+		for (int i = 0; i < iterations; ++i) 
+		{		
+			// compute the next vector
+			vector<complex<double>> v_k =  multiplycomplexmatrixvector(A,q);  
+			// compute projection coefficient
+			complex<double> h_coefficient = complexdotproduct(q,v_k);
+
+			// subtract component in q_{j}'s direction
+			vector<complex<double>> h_q = complexnumbermultiplicationComplexVector(q,h_coefficient);
+			v_k = subtractComplexVectors(v_k,h_q);
+
+			double norm_v = divisiond(1,complexnorm(v_k));
+			// normalize to obtain the next orthonormal vector
+			vector<complex<double>> new_q = scalarmultiplicationComplexVector(v_k,norm_v); 
+
+			for (int i = 0; i < n ; ++i) 
+			{		
+				q[i] = new_q[i];
+				matrix_basisvectors[i][col] = q[i];
+			}
+
+			cout <<"\nNext orthonormal vector : "<<endl;	
+			printComplexVector(new_q);
+			col = col+1;	
+		}
+	cout <<"\nMatrix orthonormal vector : "<<endl;	
+	printComplexMatrix(matrix_basisvectors);
+
+	vector<vector<complex<double>>> matrix_basisvectors_transpose = TransposeComplexMatrix(matrix_basisvectors);
+	cout <<"\nMatrix orthonormal vector transpose: "<<endl;	
+	printComplexMatrix(matrix_basisvectors_transpose);
+
+	vector<vector<complex<double>>> AP = multiplyComplexMatrices(A,matrix_basisvectors);
+	vector<vector<complex<double>>> PTAP = multiplyComplexMatrices(matrix_basisvectors_transpose,AP);
+	cout <<"\nP^{T}AP: "<<endl;	
+	printComplexMatrix(PTAP);
+
+	return matrix_basisvectors;
+}
+
+vector<vector<complex<double>>> HessenbergDecomposition(vector<vector<complex<double>>> &A) 
+// Done on Full Moon + 3: January 6th, 2026
+{	
+	int n = A.size(); // Rows	
+	int m = n;
+
+	if (n != m) 
+	{
+		cerr << "Error: Matrix is not square." << std::endl;
+		return {};
+	}
+	cout << "\nMatrix A : " << endl;
+	printComplexMatrix(A);
+	
+	vector<vector<complex<double>>> matrix_basisvectors;
+	matrix_basisvectors.assign(n, std::vector<complex<double>>(n, 0.0));	
+	vector<vector<complex<double>>> A_original;	
+	A_original.assign(n, std::vector<complex<double>>(n, 0.0));
+	vector<vector<complex<double>>> P_Hessenberg = createIdentityComplexMatrix(n);
+	vector<vector<complex<double>>> AP_Hessenberg; 
+	vector<vector<complex<double>>> PAP_Hessenberg; 
+	vector<vector<complex<double>>> P_Hessenberg_transpose; 
+
+	for (int i = 0; i < n ; ++i) 
+	{		
+		for (int j = 0; j < n ; ++j)
+		{
+			A_original[i][j] = A[i][j];
+		}
+	}
+		
+	int row = 1;	
+	int col = 0;
+	int n_x = n-1;
+	for (int i = 0; i < n-2; ++i) 
+	{		
+		// compute the next vector
+		vector<complex<double>> x;  
+		vector<complex<double>> w(n-row, 0.0);  
+		vector<complex<double>> v;  
+			
+		for (int j = row; j <= n_x ; ++j) 
+		{		
+			x.push_back(A[j][col]);
+		}
+		double real_x= real(x[0]);
+		double norm_x = complexnorm(x); 
+		if(real_x < 0 )
+		{
+			w[0] = norm_x;
+		}
+		else if(real_x >= 0 )
+		{
+			w[0] = -norm_x;
+		}
+		v = subtractComplexVectors(w,x);
+		
+		cout << "\nx: " << endl;
+		printComplexVector(x);
+		cout << "\nw: " << endl;
+		printComplexVector(w);
+		cout << "\nv: " << endl;
+		printComplexVector(v);
+		vector<vector<complex<double>>> mat_v;
+		vector<vector<complex<double>>> mat_v_transpose;
+		mat_v.assign(n-row, std::vector<complex<double>>(1, 0.0));
+		mat_v_transpose.assign(1, std::vector<complex<double>>(n-row, 0.0));
+
+		for (int i = 0; i < n-row ; ++i) 
+		{		
+			mat_v[i][0] = v[i];
+			mat_v_transpose[0][i] = v[i];
+		}
+
+		vector<vector<complex<double>>> vTv = multiplyComplexMatrices(mat_v_transpose,mat_v);
+		vector<vector<complex<double>>> vvT = multiplyComplexMatrices(mat_v,mat_v_transpose);
+		vector<vector<complex<double>>> I = createIdentityComplexMatrix(n-row);
+		vector<vector<complex<double>>> H_hat; 
+		vector<vector<complex<double>>> AH; 
+		vector<vector<complex<double>>> HAH; 
+		vector<vector<complex<double>>> H_new = createIdentityComplexMatrix(n);
+		
+		double norm_v = divisiond(1,real(vTv[0][0]));
+
+		vector<vector<complex<double>>> P;
+		P = scalarmultiplicationComplexMatrix(vvT,norm_v);
+		
+		P = scalarmultiplicationComplexMatrix(P,2);
+		H_hat = subtractComplexMatrices(I,P);
+		
+		int i1 = 0;
+		for (int i = row; i < n ; ++i) 
+		{	
+			int j1 = 0;	
+			for (int j = row; j < n ; ++j)
+			{
+				H_new[i][j] = H_hat[i1][j1];
+				
+				j1 = j1 + 1;
+			}
+			i1 = i1+1;
+		}
+
+		AH = multiplyComplexMatrices(A,H_new);
+		HAH = multiplyComplexMatrices(H_new,AH);
+
+		for (int i = 0; i < n ; ++i) 
+		{		
+			for (int j = 0; j < n ; ++j)
+			{
+				double real_value = real(HAH[i][j]) ;
+				if(abs(real_value) < 1e-10)
+				{
+					HAH[i][j] = 0;
+				}
+			}
+		}
+
+		cout << "\nvTv: " << endl;
+		printComplexMatrix(vTv);
+		cout << "\nvvT: " << endl;
+		printComplexMatrix(vvT);
+		cout << "\nP: " << endl;
+		printComplexMatrix(P);
+		cout << "\nI - 2P: " << endl;
+		printComplexMatrix(H_hat);
+		cout << "\nH_{i}: " << endl;
+		printComplexMatrix(H_new);
+		cout << "\nH_{i} A H_{i}: " << endl;
+		printComplexMatrix(HAH);
+
+		for (int i = 0; i < n ; ++i) 
+		{		
+			for (int j = 0; j < n ; ++j)
+			{
+				A[i][j] = HAH[i][j];
+			}
+		}
+
+		
+		P_Hessenberg = multiplyComplexMatrices(P_Hessenberg,H_new);
+		cout << "\nHouseholder Matrix: " << endl;
+		printComplexMatrix(P_Hessenberg);
+
+
+		row = row + 1;
+		col = col+1;	
+	}
+	
+	P_Hessenberg_transpose = TransposeComplexMatrix(P_Hessenberg);
+
+	AP_Hessenberg = multiplyComplexMatrices(A_original,P_Hessenberg);
+	PAP_Hessenberg = multiplyComplexMatrices(P_Hessenberg_transpose,AP_Hessenberg);
+		
+	for (int i = 0; i < n ; ++i) 
+	{		
+		for (int j = 0; j < n ; ++j)
+		{
+			double real_value = real(PAP_Hessenberg[i][j]) ;
+			if(abs(real_value) < 1e-10)
+			{
+				PAP_Hessenberg[i][j] = 0;
+			}
+		}
+	}
+	cout << "\n****************************************************************************" << endl;
+	cout << "\nEnd of iteration" << endl;
+	cout << "\n****************************************************************************" << endl;
+	cout << "\nP^{T} A P: " << endl;
+	printComplexMatrix(PAP_Hessenberg);
+
+	return matrix_basisvectors;
+}
+
+
+vector<vector<complex<double>>> SpectralDecomposition(vector<vector<complex<double>>> &A, double a, double b) 
+// Done on Full Moon + 2: January 5th, 2026
+{	
+	int n = A.size(); // Rows	
+	int m = n;
+
+	cout << "\nMatrix A : " << endl;
+	printComplexMatrix(A);
+	int N = 100;
+	int iterations = 100;
+
+	vector<complex<double>> vector_eigenvalues(n);		
+	vector<vector<complex<double>>> matrix_eigenvectors;	
+	vector<complex<double>> v;
+	vector<vector<complex<double>>> A_original;	
+	A_original.assign(n, std::vector<complex<double>>(n, 0.0));
+
+	for (int i = 0; i < n ; ++i) 
+	{		
+		for (int j = 0; j < n ; ++j)
+		{
+			A_original[i][j] = A[i][j];
+		}
+	}
+	int index = 0;
+	//  N =  number of the outermost iteration to obtain the correct eigenvalues.
+	for (int iter = 0; iter < N; ++iter) 
+	{
+		
+		// 1. Obtain a seed:
+		std::default_random_engine generator(
+		std::chrono::system_clock::now().time_since_epoch().count());
+		
+		// 2. Define the distribution for floating-point numbers (e.g., uniform distribution)
+		// Range [a, b)
+		std::uniform_real_distribution<double> distribution(a, b);	
+		std::uniform_real_distribution<double> distribution2(0, b);
+		double mu = distribution(generator); 
+		double sigma = distribution2(generator);
+		// start with a random initial vector v that is normally distributed with mean = mu and standard deviation = sigma
+		// mu and sigma are also random number that are generated with uniform distribution
+		v = complexvecrand_normal_zeroimaginary(mu, sigma, m); // the eigenvector won't have imaginary parts
+		double norm_v = divisiond(1,complexnorm(v));
+		v = scalarmultiplicationComplexVector(v,norm_v);
+		
+		// Calculate eigenvalue (lambda = (v^T * A * v) / (v^T * v))
+		complex<double> cdotproduct = complexdotproduct(v,v);
+		complex<double> lambda = complexquadraticmultiplication(A,v) / cdotproduct;
+		
+		// Solve (A - λ^{k-1}I)w = v^{k-1}
+		// Rayleigh quotient iteration
+		for (int i = 0; i < iterations; ++i) 
+		{		
+			vector<vector<complex<double>>> I = createIdentityComplexMatrix(n);
+			vector<vector<complex<double>>> lambda_I = complexnumbermultiplicationComplexMatrix(I,lambda); 
+			vector<vector<complex<double>>> A_lambda_I = subtractComplexMatrices(A_original,lambda_I);
+			vector<vector<complex<double>>> A_lambda_I_inverse = ComplexMatrixInverse(A_lambda_I);
+		
+			vector<complex<double>> w = multiplycomplexmatrixvector(A_lambda_I_inverse,v);
+
+			double norm_w = divisiond(1,complexnorm(w));
+			w = scalarmultiplicationComplexVector(w,norm_w);
+			//cout <<"\nw_{normalize} = (A - λ^{k-1}I) * v^{k-1}: "<<endl;
+			//printComplexVector(w);
+		
+			for (int i = 0; i < n ; ++i) 
+			{		
+				v[i] = w[i];
+			}
+		}
+		// Calculate eigenvalue (lambda = (v^T * A * v) / (v^T * v))
+		complex<double> dotproduct_final = complexdotproduct(v,v);
+		complex<double> lambda_final = complexquadraticmultiplication(A,v) / dotproduct_final;
+		complex<double> eigenvalue(lround(real(lambda_final)), lround(imag(lambda_final)));
+		
+		vector<complex<double>> A_x =  multiplycomplexmatrixvector(A,v);  
+		vector<complex<double>> lambda_x =  complexnumbermultiplicationComplexVector(v,eigenvalue); 
+		
+		// to obtain the whole eigenvalues and eigenvectors
+		vector<complex<double>> difference = subtractComplexVectors(A_x,lambda_x);
+		double diffnorm = complexnorm(difference);
+		if (diffnorm < 1e-9 )
+		{
+			for (int i = 0; i < n ; ++i)		
+			{		
+				if(eigenvalue != vector_eigenvalues[i])
+				{
+					if(i == n-1)	
+					{
+						vector_eigenvalues[index] = eigenvalue;
+						matrix_eigenvectors.push_back(v);
+						index= index+1;
+					}
+				}			
+				else if(eigenvalue == vector_eigenvalues[i])
+				{
+					break;
+				}			
+			}		
+		}	
+		if (index == n)
+		{
+			iter = N-1;
+		}
+		
+	}
+	cout <<"\nEigenvalues : "<<endl;	
+	printComplexVector(vector_eigenvalues);
+	cout <<"\nEigenvectors (represented by column): "<<endl;	
+	vector<vector<complex<double>>> matrix_eigenvectors_transpose = TransposeComplexMatrix(matrix_eigenvectors);
+	printComplexMatrix(matrix_eigenvectors_transpose);
+	
+	// Spectral decomposition computation starts here
+	for (int i = 0; i < n; ++i)
+	{
+		vector<complex<double>> vi = getcolumnComplexMatrix(matrix_eigenvectors_transpose,i);
+	
+		vector<vector<complex<double>>> mat_u;	
+		vector<vector<complex<double>>> mat_u_transpose;
+		mat_u.assign(n, std::vector<complex<double>>(1, 0.0));
+		mat_u_transpose.assign(1, std::vector<complex<double>>(n, 0.0));
+
+		for (int i = 0; i < n ; ++i) 
+		{		
+			mat_u[i][0] = vi[i];
+			mat_u_transpose[0][i] = vi[i];
+		}
+		vector<vector<complex<double>>> SDi = multiplyComplexMatrices(mat_u,mat_u_transpose);
+
+		cout <<"\nSpectral decomposition for λ_{" << i+1 <<"} = " << vector_eigenvalues[i] << " * " <<endl;	
+		printComplexMatrix(SDi);
+		
+	}
+
+	return matrix_eigenvectors_transpose;
+}
+
+
 vector<double> PowerMethod(vector<vector<double>>& A, int iterations) 
 {
 	int n = A.size();
@@ -5985,6 +6793,10 @@ vector<double> PowerMethod(vector<vector<double>>& A, int iterations)
 }
 
 vector<double> EigenvaluesEigenvectorsApproximation(vector<vector<double>>& A, int iterations) 
+// The power method is used first to compute the largest eigenvalue
+// Method of deflation to approximate all the eigenvalues
+// Inverse iteration method to compute the corresponding eigenvector for each eigenvalue
+
 {
 	int n = A.size();
 	int m = n;
@@ -6099,7 +6911,6 @@ vector<double> EigenvaluesEigenvectorsApproximation(vector<vector<double>>& A, i
 		m = m-1;
 	}
 	
-	
 	// to determine the whole eigenvectors from known eigenvalue
 	// we use inverse iteration with shift from power method
 	for (int i = 0; i < n ;++i)
@@ -6120,7 +6931,7 @@ vector<double> EigenvaluesEigenvectorsApproximation(vector<vector<double>>& A, i
 		double mu = 2; 
 		double sigma = 0.5;
 		vector_eigen = vrandn_normal(mu, sigma, n);
-		double ssv = 0; // sum of squares of w.
+		double ssv = 0; // sum of squares of v.
 		for (int j = 0; j < n ; ++j)
 		{
 			ssv += vector_eigen[j]*vector_eigen[j];
@@ -6162,19 +6973,193 @@ vector<double> EigenvaluesEigenvectorsApproximation(vector<vector<double>>& A, i
 	return vector_eigenvalues; // returns the eigenvector
 }
 
-// change from complex to real
-// NOT YET
-vector<complex<double>> ComplexEigenvaluesEigenvectorsApproximation(vector<vector<complex<double>>>& A, int iterations) 
+vector<vector<complex<double>>> QRDecompositionHouseholderReflections(vector<vector<complex<double>>>& A) 
+{ // Done on January 9th, 2026
+
+	int n = A.size(); // Rows	
+	int m = A[0].size();
+	
+	if(m > n)
+	{
+		cerr << "Error: The column dimension is bigger than the row dimension" << endl;	
+	}
+
+	cout << "\nMatrix A : " << endl;
+	printComplexMatrix(A);
+	
+	vector<vector<complex<double>>> A_original;	
+	A_original.assign(n, std::vector<complex<double>>(m, 0.0));
+	vector<vector<complex<double>>> R_final;	
+	R_final.assign(n, std::vector<complex<double>>(m, 0.0));
+	vector<vector<complex<double>>> Q = createIdentityComplexMatrix(n);
+	
+	for (int i = 0; i < n ; ++i) 
+	{		
+		for (int j = 0; j < m ; ++j)
+		{
+			A_original[i][j] = A[i][j];
+		}
+	}
+	int iter;
+	if (m == n) // iterations is the number of column-1 of matrix A if m=n
+	{
+		iter = m-1;		
+	}
+	if (m < n) // iterations depend on the number of column of matrix A if m<n
+	{
+		iter = m;	
+	}	
+	for (int i = 0; i < iter; ++i) 
+	{		
+
+		cout << "\nIteration : " << i+1 << endl;
+	
+		// compute the next vector
+		vector<complex<double>> x;  
+		vector<complex<double>> w(n, 0.0);  
+		vector<complex<double>> v;  
+			
+		for (int j = 0; j < n ; ++j) 
+		{		
+			x.push_back(A[j][i]);
+		}
+		if (i > 0)
+		{
+			for (int j = 0; j < i ; ++j) 
+			{		
+				x[j] = 0;
+			}
+			
+		}
+		double real_x= real(x[i]); // check again should we use x[i] or x[0], because x[0]  will always be 0 after iteration 1.
+		double norm_x = complexnorm(x); 
+		// w = (sgn) ||x_{i}|| e_{i}
+		if(real_x < 0 )
+		{
+			w[i] = norm_x;
+		}
+		else if(real_x >= 0 )
+		{
+			w[i] = -norm_x;
+		}
+		// v = x_{i} - ||x_{i}|| e_{i}
+		v = subtractComplexVectors(x,w);
+		
+		cout << "\nx: " << endl;
+		printComplexVector(x);
+		cout << "\nw: " << endl;
+		printComplexVector(w);
+		cout << "\nv: " << endl;
+		printComplexVector(v);
+		vector<vector<complex<double>>> mat_v;
+		vector<vector<complex<double>>> mat_v_transpose;
+		mat_v.assign(n, std::vector<complex<double>>(1, 0.0));
+		mat_v_transpose.assign(1, std::vector<complex<double>>(n, 0.0));
+
+		for (int i = 0; i < n ; ++i) 
+		{		
+			mat_v[i][0] = v[i];
+			mat_v_transpose[0][i] = v[i];
+		}
+
+		vector<vector<complex<double>>> vTv = multiplyComplexMatrices(mat_v_transpose,mat_v);
+		vector<vector<complex<double>>> vvT = multiplyComplexMatrices(mat_v,mat_v_transpose);
+		vector<vector<complex<double>>> I = createIdentityComplexMatrix(n);
+		vector<vector<complex<double>>> H_hat; 
+		vector<vector<complex<double>>> R; 
+		
+		double norm_v = divisiond(1,real(vTv[0][0]));
+
+		vector<vector<complex<double>>> P;
+		P = scalarmultiplicationComplexMatrix(vvT,norm_v);
+		
+		P = scalarmultiplicationComplexMatrix(P,2);
+		H_hat = subtractComplexMatrices(I,P);
+		
+		R = multiplyComplexMatrices(H_hat,A);
+
+		// Rounding down those with small decimal number to 0
+		for (int i = 0; i < n ; ++i) 
+		{		
+			for (int j = 0; j < m ; ++j)
+			{
+				double real_value = real(R[i][j]) ;
+				if(abs(real_value) < 1e-10)
+				{
+					R[i][j] = 0;
+				}
+			}
+		}
+
+		/*
+		cout << "\nvTv: " << endl;
+		printComplexMatrix(vTv);
+		cout << "\nvvT: " << endl;
+		printComplexMatrix(vvT);
+		cout << "\nP: " << endl;
+		printComplexMatrix(P);
+		cout << "\nI - 2P: " << endl;
+		printComplexMatrix(H_hat);*/
+		cout << "\nR: " << endl;
+		printComplexMatrix(R);
+
+		for (int i = 0; i < n ; ++i) 
+		{		
+			for (int j = 0; j < m ; ++j)
+			{
+				A[i][j] = R[i][j];
+				R_final[i][j] = R[i][j];
+			}
+		}
+		
+		Q = multiplyComplexMatrices(Q,H_hat);
+		// Rounding down those with small decimal number to 0
+		for (int i = 0; i < n ; ++i) 
+		{		
+			for (int j = 0; j < m ; ++j)
+			{
+				double real_value = real(Q[i][j]) ;
+				if(abs(real_value) < 1e-10)
+				{
+					Q[i][j] = 0;
+				}
+			}
+		}
+		cout << "\nHouseholder Matrix / Q: " << endl;
+		printComplexMatrix(Q);
+
+	}
+	
+	
+	cout << "\n****************************************************************************" << endl;
+	cout << "\nEnd of iteration" << endl;
+	cout << "\n****************************************************************************" << endl;
+	
+	cout << "\nQ: " << endl;
+	printComplexMatrix(Q);
+	cout << "\nR: " << endl;
+	printComplexMatrix(R_final);
+
+	cout << "\nQ * R: " << endl;
+	vector<vector<complex<double>>> AQR = multiplyComplexMatrices(Q,R_final);
+	printComplexMatrix(AQR);
+	return Q;
+	
+}
+
+vector<complex<double>> QRAlgorithmwithShifts(vector<vector<complex<double>>>& A, int iterations) 
 {
 
 	int n = A.size(); // Rows	
 	int C = A[0].size();
-	int m = n;
 	
 	vector<complex<double>> vector_eigenvalues;	
 	vector<vector<complex<double>>> matrix_eigenvectors;	
 	vector<complex<double>> v;
-	vector<vector<complex<double>>> A_original(n, vector<complex<double>>(n));	
+	vector<vector<complex<double>>> A_original(n, vector<complex<double>>(n));
+	vector<vector<complex<double>>> I = createIdentityComplexMatrix(n);
+	vector<vector<complex<double>>> Q_final(n, vector<complex<double>>(n));
+	
 	for (int i = 0; i < n ; ++i) 
 	{		
 		for (int j = 0; j < n ; ++j)
@@ -6183,68 +7168,145 @@ vector<complex<double>> ComplexEigenvaluesEigenvectorsApproximation(vector<vecto
 		}
 	}
 	
+	// Repeatedly decompose complex matrix A to QR, A^{k-1} - μI = QR
+	// Then multiply the reverse to obtain A^{k} = RQ + μI
 	
-	double mu = 2; 
-	double sigma = 0.5;
-	// start with a random initial vector v that is normally distributed with mean = mu and standard deviation = sigma
-	v = complexvecrand_normal(mu, sigma, m);
-	double norm_v = divisiond(1,complexnorm(v));
-	//cout << "\nv initial vector = " << endl;
-	//printComplexVector(v);
-	v = scalarmultiplicationComplexVector(v,norm_v);
-	//cout << "\nv initial vector_{normalize} = " << endl;
-	//printComplexVector(v);
+	vector<vector<complex<double>>> A_loop(n, vector<complex<double>>(n));
 	
-
-	// Repeatedly decompose complex matrix A to QR, A^{k-1} = QR
-	// Then multiply the reverse to obtain RQ = A^{k}
+	for (int i = 0; i < n ; ++i) 
+	{		
+		for (int j = 0; j < n ; ++j)
+		{
+			A_loop[i][j] = A_original[i][j];
+		}
+	}
 	for (int i = 0; i < iterations; ++i) 
 	{
+		double a_complex = real(A_loop[n-1][n-1]);
+		double b_complex = imag(A_loop[n-1][n-1]);
+		complex<double> mu(a_complex,b_complex);
+		vector<vector<complex<double>>> I = createIdentityComplexMatrix(n);
+		vector<vector<complex<double>>> mu_I = complexnumbermultiplicationComplexMatrix(I,mu); 
+		vector<vector<complex<double>>> A_mu_I = subtractComplexMatrices(A_loop,mu_I);
+
 		cmat Q(n, vector<complex<double>>(C));
 		cmat R(n, vector<complex<double>>(C));
 
-		QRDecompositionComplex(A, Q, R);
+		QRDecompositionComplexHouseholder(A_mu_I, Q, R);
 
+		vector<vector<complex<double>>> RQ = multiplyComplexMatrices(R,Q);
+
+		cout <<"\nIteration: "<< i + 1 << endl;
+		cout << "\nμ = " << mu << endl;
 		cout <<"\nA: "<<endl;
-		printComplexMatrix(A);
+		printComplexMatrix(A_loop);
+		cout << "\nμI = " << endl;
+		printComplexMatrix(mu_I);
+		cout << "\nA - μI = " << endl;
+		printComplexMatrix(A_mu_I);
 		cout <<"\nQ: "<<endl;
 		printComplexMatrix(Q);
 		cout <<"\nR: "<<endl;
 		printComplexMatrix(R);
-
-		vector<vector<complex<double>>> RQ = multiplyComplexMatrices(R,Q);
 		cout << "\nRQ = " << endl;
 		printComplexMatrix(RQ);
 			
-		vector<complex<double>> w = multiplycomplexmatrixvector(A,v);
-		double norm_w = divisiond(1,complexnorm(w));
-		w = scalarmultiplicationComplexVector(w,norm_w);
-		cout <<"\nw = A*v: "<<endl;
-		printComplexVector(w);
-		
-		for (int i = 0; i < n ; ++i) 
+			for (int i = 0; i < n ; ++i) 
 		{		
 			for (int j = 0; j < n ; ++j)
 			{
-				A[i][j] = RQ[i][j];
+				A_loop[i][j] = RQ[i][j] + mu_I[i][j];
+				Q_final[i][j] = Q[i][j];
 			}
 		}
-		for (int i = 0; i < n ; ++i) 
-		{		
-			v[i] = w[i];
-		}
+		cout << "\nA_{new} = " << endl;
+		printComplexMatrix(A_loop);
 	}
-	// Calculate eigenvalue (lambda = (v^T * A * v) / (v^T * v))
-	//complex<double> cdotproduct = complexdotproduct(v,v);
-	//complex<double> lambda = complexquadraticmultiplication(A,v) / cdotproduct;
-	//cout << "\nEigenvalue = " << lambda << endl;
+	double sum_lowerdiagonal;
+	for (int i = 1; i < n ; ++i) 
+	{		
+		for (int j = 0; j < i ; ++j) 
+		{
+			sum_lowerdiagonal += real(A_loop[i][j]);	
+		}	
+	}
+			
+	if(sum_lowerdiagonal < 1e-9)
+	{
+		for (int i = 0; i < n ; ++i) 
+		{
+			vector_eigenvalues.push_back(A_loop[i][i]);
+		}
+		
+	}
+	
+	cout << "\n****************************************************************************" << endl;
+	cout << "\nEnd of iteration" << endl;
+	cout << "\n****************************************************************************" << endl;
+	
+	// to determine the whole eigenvectors from known eigenvalue
+	// we use inverse iteration with shift from power method
+	for (int i = 0; i < n ;++i)
+	{
+		complex<double> eigen = vector_eigenvalues[i];
+		vector<complex<double>> vector_eigen;
+		cout << "\nEigenvalue(" << i+1 << ") = " << eigen << endl;
+		
+		vector<vector<complex<double>>> I = createIdentityComplexMatrix(n);
+		// why we use subtraction to 0.1? because we are using inverse iteration method and the inverse of (A - λI) does not exist 
+		vector<vector<complex<double>>> lambda_I = scalarmultiplicationComplexMatrix(I,real(eigen)-0.1); 
+		//cout << "\nlambda I = " << endl;
+		//printMatrix(lambda_I);
+		vector<vector<complex<double>>> A_lambda_I = subtractComplexMatrices(A_original,lambda_I);
+		vector<vector<complex<double>>> A_lambda_I_inverse = ComplexMatrixInverse(A_lambda_I);
+		//cout << "\nA - lambda I" << endl;
+		//printMatrix(A_lambda_I);
+		double mu = 2; 
+		double sigma = 0.5;
+		vector_eigen = complexvecrand_normal_zeroimaginary(mu, sigma, n);
+		complex<double> ssv(0,0); // sum of squares of v.
+		for (int j = 0; j < n ; ++j)
+		{
+			ssv += vector_eigen[j]*vector_eigen[j];
+		}
+		double norm = std::sqrt(real(ssv));
+		// Normalize v (v = v / norm)
+		vector_eigen = scalarmultiplicationComplexVector(vector_eigen,divisiond(1,norm));
+			
+		//cout << "\nv initial vector = " << endl;
+		//printVector(vector_eigen);
+		
+		for (int k = 0; k < iterations; ++k) 
+		{
+			vector<complex<double>> w_eigen = multiplycomplexmatrixvector(A_lambda_I_inverse,vector_eigen);
+			complex<double> ssw(0,0); // sum of squares of w.
+			for (int j = 0; j < n ; ++j)
+			{
+				ssw += w_eigen[j]*w_eigen[j];
+			}
+			double norm_w = std::sqrt(real(ssw));
+			// Normalize w (w = w / norm)
+			vector<complex<double>> w_eigen_normalize = scalarmultiplicationComplexVector(w_eigen,divisiond(1,norm_w));
+			
+			for (int j = 0; j < n ; ++j)
+			{
+				vector_eigen[j] = w_eigen_normalize[j];
+			}
+			
+		}
+		cout << "\nCorresponding Eigenvector: " << endl;
+		printComplexVector(vector_eigen);
+		matrix_eigenvectors.push_back(vector_eigen);
+	}
 
-	//vector_eigenvalues.push_back(lambda);
+	matrix_eigenvectors = TransposeComplexMatrix(matrix_eigenvectors);
+	cout << "\nEigenvectors (in column vectors): " << endl;
+	printComplexMatrix(matrix_eigenvectors);
 
-	//cout << "\nEigenvector corresponds to " << lambda << " :" << endl;
-	//printComplexVector(v);
-	/* */
-	return vector_eigenvalues; // returns the eigenvector
+	cout << "\nEigenvalues: " << endl;
+	printComplexVector(vector_eigenvalues);
+
+	return vector_eigenvalues; // returns the eigenvalues
 }
 
 vector<double> RayleighQuotientIteration(vector<vector<double>>& A, int iterations, double a, double b) 
@@ -6324,7 +7386,6 @@ vector<double> RayleighQuotientIteration(vector<vector<double>>& A, int iteratio
 	/* */
 	return vector_eigenvalues; // returns the eigenvector
 }
-
 
 vector<complex<double>> ComplexRayleighQuotientIteration(vector<vector<complex<double>>> &A, int iterations, int N, double a, double b) 
 {

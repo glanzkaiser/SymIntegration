@@ -16,11 +16,10 @@ int main()
 // Get starting timepoint
 	auto start = high_resolution_clock::now();
 
-Eigen::Matrix<double, 3, 3> A; // declare a real (double) 3x3 matrix
+Eigen::Matrix<double, 2, 2> A; // declare a real (double) 3x3 matrix
 // defined the matrix A
-A << -4,12,-12,  
-	0,5,-6,  
-	-2,-2,10;
+A << 4,1,  
+	2,3;
 /*
 A(0,0) = 0.0;
 A(0,1) = 1.0;
@@ -36,12 +35,12 @@ A(2,2) = 8.0;
 
 */
 
-Eigen::EigenSolver<Eigen::Matrix<double, 3,3> > s(A); // the instance s(A) includes the eigensystem
+Eigen::EigenSolver<Eigen::Matrix<double, 2,2> > s(A); // the instance s(A) includes the eigensystem
 cout << "Matrix A:\n" << A << endl;
 cout << endl;
 cout << "Eigenvalues:" << endl;
 
-int n = 3;
+int n = 2;
 for (int i = 1; i <= n; i++) 
 	{
 		cout << "λ_" << i << " = " << real(s.eigenvalues()(i-1)) << " + " << imag(s.eigenvalues()(i-1)) << "i" << endl;

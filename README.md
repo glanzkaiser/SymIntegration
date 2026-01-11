@@ -45,7 +45,7 @@ It is able to compute
 14. Compute direction fields and plot it with gnuplot.
 15. Linear programming solution with Simplex Method.
 16. Numerical differentiation and Richardson's Extrapolation.
-17. Matrices multiplication, addition, LU decomposition, SVD, eigenvalues and eigenvectors approximation, QR-decomposition, Cholesky decomposition
+17. Matrices multiplication, addition, LU decomposition, SVD, eigenvalues and eigenvectors approximation, QR-decomposition, Cholesky decomposition, Schur decomposition, Hessenberg decomposition, QR Algorithm with shifts
 18. Generate random number that has certain distribution (uniform, gamma, beta, normal, F, chi-squared) and plot the histogram with Hamzstplot
 19. Compute one-way ANOVA, two-way ANOVA, three-way ANOVA, multiple regression model.
 20. Compute one-tailed and two-tailed hypothesis testing. One- and Two-Sample Estimation Problem, e.g. Confidence Interval and Prediction Interval.
