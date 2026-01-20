@@ -169,7 +169,7 @@ void printComplexMatrix(const ComplexMatrix &mat)
 	{
 		for (const auto &val : row) 
 		{
-			cout << setw(12) << setprecision(3) << val << " ";
+			cout << setw(12) << setprecision(6) << val << " ";
 		}
 		cout << "\n";
 	}
@@ -181,9 +181,25 @@ void printComplexVector(const ComplexVector &vec)
 	int n = vec.size();
 	for (int i = 0; i< n; ++i) 
 	{
-		cout << setprecision(3) << vec[i] ;
+		cout << setprecision(6) << vec[i] ;
 		cout << "\n";
 	}
+}
+
+vector<vector<double>> ComplextoRealMatrix(vector<vector<complex<double>>> &A) 
+{
+	int R = A.size();
+	int C = A[0].size();
+
+	vector<vector<double>> matrix(R, vector<double>(C, 0.0));
+	for (int i = 0; i < R; ++i) 
+	{
+		for (int j = 0; j < C; ++j) 
+		{
+			matrix[i][j] = real(A[i][j]);
+		}
+	}
+	return matrix;
 }
 
 complex<double> complexdivision(complex<double> a, double b)
@@ -504,6 +520,35 @@ vector<vector<complex<double>>> createIdentityComplexMatrix(int n)
 	return resultMatrix;
 }
 
+vector<vector<complex<double>>> createSubMatrix(vector<vector<complex<double>>> &A, int i1, int i2, int j1, int j2)
+{
+	int n = A.size();
+	int m = A[0].size();
+
+	if (i1 > i2 || j1 > j2 || i1 >= n || j1 >= m) 
+	{
+		throw std::invalid_argument("Wrong input.");
+	}
+	int R = i2 - i1 + 1;
+	int C= j2 - j1 + 1;
+	
+	vector<vector<complex<double>>> resultMatrix;
+	resultMatrix.assign(R, std::vector<complex<double>>(C, 0.0));
+	
+	int i1_index = i1;
+	for (int i = 0; i < R; ++i) 
+	{
+		int j1_index = j1;
+		for (int j = 0; j < C; ++j) 
+		{
+			resultMatrix[i][j] = A[i1_index][j1_index];
+			j1_index = j1_index + 1;
+		}
+		i1_index = i1_index + 1;
+	}
+	return resultMatrix;
+}
+
 vector<vector<complex<double>>> TransposeComplexMatrix(vector<vector<complex<double>>> &A)
 {
 	int rows = A.size();
@@ -568,7 +613,7 @@ vector<vector<complex<double>>> ComplexMatrixInverse(vector<vector<complex<doubl
 		swap(I_complex[i], I_complex[pivotRow]);
 	
 		// Check for singular matrix (no unique solution)
-		if (moduluscomplex(A_rref[i][i]) < 1e-9) // Using a small epsilon
+		if (moduluscomplex(A_rref[i][i]) < 1e-12) // Using a small epsilon
 		{ 
 			cout << "No unique solution or infinite solutions exist." << endl;
 		}
@@ -1113,6 +1158,41 @@ vector<vector<double>> add(vector<vector<double>> &matrixA, vector<vector<double
 	return result;
 }
 
+vector<vector<double>> subtract(vector<vector<double>> &matrixA, vector<vector<double>> &matrixB) 
+{
+
+	if (matrixA.empty() || matrixB.empty() || matrixB[0].empty()) 
+	{
+        	// Handle empty matrices or invalid dimensions
+		return {};
+	}
+
+	size_t rowsA = matrixA.size();
+	size_t colsA = matrixA[0].size();
+	size_t rowsB = matrixB.size();
+	size_t colsB = matrixB[0].size();
+
+	if (rowsA != rowsB && colsA != colsB) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Matrix dimensions are incompatible for subtraction." << endl;
+		return {};
+	}
+
+	// Initialize result matrix with appropriate dimensions
+	vector<vector<double>> result(rowsA, vector<double>(colsA, 0.0));
+
+	// Perform matrix multiplication
+	for (size_t i = 0; i < rowsA; ++i) 
+	{
+		for (size_t j = 0; j < colsA; ++j) 
+		{
+			result[i][j] = matrixA[i][j] - matrixB[i][j];
+		}
+	}
+	return result;
+}
+
 double quadraticmultiplication(vector<vector<double>> &matrixA, vector<double> &vectorX)
 {
 	int R = matrixA.size();
@@ -1536,7 +1616,7 @@ vector<vector<double>> inverse(vector<vector<double>> &matrix)
 	}
 
 	double det = determinant(matrix);
-	if (std::abs(det) < 1e-9) 
+	if (std::abs(det) < 1e-12) 
 	{ // Check for near-zero determinant
 		cerr << "Error: Matrix is singular, inverse does not exist." << endl;
 		return {};
@@ -1865,7 +1945,7 @@ void linearindependencetest(vector<vector<double>> &A)
 		swap(augmentedMatrix[i], augmentedMatrix[pivotRow]);
 
 		// Check for singular matrix (no unique solution)
-		if (abs(augmentedMatrix[i][i]) < 1e-9) // Using a small epsilon
+		if (abs(augmentedMatrix[i][i]) < 1e-12) // Using a small epsilon
 		{ 
 			cout << "No unique solution or infinite solutions exist." << endl;
 	 		
@@ -1955,7 +2035,7 @@ void basistest(vector<vector<double>> &A)
 		swap(augmentedMatrix[i], augmentedMatrix[pivotRow]);
 
 		// Check for singular matrix (no unique solution)
-		if (abs(augmentedMatrix[i][i]) < 1e-9) // Using a small epsilon
+		if (abs(augmentedMatrix[i][i]) < 1e-12) // Using a small epsilon
 		{ 
 			cout << "No unique solution or infinite solutions exist." << endl;
 	 		
@@ -2039,7 +2119,7 @@ void coordinatevector(vector<vector<double>> &A, vector<vector<double>> &b)
 		swap(augmentedMatrix[i], augmentedMatrix[pivotRow]);
 
 		// Check for singular matrix (no unique solution)
-		if (abs(augmentedMatrix[i][i]) < 1e-9) // Using a small epsilon
+		if (abs(augmentedMatrix[i][i]) < 1e-12) // Using a small epsilon
 		{ 
 			cout << "No unique solution or infinite solutions exist." << endl;
 	 		
@@ -2132,7 +2212,7 @@ void basistransition(vector<vector<double>> &oldbasis, vector<vector<double>> &n
 			swap(transitionMatrix_full[i], transitionMatrix_full[pivotRow]);
 
 			// Check for singular matrix (no unique solution)
-			if (abs(transitionMatrix_full[i][i]) < 1e-9) // Using a small epsilon
+			if (abs(transitionMatrix_full[i][i]) < 1e-12) // Using a small epsilon
 			{ 
 				cout << "No unique solution or infinite solutions exist." << endl;
 		 		
@@ -2259,7 +2339,7 @@ void basistransition_withcoordinatevector(vector<vector<double>> &oldbasis, vect
 			swap(transitionMatrix_full[i], transitionMatrix_full[pivotRow]);
 
 			// Check for singular matrix (no unique solution)
-			if (abs(transitionMatrix_full[i][i]) < 1e-9) // Using a small epsilon
+			if (abs(transitionMatrix_full[i][i]) < 1e-12) // Using a small epsilon
 			{ 
 				cout << "No unique solution or infinite solutions exist." << endl;
 		 		
@@ -2293,7 +2373,7 @@ void basistransition_withcoordinatevector(vector<vector<double>> &oldbasis, vect
 			swap(transitionMatrix_fullwithidentity[i], transitionMatrix_fullwithidentity[pivotRow]);
 
 			// Check for singular matrix (no unique solution)
-			if (abs(transitionMatrix_fullwithidentity[i][i]) < 1e-9) // Using a small epsilon
+			if (abs(transitionMatrix_fullwithidentity[i][i]) < 1e-12) // Using a small epsilon
 			{ 
 				cout << "No unique solution or infinite solutions exist." << endl;
 		 		
@@ -2327,7 +2407,7 @@ void basistransition_withcoordinatevector(vector<vector<double>> &oldbasis, vect
 			swap(transitionMatrix_fullwithidentity2[i], transitionMatrix_fullwithidentity2[pivotRow]);
 
 			// Check for singular matrix (no unique solution)
-			if (abs(transitionMatrix_fullwithidentity2[i][i]) < 1e-9) // Using a small epsilon
+			if (abs(transitionMatrix_fullwithidentity2[i][i]) < 1e-12) // Using a small epsilon
 			{ 
 				cout << "No unique solution or infinite solutions exist." << endl;
 		 		
@@ -4864,6 +4944,33 @@ vector<vector<double>> penrose(vector<double>& vectorx, vector<double>& vectory)
 	return penrosematrix;
 }
 
+vector<vector<complex<double>>> penroseComplex(vector<complex<double>>& vectorx, vector<complex<double>>& vectory) 
+{
+	int n = vectorx.size();
+	int m = vectory.size();
+	if (n != m) 
+	{
+		// Dimensions are incompatible for multiplication
+		cerr << "Error: Vector dimensions has to be the same." << std::endl;
+		return {};
+	}
+	vector<vector<complex<double>>> penrosematrix;
+	penrosematrix.assign(n, std::vector<complex<double>>(n, 0.0)); // initialize penrose matrix with size n x n and entries all zero
+	complex<double> denom = complexdotproduct(vectorx,vectorx);
+	complex<double> z(1,0);
+	denom = z/denom;
+	for (int i = 0; i < n; ++i)
+	{
+		for (int j = 0; j < n; ++j)
+		{
+			penrosematrix[i][j] = vectory[i]*vectorx[j];
+		}
+	}
+	penrosematrix = complexnumbermultiplicationComplexMatrix(penrosematrix,denom);
+
+	return penrosematrix;
+}
+
 vector<double> MarkovChain(vector<vector<double>>& P, vector<double>& x0, int k) 
 {
 	int n = P.size(); // Rows	
@@ -5215,7 +5322,7 @@ void QRDecompositionComplexHouseholder(vector<vector<complex<double>>>& A, vecto
 			for (int j = 0; j < m ; ++j)
 			{
 				double real_value = real(R_temp[i][j]) ;
-				if(abs(real_value) < 1e-10)
+				if(abs(real_value) < 1e-12)
 				{
 					R_temp[i][j] = 0;
 				}
@@ -5237,7 +5344,7 @@ void QRDecompositionComplexHouseholder(vector<vector<complex<double>>>& A, vecto
 			for (int j = 0; j < m ; ++j)
 			{
 				double real_value = real(Q[i][j]) ;
-				if(abs(real_value) < 1e-10)
+				if(abs(real_value) < 1e-12)
 				{
 					//Q[i][j] = 0;
 				}
@@ -5291,7 +5398,7 @@ void GaussJordanComplexMatrix(vector<vector<complex<double>>> &A)
 		printComplexMatrix(I_complex);
 	
 		// Check for singular matrix (no unique solution)
-		if (moduluscomplex(A_rref[i][i]) < 1e-9) // Using a small epsilon
+		if (moduluscomplex(A_rref[i][i]) < 1e-12) // Using a small epsilon
 		{ 
 			cout << "No unique solution or infinite solutions exist." << endl;
 		}
@@ -5374,7 +5481,7 @@ void GaussJordanComplexMatrix(vector<vector<complex<double>>> &A)
 		for (int j = 0; j < n; ++j) 
 		{
 			double realpart = real(A_rref[i][j]);
-			if (realpart < 1e-12) // Using a small epsilon
+			if (abs(realpart) < 1e-12) // Using a small epsilon
 			{ 
 				AI[i][j] = 0;
 			}
@@ -5424,7 +5531,7 @@ void GaussJordanComplexMatrixTEST(vector<vector<complex<double>>> &A) //NOT YET
 		printComplexMatrix(A_ref);
 	
 		// Check for singular matrix (no unique solution)
-		if (moduluscomplex(A_ref[i][i]) < 1e-9) // Using a small epsilon
+		if (moduluscomplex(A_ref[i][i]) < 1e-12) // Using a small epsilon
 		{ 
 			cout << "No unique solution or infinite solutions exist." << endl;
 		}
@@ -5511,7 +5618,7 @@ void gaussianelimination(const vector<vector<double>> &A)
 		swap(augmentedMatrix[i], augmentedMatrix[pivotRow]);
 
 		// Check for singular matrix (no unique solution)
-		if (abs(augmentedMatrix[i][i]) < 1e-9) // Using a small epsilon
+		if (abs(augmentedMatrix[i][i]) < 1e-12) // Using a small epsilon
 		{ 
 			cout << "No unique solution or infinite solutions exist." << endl;
 		}
@@ -5617,7 +5724,7 @@ Symbolic gaussianelimination(const SymbolicMatrix &A, int n)
 		swap(augmentedMatrix[i], augmentedMatrix[pivotRow]);
 
 		// Check for singular matrix (no unique solution)
-		if (abs(augmentedMatrix[i][i]) < 1e-9) // Using a small epsilon
+		if (abs(augmentedMatrix[i][i]) < 1e-12) // Using a small epsilon
 		{ 
 			cout << "No unique solution or infinite solutions exist." << endl;
 	 		return 0;
@@ -5699,7 +5806,7 @@ void solve_nhsystem(vector<vector<double>> &A, vector<vector<double>> &b, vector
 		swap(augmentedMatrix[i], augmentedMatrix[pivotRow]);
 
 		// Check for singular matrix (no unique solution)
-		if (abs(augmentedMatrix[i][i]) < 1e-9) // Using a small epsilon
+		if (abs(augmentedMatrix[i][i]) < 1e-12) // Using a small epsilon
 		{ 
 			cout << "No unique solution or infinite solutions exist." << endl;
 	 		
@@ -5773,7 +5880,7 @@ void solve_homogeneoussystem(vector<vector<double>> &A, vector<double> &x) // no
 		swap(Matrix[i], Matrix[pivotRow]);
 
 		// Check for singular matrix (no unique solution)
-		if (abs(Matrix[i][i]) < 1e-9) // Using a small epsilon
+		if (abs(Matrix[i][i]) < 1e-12) // Using a small epsilon
 		{ 
 			//cout << "No unique solution or infinite solutions exist." << endl;
 		}
@@ -5938,7 +6045,7 @@ void LUsolve_nhsystem(vector<vector<double>> &A, vector<vector<double>> &b, vect
 		swap(augmentedMatrix[i], augmentedMatrix[pivotRow]);
 
 		// Check for singular matrix (no unique solution)
-		if (abs(augmentedMatrix[i][i]) < 1e-9) // Using a small epsilon
+		if (abs(augmentedMatrix[i][i]) < 1e-12) // Using a small epsilon
 		{ 
 			cout << "No unique solution or infinite solutions exist." << endl;
 	 		
@@ -6010,7 +6117,7 @@ void LUsolve_nhsystem(vector<vector<double>> &A, vector<vector<double>> &b, vect
 		swap(augmentedMatrix2[i], augmentedMatrix2[pivotRow]);
 
 		// Check for singular matrix (no unique solution)
-		if (abs(augmentedMatrix2[i][i]) < 1e-9) // Using a small epsilon
+		if (abs(augmentedMatrix2[i][i]) < 1e-12) // Using a small epsilon
 		{ 
 			cout << "No unique solution or infinite solutions exist." << endl;
 	 		
@@ -6206,7 +6313,7 @@ SymbolicMatrix IVPSolution_firstorderdiffeq(vector<vector<complex<double>>> &A, 
 		// to obtain the whole eigenvalues and eigenvectors
 		vector<complex<double>> difference = subtractComplexVectors(A_x,lambda_x);
 		double diffnorm = complexnorm(difference);
-		if (diffnorm < 1e-9 )
+		if (abs(diffnorm) < 1e-12 )
 		{
 			for (int i = 0; i < n ; ++i)		
 			{		
@@ -6271,7 +6378,7 @@ SymbolicMatrix IVPSolution_firstorderdiffeq(vector<vector<complex<double>>> &A, 
 		swap(augmentedMatrix[i], augmentedMatrix[pivotRow]);
 	
 		// Check for singular matrix (no unique solution)
-		if (moduluscomplex(augmentedMatrix[i][i]) < 1e-9) // Using a small epsilon
+		if (moduluscomplex(augmentedMatrix[i][i]) < 1e-12) // Using a small epsilon
 		{ 
 			cout << "No unique solution or infinite solutions exist." << endl;
 		}
@@ -6454,8 +6561,6 @@ vector<vector<complex<double>>> HessenbergDecomposition(vector<vector<complex<do
 	cout << "\nMatrix A : " << endl;
 	printComplexMatrix(A);
 	
-	vector<vector<complex<double>>> matrix_basisvectors;
-	matrix_basisvectors.assign(n, std::vector<complex<double>>(n, 0.0));	
 	vector<vector<complex<double>>> A_original;	
 	A_original.assign(n, std::vector<complex<double>>(n, 0.0));
 	vector<vector<complex<double>>> P_Hessenberg = createIdentityComplexMatrix(n);
@@ -6551,7 +6656,7 @@ vector<vector<complex<double>>> HessenbergDecomposition(vector<vector<complex<do
 			for (int j = 0; j < n ; ++j)
 			{
 				double real_value = real(HAH[i][j]) ;
-				if(abs(real_value) < 1e-10)
+				if(abs(real_value) < 1e-12)
 				{
 					HAH[i][j] = 0;
 				}
@@ -6599,7 +6704,7 @@ vector<vector<complex<double>>> HessenbergDecomposition(vector<vector<complex<do
 		for (int j = 0; j < n ; ++j)
 		{
 			double real_value = real(PAP_Hessenberg[i][j]) ;
-			if(abs(real_value) < 1e-10)
+			if(abs(real_value) < 1e-12)
 			{
 				PAP_Hessenberg[i][j] = 0;
 			}
@@ -6611,7 +6716,151 @@ vector<vector<complex<double>>> HessenbergDecomposition(vector<vector<complex<do
 	cout << "\nP^{T} A P: " << endl;
 	printComplexMatrix(PAP_Hessenberg);
 
-	return matrix_basisvectors;
+	return PAP_Hessenberg;
+}
+
+vector<vector<complex<double>>> HessenbergDecompositionResultOnly(vector<vector<complex<double>>> &A) 
+// Done on Full Moon + 3: January 6th, 2026
+{	
+	int n = A.size(); // Rows	
+	int m = n;
+
+	if (n != m) 
+	{
+		cerr << "Error: Matrix is not square." << std::endl;
+		return {};
+	}
+	
+	vector<vector<complex<double>>> A_original;	
+	A_original.assign(n, std::vector<complex<double>>(n, 0.0));
+	vector<vector<complex<double>>> P_Hessenberg = createIdentityComplexMatrix(n);
+	vector<vector<complex<double>>> AP_Hessenberg; 
+	vector<vector<complex<double>>> PAP_Hessenberg; 
+	vector<vector<complex<double>>> P_Hessenberg_transpose; 
+
+	for (int i = 0; i < n ; ++i) 
+	{		
+		for (int j = 0; j < n ; ++j)
+		{
+			A_original[i][j] = A[i][j];
+		}
+	}
+		
+	int row = 1;	
+	int col = 0;
+	int n_x = n-1;
+	for (int i = 0; i < n-2; ++i) 
+	{		
+		// compute the next vector
+		vector<complex<double>> x;  
+		vector<complex<double>> w(n-row, 0.0);  
+		vector<complex<double>> v;  
+			
+		for (int j = row; j <= n_x ; ++j) 
+		{		
+			x.push_back(A[j][col]);
+		}
+		double real_x= real(x[0]);
+		double norm_x = complexnorm(x); 
+		if(real_x < 0 )
+		{
+			w[0] = norm_x;
+		}
+		else if(real_x >= 0 )
+		{
+			w[0] = -norm_x;
+		}
+		v = subtractComplexVectors(w,x);
+		
+		
+		vector<vector<complex<double>>> mat_v;
+		vector<vector<complex<double>>> mat_v_transpose;
+		mat_v.assign(n-row, std::vector<complex<double>>(1, 0.0));
+		mat_v_transpose.assign(1, std::vector<complex<double>>(n-row, 0.0));
+
+		for (int i = 0; i < n-row ; ++i) 
+		{		
+			mat_v[i][0] = v[i];
+			mat_v_transpose[0][i] = v[i];
+		}
+
+		vector<vector<complex<double>>> vTv = multiplyComplexMatrices(mat_v_transpose,mat_v);
+		vector<vector<complex<double>>> vvT = multiplyComplexMatrices(mat_v,mat_v_transpose);
+		vector<vector<complex<double>>> I = createIdentityComplexMatrix(n-row);
+		vector<vector<complex<double>>> H_hat; 
+		vector<vector<complex<double>>> AH; 
+		vector<vector<complex<double>>> HAH; 
+		vector<vector<complex<double>>> H_new = createIdentityComplexMatrix(n);
+		
+		double norm_v = divisiond(1,real(vTv[0][0]));
+
+		vector<vector<complex<double>>> P;
+		P = scalarmultiplicationComplexMatrix(vvT,norm_v);
+		
+		P = scalarmultiplicationComplexMatrix(P,2);
+		H_hat = subtractComplexMatrices(I,P);
+		
+		int i1 = 0;
+		for (int i = row; i < n ; ++i) 
+		{	
+			int j1 = 0;	
+			for (int j = row; j < n ; ++j)
+			{
+				H_new[i][j] = H_hat[i1][j1];
+				
+				j1 = j1 + 1;
+			}
+			i1 = i1+1;
+		}
+
+		AH = multiplyComplexMatrices(A,H_new);
+		HAH = multiplyComplexMatrices(H_new,AH);
+
+		for (int i = 0; i < n ; ++i) 
+		{		
+			for (int j = 0; j < n ; ++j)
+			{
+				double real_value = real(HAH[i][j]) ;
+				if(abs(real_value) < 1e-12)
+				{
+					HAH[i][j] = 0;
+				}
+			}
+		}
+
+		for (int i = 0; i < n ; ++i) 
+		{		
+			for (int j = 0; j < n ; ++j)
+			{
+				A[i][j] = HAH[i][j];
+			}
+		}
+
+		
+		P_Hessenberg = multiplyComplexMatrices(P_Hessenberg,H_new);
+		
+		row = row + 1;
+		col = col+1;	
+	}
+	
+	P_Hessenberg_transpose = TransposeComplexMatrix(P_Hessenberg);
+
+	AP_Hessenberg = multiplyComplexMatrices(A_original,P_Hessenberg);
+	PAP_Hessenberg = multiplyComplexMatrices(P_Hessenberg_transpose,AP_Hessenberg);
+		
+	for (int i = 0; i < n ; ++i) 
+	{		
+		for (int j = 0; j < n ; ++j)
+		{
+			double real_value = real(PAP_Hessenberg[i][j]) ;
+			if(abs(real_value) < 1e-12)
+			{
+				PAP_Hessenberg[i][j] = 0;
+			}
+		}
+	}
+	
+	return PAP_Hessenberg;
 }
 
 
@@ -6696,7 +6945,7 @@ vector<vector<complex<double>>> SpectralDecomposition(vector<vector<complex<doub
 		// to obtain the whole eigenvalues and eigenvectors
 		vector<complex<double>> difference = subtractComplexVectors(A_x,lambda_x);
 		double diffnorm = complexnorm(difference);
-		if (diffnorm < 1e-9 )
+		if (abs(diffnorm) < 1e-12 )
 		{
 			for (int i = 0; i < n ; ++i)		
 			{		
@@ -7084,7 +7333,7 @@ vector<vector<complex<double>>> QRDecompositionHouseholderReflections(vector<vec
 			for (int j = 0; j < m ; ++j)
 			{
 				double real_value = real(R[i][j]) ;
-				if(abs(real_value) < 1e-10)
+				if(abs(real_value) < 1e-12)
 				{
 					R[i][j] = 0;
 				}
@@ -7119,7 +7368,7 @@ vector<vector<complex<double>>> QRDecompositionHouseholderReflections(vector<vec
 			for (int j = 0; j < m ; ++j)
 			{
 				double real_value = real(Q[i][j]) ;
-				if(abs(real_value) < 1e-10)
+				if(abs(real_value) < 1e-12)
 				{
 					Q[i][j] = 0;
 				}
@@ -7231,7 +7480,7 @@ vector<complex<double>> QRAlgorithmwithShifts(vector<vector<complex<double>>>& A
 		}	
 	}
 			
-	if(sum_lowerdiagonal < 1e-9)
+	if(abs(sum_lowerdiagonal) < 1e-12)
 	{
 		for (int i = 0; i < n ; ++i) 
 		{
@@ -7302,6 +7551,987 @@ vector<complex<double>> QRAlgorithmwithShifts(vector<vector<complex<double>>>& A
 	matrix_eigenvectors = TransposeComplexMatrix(matrix_eigenvectors);
 	cout << "\nEigenvectors (in column vectors): " << endl;
 	printComplexMatrix(matrix_eigenvectors);
+
+	cout << "\nEigenvalues: " << endl;
+	printComplexVector(vector_eigenvalues);
+
+	return vector_eigenvalues; // returns the eigenvalues
+}
+
+// Homework
+vector<complex<double>> QRAlgorithmDoubleShifts(vector<vector<complex<double>>>& A, int iterations) 
+{
+
+	int n = A.size(); // Rows	
+	int C = A[0].size();
+	
+	vector<complex<double>> vector_eigenvalues;	
+	vector<vector<complex<double>>> matrix_eigenvectors;	
+	vector<complex<double>> v;
+	vector<vector<complex<double>>> A_original(n, vector<complex<double>>(n));
+	vector<vector<complex<double>>> I = createIdentityComplexMatrix(n);
+	vector<vector<complex<double>>> Q_final(n, vector<complex<double>>(n));
+	
+	for (int i = 0; i < n ; ++i) 
+	{		
+		for (int j = 0; j < n ; ++j)
+		{
+			A_original[i][j] = A[i][j];
+		}
+	}
+	
+	// Repeatedly decompose complex matrix A to QR, A^{k-1} - μI = QR
+	// Then multiply the reverse to obtain A^{k} = RQ + μI
+	
+	vector<vector<complex<double>>> A_loop(n, vector<complex<double>>(n));
+	
+	for (int i = 0; i < n ; ++i) 
+	{		
+		for (int j = 0; j < n ; ++j)
+		{
+			A_loop[i][j] = A_original[i][j];
+		}
+	}
+	for (int i = 0; i < iterations; ++i) 
+	{
+		double a_complex = real(A_loop[n-1][n-1]);
+		double b_complex = imag(A_loop[n-1][n-1]);
+		complex<double> mu(a_complex,b_complex);
+		vector<vector<complex<double>>> I = createIdentityComplexMatrix(n);
+		vector<vector<complex<double>>> mu_I = complexnumbermultiplicationComplexMatrix(I,mu); 
+		vector<vector<complex<double>>> A_mu_I = subtractComplexMatrices(A_loop,mu_I);
+
+		cmat Q(n, vector<complex<double>>(C));
+		cmat R(n, vector<complex<double>>(C));
+
+		QRDecompositionComplexHouseholder(A_mu_I, Q, R);
+
+		vector<vector<complex<double>>> RQ = multiplyComplexMatrices(R,Q);
+
+		cout <<"\nIteration: "<< i + 1 << endl;
+		cout << "\nμ = " << mu << endl;
+		cout <<"\nA: "<<endl;
+		printComplexMatrix(A_loop);
+		cout << "\nμI = " << endl;
+		printComplexMatrix(mu_I);
+		cout << "\nA - μI = " << endl;
+		printComplexMatrix(A_mu_I);
+		cout <<"\nQ: "<<endl;
+		printComplexMatrix(Q);
+		cout <<"\nR: "<<endl;
+		printComplexMatrix(R);
+		cout << "\nRQ = " << endl;
+		printComplexMatrix(RQ);
+			
+			for (int i = 0; i < n ; ++i) 
+		{		
+			for (int j = 0; j < n ; ++j)
+			{
+				A_loop[i][j] = RQ[i][j] + mu_I[i][j];
+				Q_final[i][j] = Q[i][j];
+			}
+		}
+		cout << "\nA_{new} = " << endl;
+		printComplexMatrix(A_loop);
+	}
+	double sum_lowerdiagonal;
+	for (int i = 1; i < n ; ++i) 
+	{		
+		for (int j = 0; j < i ; ++j) 
+		{
+			sum_lowerdiagonal += real(A_loop[i][j]);	
+		}	
+	}
+			
+	if(abs(sum_lowerdiagonal) < 1e-12)
+	{
+		for (int i = 0; i < n ; ++i) 
+		{
+			vector_eigenvalues.push_back(A_loop[i][i]);
+		}
+		
+	}
+	
+	cout << "\n****************************************************************************" << endl;
+	cout << "\nEnd of iteration" << endl;
+	cout << "\n****************************************************************************" << endl;
+	
+	// to determine the whole eigenvectors from known eigenvalue
+	// we use inverse iteration with shift from power method
+	for (int i = 0; i < n ;++i)
+	{
+		complex<double> eigen = vector_eigenvalues[i];
+		vector<complex<double>> vector_eigen;
+		cout << "\nEigenvalue(" << i+1 << ") = " << eigen << endl;
+		
+		vector<vector<complex<double>>> I = createIdentityComplexMatrix(n);
+		// why we use subtraction to 0.1? because we are using inverse iteration method and the inverse of (A - λI) does not exist 
+		vector<vector<complex<double>>> lambda_I = scalarmultiplicationComplexMatrix(I,real(eigen)-0.1); 
+		//cout << "\nlambda I = " << endl;
+		//printMatrix(lambda_I);
+		vector<vector<complex<double>>> A_lambda_I = subtractComplexMatrices(A_original,lambda_I);
+		vector<vector<complex<double>>> A_lambda_I_inverse = ComplexMatrixInverse(A_lambda_I);
+		//cout << "\nA - lambda I" << endl;
+		//printMatrix(A_lambda_I);
+		double mu = 2; 
+		double sigma = 0.5;
+		vector_eigen = complexvecrand_normal_zeroimaginary(mu, sigma, n);
+		complex<double> ssv(0,0); // sum of squares of v.
+		for (int j = 0; j < n ; ++j)
+		{
+			ssv += vector_eigen[j]*vector_eigen[j];
+		}
+		double norm = std::sqrt(real(ssv));
+		// Normalize v (v = v / norm)
+		vector_eigen = scalarmultiplicationComplexVector(vector_eigen,divisiond(1,norm));
+			
+		//cout << "\nv initial vector = " << endl;
+		//printVector(vector_eigen);
+		
+		for (int k = 0; k < iterations; ++k) 
+		{
+			vector<complex<double>> w_eigen = multiplycomplexmatrixvector(A_lambda_I_inverse,vector_eigen);
+			complex<double> ssw(0,0); // sum of squares of w.
+			for (int j = 0; j < n ; ++j)
+			{
+				ssw += w_eigen[j]*w_eigen[j];
+			}
+			double norm_w = std::sqrt(real(ssw));
+			// Normalize w (w = w / norm)
+			vector<complex<double>> w_eigen_normalize = scalarmultiplicationComplexVector(w_eigen,divisiond(1,norm_w));
+			
+			for (int j = 0; j < n ; ++j)
+			{
+				vector_eigen[j] = w_eigen_normalize[j];
+			}
+			
+		}
+		cout << "\nCorresponding Eigenvector: " << endl;
+		printComplexVector(vector_eigen);
+		matrix_eigenvectors.push_back(vector_eigen);
+	}
+
+	matrix_eigenvectors = TransposeComplexMatrix(matrix_eigenvectors);
+	cout << "\nEigenvectors (in column vectors): " << endl;
+	printComplexMatrix(matrix_eigenvectors);
+
+	cout << "\nEigenvalues: " << endl;
+	printComplexVector(vector_eigenvalues);
+
+	return vector_eigenvalues; // returns the eigenvalues
+}
+
+vector<complex<double>> FrancisDoubleStepQRReal(vector<vector<complex<double>>>& A, int iterations) 
+// Done on January 18th, 2026 took almost 1 week to comprehend and finish this
+{
+
+	int n = A.size(); // Rows	
+	int C = A[0].size();
+	if (C != n) 
+	{
+		cerr << "Error: Matrix is not square." << endl;
+		return {};
+	}
+	vector<complex<double>> vector_eigenvalues;	
+	vector<vector<complex<double>>> matrix_eigenvectors;	
+	
+	vector<vector<double>> I = createIdentityMatrix(n);
+
+	cout << "\nA = " << endl;
+	printComplexMatrix(A);
+	
+	vector<vector<complex<double>>> H = HessenbergDecompositionResultOnly(A);
+	vector<vector<double>> H_loop = ComplextoRealMatrix(H);
+	
+	cout << "\nH_{0} = " << endl;
+	printComplexMatrix(H);
+	cout << "\nH_{0} = " << endl;
+	printMatrix(H_loop);
+	int iter = 1;
+	int q_index, p_index;
+	int p = n;
+	double s,t,x,y,z;		
+	for (int pindex = 0; pindex < iterations; pindex++ )
+	{
+		cout << "\nIteration: " << iter << endl;
+		cout << "\nH = " << endl;
+		printMatrix(H_loop);
+		p_index = p-1;
+		q_index = p-2;
+		
+		s = H_loop[q_index][q_index] + H_loop[p_index][p_index];
+		t = (H_loop[q_index][q_index] * H_loop[p_index][p_index]) - (H_loop[q_index][p_index] * H_loop[p_index][q_index]);
+		cout << "\ns = " << s << endl;	
+		cout << "t = " << t << endl;	
+		x = (H_loop[0][0]*H_loop[0][0]) + (H_loop[0][1]*H_loop[1][0]) - s*H_loop[0][0] + t;
+		y = H_loop[1][0]*(H_loop[0][0] + H_loop[1][1] - s);
+		z = H_loop[1][0]*H_loop[2][1];
+		cout << "x = " << x << endl;	
+		cout << "y = " << y << endl;	
+		cout << "z = " << z << endl;	
+
+		vector<double> e1(3,0.0);
+		e1[0] = 1.0;
+		vector<double> vec_x(3,0.0) ;
+		vec_x[0] = x;
+		vec_x[1] = y;
+		vec_x[2] = z;
+
+		double norm_x = norm(vec_x);
+
+		if(vec_x[0] > 0 )
+		{
+			norm_x = -1*norm_x;		
+		}		
+		else if(vec_x[0] <= 0 )
+		{
+			norm_x = norm_x;		
+		}		
+
+		vector<double> vec_w = scalarmultiplication(e1,norm_x);
+		vector<double> vec_u = add(vec_x,vec_w);
+
+		cout << "\nx = " << endl;
+		printVector(vec_x);
+		cout << "\nw = " << endl;
+		printVector(vec_w);
+		cout << "\nu = " << endl;
+		printVector(vec_u);
+		
+
+		vector<vector<double>> mat_u; 
+		vector<vector<double>> mat_u_transpose; 
+		mat_u.assign(3, std::vector<double>(1, 0.0));
+		mat_u_transpose.assign(1, std::vector<double>(3, 0.0));
+		
+		for (int i = 0; i < 3 ; ++i) 
+		{		
+			mat_u[i][0] = vec_u[i];
+			mat_u_transpose[0][i] =vec_u[i];
+		}
+		cout << "\nu = " << endl;
+		printMatrix(mat_u);
+		cout << "\nuT = " << endl;
+		printMatrix(mat_u_transpose);
+
+		vector<vector<double>> uTu = multiply(mat_u_transpose,mat_u);
+		vector<vector<double>> uuT = multiply(mat_u,mat_u_transpose);
+		vector<vector<double>> P0; 
+		P0.assign(3,std::vector<double>(3, 0.0));
+		for (int i = 0; i < 3 ; ++i) 
+		{		
+			for (int j = 0; j < 3 ; ++j) 
+			{		
+				P0[i][j] = uuT[i][j];
+			}
+		}
+		
+		cout << "\nuTu = " << endl;
+		printMatrix(uTu);
+		cout << "\nuuT = " << endl;
+		printMatrix(uuT);
+
+		
+		double norm_u = divisiond(1,uTu[0][0]); // ||u||^{2}
+		cout << "\n||u|| = " << norm_u << endl;
+		// compute 2 u u^{t} / ||u||
+		P0 = scalarmultiplication(P0,norm_u);
+		P0 = scalarmultiplication(P0,2); 
+		//cout << "\nP_{" << iter <<"}:" << endl;
+		//printMatrix(P0);
+
+		vector<vector<double>> P0_final; 
+		P0_final.assign(n,std::vector<double>(n, 0.0));
+	
+		for (int i = 0; i < 3 ; ++i) 
+		{		
+			for (int j = 0; j < 3 ; ++j) 
+			{		
+				P0_final[i][j] = P0[i][j];
+			}
+		}
+		// compute I - (2 u u^{t} / ||u|| )
+		P0_final = subtract(I,P0_final);
+		
+		cout << "\nP_{" << iter  - 1<<"}:" << endl;
+		printMatrix(P0_final);
+
+		vector<vector<double>> B = multiply(H_loop,P0_final); 
+		B = multiply(P0_final,B); 
+
+		cout << "\nB_{" << iter  - 1<<"}:" << endl;
+		printMatrix(B);
+		vector<vector<double>> H_new = multiply(I,B); 
+		// "Bulge chasing" sequence coding
+	
+		int index = 1;
+		int index2 = 0;
+		for (int k = 0; k <= p-2; ++k)
+		{
+			vector<vector<double>> P1; 
+			vector<vector<double>> P_last; 
+			vector<double> vec_x1(3);
+			if(k < p-3)
+			{			
+				vec_x1[0] = H_new[index][k];
+				vec_x1[1] = H_new[index+1][k];
+				vec_x1[2] = H_new[index+2][k];
+				
+				double norm_x1 = norm(vec_x1);
+			
+				if(real(vec_x1[0]) > 0 )
+				{
+					norm_x1 = -1*norm_x1;		
+				}		
+				else if(real(vec_x1[0]) <= 0 )
+				{
+					norm_x1 = norm_x1;		
+				}		
+
+				cout << "\nx_{" << k+1 <<"}:" << endl;
+				printVector(vec_x1);
+
+				vector<double> e1_3d(3,0.0);
+				e1_3d[0] = 1.0;
+
+				vector<double> vec_w1 = scalarmultiplication(e1_3d,norm_x1);
+				vector<double> vec_v1 = add(vec_x1,vec_w1);
+
+				vector<vector<double>> mat_v; 
+				vector<vector<double>> mat_v_transpose; 
+				mat_v.assign(3, std::vector<double>(1, 0.0));
+				mat_v_transpose.assign(1, std::vector<double>(3, 0.0));
+
+				for (int i = 0; i < 3 ; ++i) 
+				{		
+					mat_v[i][0] = vec_v1[i];
+					mat_v_transpose[0][i] =vec_v1[i];
+				}
+
+				vector<vector<double>> vTv = multiply(mat_v_transpose,mat_v);
+				vector<vector<double>> vvT = multiply(mat_v,mat_v_transpose);
+				
+				double norm_v1 = divisiond(1,vTv[0][0]); // ||u||^{2}
+
+				// compute 2 u u^{t} / ||u||
+				P1 = scalarmultiplication(vvT,norm_v1);				
+				P1 = scalarmultiplication(P1,2);
+
+				vector<vector<double>> P1_final;
+				P1_final.assign(n, std::vector<double>(n, 0.0));
+				int i1 = 0;
+				for (int i = 1 + index2; i <= 3 + index2; ++i)
+				{
+					int j1=0;
+					for (int j = 1 + index2; j <= 3 + index2; ++j)
+					{
+						P1_final[i][j] = P1[i1][j1];
+						j1 = j1+1;
+					}
+					i1= i1 + 1;
+				}
+				vector<vector<double>> P1_f = subtract(I,P1_final);
+				cout << "\nP_{" << k+1 <<"} reflector:" << endl;
+				printMatrix(P1_f);
+
+				H_new = multiply(H_new,P1_f);
+				H_new = multiply(P1_f,H_new);
+
+				cout << "\nH^{" << k+1 <<"}:" << endl;
+				printMatrix(H_new);
+				
+			}
+			else if (k == p-3)
+			{
+				vector<double> vec_x2(2);
+				vec_x2[0] = H_new[index][k];
+				vec_x2[1] = H_new[index+1][k];
+				
+				double norm_x2 = norm(vec_x2);
+			
+				if(vec_x2[0] > 0 )
+				{
+					norm_x2 = -1*norm_x2;		
+				}		
+				else if(vec_x2[0] <= 0 )
+				{
+					norm_x2 = norm_x2;		
+				}		
+
+				cout << "\nx_{" << k+1 <<"}:" << endl;
+				printVector(vec_x2);
+
+				vector<double> e1_2d(2,0.0);
+				e1_2d[0] = 1.0;
+
+				vector<double> vec_w2 = scalarmultiplication(e1_2d,norm_x2);
+				vector<double> vec_v2 = add(vec_x2,vec_w2);
+
+				vector<vector<double>> mat_v; 
+				vector<vector<double>> mat_v_transpose; 
+				mat_v.assign(2, std::vector<double>(1, 0.0));
+				mat_v_transpose.assign(1, std::vector<double>(2, 0.0));
+
+				for (int i = 0; i < 2 ; ++i) 
+				{		
+					mat_v[i][0] = vec_v2[i];
+					mat_v_transpose[0][i] =vec_v2[i];
+				}
+
+				vector<vector<double>> vTv = multiply(mat_v_transpose,mat_v);
+				vector<vector<double>> vvT = multiply(mat_v,mat_v_transpose);
+				
+				double norm_v2 = divisiond(1,vTv[0][0]); // ||u||^{2}
+
+				P_last = scalarmultiplication(vvT,norm_v2);
+				
+				P_last = scalarmultiplication(P_last,2);
+				//cout << "\nP_{" << k+1 <<"} last:" << endl;
+				//printMatrix(P_last);
+				vector<vector<double>> P_last_final;
+				P_last_final.assign(n, std::vector<double>(n, 0.0));
+				
+				vector<vector<double>> P_last_f = subtract(I,P_last_final);
+			
+				P_last_f[n-2][n-2] = 1 - P_last[0][0] ;
+				P_last_f[n-2][n-1] =0 - P_last[0][1] ;
+				P_last_f[n-1][n-2] = 0 - P_last[1][0] ;
+				P_last_f[n-1][n-1] = 1 - P_last[1][1] ;
+
+				cout << "\nP_{" << k+1 <<"} reflector:" << endl;
+				printMatrix(P_last_f);
+				H_new = multiply(H_new,P_last_f);
+				H_new = multiply(P_last_f,H_new);
+
+				cout << "\nH^{" << k+1 <<"}:" << endl;
+				printMatrix(H_new);
+				
+			}
+			else if (k == p-2)
+			{
+				vector<double> vec_x2(2);
+				vec_x2[0] = H_new[index2][k];
+				vec_x2[1] = H_new[index2+1][k];
+				
+				double norm_x2 = norm(vec_x2);
+			
+				if(vec_x2[0] > 0 )
+				{
+					norm_x2 = -1*norm_x2;		
+				}		
+				else if(vec_x2[0] <= 0 )
+				{
+					norm_x2 = norm_x2;		
+				}		
+
+				cout << "\nx_{" << k+1 <<"}:" << endl;
+				printVector(vec_x2);
+
+				vector<double> e1_2d(2,0.0);
+				e1_2d[0] = 1.0;
+
+				vector<double> vec_w2 = scalarmultiplication(e1_2d,norm_x2);
+				vector<double> vec_v2 = add(vec_x2,vec_w2);
+
+				vector<vector<double>> mat_v; 
+				vector<vector<double>> mat_v_transpose; 
+				mat_v.assign(2, std::vector<double>(1, 0.0));
+				mat_v_transpose.assign(1, std::vector<double>(2, 0.0));
+
+				for (int i = 0; i < 2 ; ++i) 
+				{		
+					mat_v[i][0] = vec_v2[i];
+					mat_v_transpose[0][i] =vec_v2[i];
+				}
+
+				vector<vector<double>> vTv = multiply(mat_v_transpose,mat_v);
+				vector<vector<double>> vvT = multiply(mat_v,mat_v_transpose);
+				
+				double norm_v2 = divisiond(1,vTv[0][0]); // ||u||^{2}
+
+				P_last = scalarmultiplication(vvT,norm_v2);
+				
+				P_last = scalarmultiplication(P_last,2);
+				cout << "\nP_{" << k+1 <<"} last:" << endl;
+				printMatrix(P_last);
+				vector<vector<double>> P_last_final;
+				P_last_final.assign(n, std::vector<double>(n, 0.0));
+				
+				vector<vector<double>> P_last_f = subtract(I,P_last_final);
+			
+				P_last_f[n-1][n-1] = 1 - P_last[0][0] ;
+
+				cout << "\nP_{" << k+1 <<"} reflector:" << endl;
+				printMatrix(P_last_f);
+				H_new = multiply(H_new,P_last_f);
+				H_new = multiply(P_last_f,H_new);
+
+				cout << "\nH^{" << k+1 <<"}:" << endl;
+				printMatrix(H_new);
+				
+			}
+			index = index+1;
+			index2=index2+1;
+		}
+		H_loop = multiply(I,H_new);
+		iter = iter+1;
+		
+	}
+	cout << "\n****************************************************************************" << endl;
+	cout << "\nEnd of " << iter - 1 << " iterations" << endl;
+	cout << "\n****************************************************************************" << endl;
+	
+	cout << "\nH updated :" << endl;
+	printMatrix(H_loop);
+	
+	for (int i = 0; i < n ; ++i) 
+	{		
+		complex<double> a(1,0);
+		complex<double> b = - H_loop[i+1][i+1] - H_loop[i][i];
+		complex<double> c = (H_loop[i+1][i+1]*H_loop[i][i]) - (H_loop[i+1][i]*H_loop[i][i+1]);
+			
+		complex<double> σ1 = (-b + sqrt( (b*b) - (complex<double>(4,0)*a*c)) )/(complex<double>(2,0)*a);
+		complex<double> σ2 = (-b - sqrt( (b*b) - (complex<double>(4,0)*a*c)) )/(complex<double>(2,0)*a);
+		//cout << "\nσ1 :" <<   σ1 << endl;
+		//cout << "\nσ2 :" <<   σ2 << endl;
+		vector_eigenvalues.push_back(σ1);
+		vector_eigenvalues.push_back(σ2);
+		i = i+1;		
+	}
+	//matrix_eigenvectors = TransposeComplexMatrix(matrix_eigenvectors);
+	//cout << "\nEigenvectors (in column vectors): " << endl;
+	//printComplexMatrix(matrix_eigenvectors);
+
+	cout << "\nEigenvalues: " << endl;
+	printComplexVector(vector_eigenvalues);
+
+	return vector_eigenvalues; // returns the eigenvalues
+}
+
+
+vector<complex<double>> FrancisDoubleStepQR(vector<vector<complex<double>>>& A, int iterations) 
+{
+
+	int n = A.size(); // Rows	
+	int C = A[0].size();
+	if (C != n) 
+	{
+		cerr << "Error: Matrix is not square." << endl;
+		return {};
+	}
+	vector<complex<double>> vector_eigenvalues;	
+	vector<vector<complex<double>>> matrix_eigenvectors;	
+	vector<complex<double>> v;
+	vector<vector<complex<double>>> A_original(n, vector<complex<double>>(n));
+	vector<vector<complex<double>>> I = createIdentityComplexMatrix(n);
+	vector<vector<complex<double>>> Q_final(n, vector<complex<double>>(n));
+	
+	for (int i = 0; i < n ; ++i) 
+	{		
+		for (int j = 0; j < n ; ++j)
+		{
+			A_original[i][j] = A[i][j];
+		}
+	}
+	cout << "\nA = " << endl;
+	printComplexMatrix(A);
+	// Repeatedly decompose complex matrix A to QR, A^{k-1} - μI = QR
+	// Then multiply the reverse to obtain A^{k} = RQ + μI
+	
+	vector<vector<complex<double>>> H = HessenbergDecompositionResultOnly(A);
+	vector<vector<complex<double>>> H_loop;
+	H_loop.assign(n, std::vector<complex<double>>(n, 0.0));
+
+	for (int i = 0; i < n ; ++i) 
+	{		
+		for (int j = 0; j < n ; ++j)
+		{
+			H_loop[i][j] = H[i][j];
+		}
+	}
+
+	cout << "\nH_{0} = " << endl;
+	printComplexMatrix(H);
+	int iter = 1;
+	int p = n;
+	int q_index, p_index;
+	for (int i = 0; i < iterations; i++)
+	{
+		cout << "\nIteration: " << iter << endl;
+		cout << "\nH = " << endl;
+		printComplexMatrix(H_loop);
+		
+		/*
+		// this method use the eigenvalues from 2 x 2 trailing matrix at the bottom right
+		// the weakness is if the eigenvalues are complex, then it will be hard since Francis method basic is using real arithmetic
+		complex<double> a(1,0);
+		complex<double> b = - H_loop[n-2][n-2] - H_loop[n-1][n-1];
+		complex<double> c = (H_loop[n-1][n-1]*H_loop[n-2][n-2]) - (H_loop[n-1][n-2]*H_loop[n-2][n-1]);
+	
+		complex<double> σ1 = (-b + sqrt( (b*b) - (complex<double>(4,0)*a*c)) )/(complex<double>(2,0)*a);
+		complex<double> σ2 = (-b - sqrt( (b*b) - (complex<double>(4,0)*a*c)) )/(complex<double>(2,0)*a);
+		cout << "σ1 = " << σ1 << endl;
+		cout << "σ2 = " << σ2 << endl;
+	
+		vector<vector<complex<double>>> I = createIdentityComplexMatrix(n);
+		vector<vector<complex<double>>> I_σ1 = complexnumbermultiplicationComplexMatrix(I,σ1);
+		vector<vector<complex<double>>> I_σ2 = complexnumbermultiplicationComplexMatrix(I,σ2);
+		vector<vector<complex<double>>> H_σ1 = subtractComplexMatrices(H_loop,I_σ1);
+		vector<vector<complex<double>>> H_σ2 = multiplyComplexMatrices(H_loop,I_σ2);
+		vector<complex<double>> e1(n,0.0);
+		e1[0] = 1.0;
+		vector<complex<double>> vec_x = multiplycomplexmatrixvector(G,e1);
+		vector<vector<complex<double>>> G = multiplyComplexMatrices(H_σ1,H_σ2);*/
+
+		p_index = p-1;
+		q_index = p-2;
+		
+		complex<double> s(real(H_loop[q_index][q_index] + H_loop[p_index][p_index]), imag(H_loop[q_index][q_index] + H_loop[p_index][p_index]) );
+		complex<double> t(real( (H_loop[q_index][q_index] * H_loop[p_index][p_index]) - (H_loop[q_index][p_index] * H_loop[p_index][q_index])) , imag((H_loop[q_index][q_index] * H_loop[p_index][p_index]) - (H_loop[q_index][p_index] * H_loop[p_index][q_index])) );
+		cout << "\ns = " << s << endl;	
+		cout << "t = " << t << endl;	
+		complex<double> x(real((H_loop[0][0]*H_loop[0][0]) + (H_loop[0][1]*H_loop[1][0]) - s*H_loop[0][0] + t), imag((H_loop[0][0]*H_loop[0][0]) + (H_loop[0][1]*H_loop[1][0]) - s*H_loop[0][0] + t) );
+		complex<double> y(real(H_loop[1][0]*(H_loop[0][0] + H_loop[1][1] - s)), imag(H_loop[1][0]*(H_loop[0][0] + H_loop[1][1] - s)) );
+		complex<double> z(real(H_loop[1][0]*H_loop[2][1]) , imag(H_loop[1][0]*H_loop[2][1]) );
+		cout << "x = " << x << endl;	
+		cout << "y = " << y << endl;	
+		cout << "z = " << z << endl;	
+
+		vector<complex<double>> e1(n,0.0);
+		e1[0] = 1.0;
+		vector<complex<double>> vec_x(n,0.0);
+		vec_x[0] = x;
+		vec_x[1] = y;
+		vec_x[2] = z;
+		double norm_x = complexnorm(vec_x);
+		
+		if(real(vec_x[0]) > 0 )
+		{
+			norm_x = -1*norm_x;		
+		}		
+		else if(real(vec_x[0]) <= 0 )
+		{
+			norm_x = norm_x;		
+		}		
+
+		vector<complex<double>> vec_w = scalarmultiplicationComplexVector(e1,norm_x);
+		vector<complex<double>> vec_u = addComplexVectors(vec_x,vec_w);
+
+		cout << "\nx = " << endl;
+		printComplexVector(vec_x);
+		cout << "\nw = " << endl;
+		printComplexVector(vec_w);
+		cout << "\nu = " << endl;
+		printComplexVector(vec_u);
+		
+
+		vector<vector<complex<double>>> mat_u; 
+		vector<vector<complex<double>>> mat_u_transpose; 
+		mat_u.assign(n, std::vector<complex<double>>(1, 0.0));
+		mat_u_transpose.assign(1, std::vector<complex<double>>(n, 0.0));
+
+		for (int i = 0; i < n ; ++i) 
+		{		
+			mat_u[i][0] = vec_u[i];
+			mat_u_transpose[0][i] =vec_u[i];
+		}
+
+		vector<vector<complex<double>>> uTu = multiplyComplexMatrices(mat_u_transpose,mat_u);
+		vector<vector<complex<double>>> uuT = multiplyComplexMatrices(mat_u,mat_u_transpose);
+		vector<vector<complex<double>>> P0; 
+		
+		double norm_u = divisiond(1,real(uTu[0][0])); // ||u||^{2}
+
+		P0 = scalarmultiplicationComplexMatrix(uuT,norm_u);
+		
+		P0 = scalarmultiplicationComplexMatrix(P0,2);
+		P0 = subtractComplexMatrices(I,P0);
+		cout << "\nP_{" << i <<"}:" << endl;
+		printComplexMatrix(P0);
+		
+		vector<vector<complex<double>>> PHP = multiplyComplexMatrices(H_loop,P0);
+		vector<vector<complex<double>>> P0_transpose = TransposeComplexMatrix(P0);
+		PHP = multiplyComplexMatrices(P0_transpose,PHP);
+		cout << "\nP_{" << i <<"}^{T} H P_{" << i <<"}:" << endl;
+		printComplexMatrix(PHP);	
+		vector<vector<complex<double>>> H_new = multiplyComplexMatrices(I,PHP);
+		
+		// "Bulge chasing" sequence coding
+		int p = n;
+		int index = 1;
+		int index2 = 0;
+		for (int k = 0; k <= p-2; ++k)
+		{
+			vector<vector<complex<double>>> P1; 
+			vector<vector<complex<double>>> P_last; 
+			vector<complex<double>> vec_x1(3);
+			if(k < p-3)
+			{			
+				vec_x1[0] = H_new[index][k];
+				vec_x1[1] = H_new[index+1][k];
+				vec_x1[2] = H_new[index+2][k];
+				
+				double norm_x1 = complexnorm(vec_x1);
+			
+				if(real(vec_x1[0]) > 0 )
+				{
+					norm_x1 = -1*norm_x1;		
+				}		
+				else if(real(vec_x1[0]) <= 0 )
+				{
+					norm_x1 = norm_x1;		
+				}		
+
+				cout << "\nx_{" << k+1 <<"}:" << endl;
+				printComplexVector(vec_x1);
+
+				vector<complex<double>> e1_3d(3,0.0);
+				e1_3d[0] = 1.0;
+
+				vector<complex<double>> vec_w1 = scalarmultiplicationComplexVector(e1_3d,norm_x1);
+				vector<complex<double>> vec_v1 = addComplexVectors(vec_x1,vec_w1);
+
+				vector<vector<complex<double>>> mat_v; 
+				vector<vector<complex<double>>> mat_v_transpose; 
+				mat_v.assign(3, std::vector<complex<double>>(1, 0.0));
+				mat_v_transpose.assign(1, std::vector<complex<double>>(3, 0.0));
+
+				for (int i = 0; i < 3 ; ++i) 
+				{		
+					mat_v[i][0] = vec_v1[i];
+					mat_v_transpose[0][i] =vec_v1[i];
+				}
+
+				vector<vector<complex<double>>> vTv = multiplyComplexMatrices(mat_v_transpose,mat_v);
+				vector<vector<complex<double>>> vvT = multiplyComplexMatrices(mat_v,mat_v_transpose);
+				
+				double norm_v1 = divisiond(1,real(vTv[0][0])); // ||u||^{2}
+
+				P1 = scalarmultiplicationComplexMatrix(vvT,norm_v1);
+				
+				P1 = scalarmultiplicationComplexMatrix(P1,2);
+				vector<vector<complex<double>>> P1_final;
+				P1_final.assign(n, std::vector<complex<double>>(n, 0.0));
+				int i1 = 0;
+				for (int i = 1 + index2; i <= 3 + index2; ++i)
+				{
+					int j1=0;
+					for (int j = 1 + index2; j <= 3 + index2; ++j)
+					{
+						P1_final[i][j] = P1[i1][j1];
+						j1 = j1+1;
+					}
+					i1= i1 + 1;
+				}
+				vector<vector<complex<double>>> P1_f = subtractComplexMatrices(I,P1_final);
+				cout << "\nP_{" << k+1 <<"} reflector:" << endl;
+				printComplexMatrix(P1_f);
+
+				H_new = multiplyComplexMatrices(H_new,P1_f);
+				H_new = multiplyComplexMatrices(P1_f,H_new);
+
+				cout << "\nH^{" << k+1 <<"}:" << endl;
+				printComplexMatrix(H_new);
+				for (int i = 0; i < n; ++i)
+				{
+					for (int j = 0; j < n; ++j)
+					{
+						if (abs(real(H_new[i][j])) < 1e-10)
+						{
+							H_new[i][j] = 0;
+						}
+					}
+				}
+				H_new[n-1][k]= 0;
+				cout << "\nH^{" << k+1 <<"}:" << endl;
+				printComplexMatrix(H_new);
+			}
+			else if (k == p-3)
+			{
+				vector<complex<double>> vec_x2(2);
+				vec_x2[0] = H_new[index][k];
+				vec_x2[1] = H_new[index+1][k];
+				
+				double norm_x2 = complexnorm(vec_x2);
+			
+				if(real(vec_x2[0]) > 0 )
+				{
+					norm_x2 = -1*norm_x2;		
+				}		
+				else if(real(vec_x2[0]) <= 0 )
+				{
+					norm_x2 = norm_x2;		
+				}		
+
+				cout << "\nx_{" << k+1 <<"}:" << endl;
+				printComplexVector(vec_x2);
+
+				vector<complex<double>> e1_2d(2,0.0);
+				e1_2d[0] = 1.0;
+
+				vector<complex<double>> vec_w2 = scalarmultiplicationComplexVector(e1_2d,norm_x2);
+				vector<complex<double>> vec_v2 = addComplexVectors(vec_x2,vec_w2);
+
+				vector<vector<complex<double>>> mat_v; 
+				vector<vector<complex<double>>> mat_v_transpose; 
+				mat_v.assign(2, std::vector<complex<double>>(1, 0.0));
+				mat_v_transpose.assign(1, std::vector<complex<double>>(2, 0.0));
+
+				for (int i = 0; i < 2 ; ++i) 
+				{		
+					mat_v[i][0] = vec_v2[i];
+					mat_v_transpose[0][i] =vec_v2[i];
+				}
+
+				vector<vector<complex<double>>> vTv = multiplyComplexMatrices(mat_v_transpose,mat_v);
+				vector<vector<complex<double>>> vvT = multiplyComplexMatrices(mat_v,mat_v_transpose);
+				
+				double norm_v2 = divisiond(1,real(vTv[0][0])); // ||u||^{2}
+
+				P_last = scalarmultiplicationComplexMatrix(vvT,norm_v2);
+				
+				P_last = scalarmultiplicationComplexMatrix(P_last,2);
+				//cout << "\nP_{" << k+1 <<"} last:" << endl;
+				//printComplexMatrix(P_last);
+				vector<vector<complex<double>>> P_last_final;
+				P_last_final.assign(n, std::vector<complex<double>>(n, 0.0));
+				
+				vector<vector<complex<double>>> P_last_f = subtractComplexMatrices(I,P_last_final);
+			
+				P_last_f[n-2][n-2] = complex<double>(1,0) - P_last[0][0] ;
+				P_last_f[n-2][n-1] = complex<double>(0,0) - P_last[0][1] ;
+				P_last_f[n-1][n-2] = complex<double>(0,0) - P_last[1][0] ;
+				P_last_f[n-1][n-1] = complex<double>(1,0) - P_last[1][1] ;
+
+				cout << "\nP_{" << k+1 <<"} reflector:" << endl;
+				printComplexMatrix(P_last_f);
+				H_new = multiplyComplexMatrices(H_new,P_last_f);
+				H_new = multiplyComplexMatrices(P_last_f,H_new);
+
+				cout << "\nH^{" << k+1 <<"}:" << endl;
+				printComplexMatrix(H_new);
+				for (int i = 0; i < n; ++i)
+				{
+					for (int j = 0; j < n; ++j)
+					{
+						if (abs(real(H_new[i][j])) < 1e-10)
+						{
+							H_new[i][j] = 0;
+						}
+					}
+				}
+				cout << "\nH^{" << k+1 <<"}:" << endl;
+				printComplexMatrix(H_new);
+			}
+			else if (k == p-2)
+			{
+				vector<complex<double>> vec_x2(2);
+				vec_x2[0] = H_new[index2][k];
+				vec_x2[1] = H_new[index2+1][k];
+				
+				double norm_x2 = complexnorm(vec_x2);
+			
+				if(real(vec_x2[0]) > 0 )
+				{
+					norm_x2 = -1*norm_x2;		
+				}		
+				else if(real(vec_x2[0]) <= 0 )
+				{
+					norm_x2 = norm_x2;		
+				}		
+
+				cout << "\nx_{" << k+1 <<"}:" << endl;
+				printComplexVector(vec_x2);
+
+				vector<complex<double>> e1_2d(2,0.0);
+				e1_2d[0] = 1.0;
+
+				vector<complex<double>> vec_w2 = scalarmultiplicationComplexVector(e1_2d,norm_x2);
+				vector<complex<double>> vec_v2 = addComplexVectors(vec_x2,vec_w2);
+
+				vector<vector<complex<double>>> mat_v; 
+				vector<vector<complex<double>>> mat_v_transpose; 
+				mat_v.assign(2, std::vector<complex<double>>(1, 0.0));
+				mat_v_transpose.assign(1, std::vector<complex<double>>(2, 0.0));
+
+				for (int i = 0; i < 2 ; ++i) 
+				{		
+					mat_v[i][0] = vec_v2[i];
+					mat_v_transpose[0][i] =vec_v2[i];
+				}
+
+				vector<vector<complex<double>>> vTv = multiplyComplexMatrices(mat_v_transpose,mat_v);
+				vector<vector<complex<double>>> vvT = multiplyComplexMatrices(mat_v,mat_v_transpose);
+				
+				double norm_v2 = divisiond(1,real(vTv[0][0])); // ||u||^{2}
+
+				P_last = scalarmultiplicationComplexMatrix(vvT,norm_v2);
+				
+				P_last = scalarmultiplicationComplexMatrix(P_last,2);
+				cout << "\nP_{" << k+1 <<"} last:" << endl;
+				printComplexMatrix(P_last);
+				vector<vector<complex<double>>> P_last_final;
+				P_last_final.assign(n, std::vector<complex<double>>(n, 0.0));
+				
+				vector<vector<complex<double>>> P_last_f = subtractComplexMatrices(I,P_last_final);
+			
+				P_last_f[n-1][n-1] = complex<double>(1,0) - P_last[0][0] ;
+
+				cout << "\nP_{" << k+1 <<"} reflector:" << endl;
+				printComplexMatrix(P_last_f);
+				H_new = multiplyComplexMatrices(H_new,P_last_f);
+				H_new = multiplyComplexMatrices(P_last_f,H_new);
+
+				cout << "\nH^{" << k+1 <<"}:" << endl;
+				printComplexMatrix(H_new);
+				for (int i = 0; i < n; ++i)
+				{
+					for (int j = 0; j < n; ++j)
+					{
+						if (abs(real(H_new[i][j])) < 1e-10)
+						{
+							H_new[i][j] = 0;
+						}
+					}
+				}
+				cout << "\nH^{" << k+1 <<"}:" << endl;
+				printComplexMatrix(H_new);
+			}
+			index = index+1;
+			index2 = index2+1;
+		}
+		for (int i = 0; i < n; ++i)
+		{
+			for (int j = 0; j < n; ++j)
+			{
+				H_loop[i][j] = H_new[i][j];
+			}
+		}
+		
+		iter = iter+1;
+	}
+	cout << "\n****************************************************************************" << endl;
+	cout << "\nEnd of " << iter - 1 << " iterations." << endl;
+	cout << "\n****************************************************************************" << endl;
+	
+	cout << "\nH updated :" << endl;
+	printComplexMatrix(H_loop);
+	
+	for (int i = 0; i < n ; ++i) 
+	{		
+		complex<double> a1(1,0);
+		complex<double> b1 = - H_loop[i+1][i+1] - H_loop[i][i];
+		complex<double> c1 = (H_loop[i+1][i+1]*H_loop[i][i]) - (H_loop[i+1][i]*H_loop[i][i+1]);
+			
+		complex<double> λ1 = (-b1 + sqrt( (b1*b1) - (complex<double>(4,0)*a1*c1)) )/(complex<double>(2,0)*a1);
+		complex<double> λ2 = (-b1 - sqrt( (b1*b1) - (complex<double>(4,0)*a1*c1)) )/(complex<double>(2,0)*a1);
+		vector_eigenvalues.push_back(λ1);
+		vector_eigenvalues.push_back(λ2);
+		i = i+1;		
+	}
+	//matrix_eigenvectors = TransposeComplexMatrix(matrix_eigenvectors);
+	//cout << "\nEigenvectors (in column vectors): " << endl;
+	//printComplexMatrix(matrix_eigenvectors);
 
 	cout << "\nEigenvalues: " << endl;
 	printComplexVector(vector_eigenvalues);
@@ -7479,7 +8709,7 @@ vector<complex<double>> ComplexRayleighQuotientIteration(vector<vector<complex<d
 		// to obtain the whole eigenvalues and eigenvectors
 		vector<complex<double>> difference = subtractComplexVectors(A_x,lambda_x);
 		double diffnorm = complexnorm(difference);
-		if (diffnorm < 1e-9 )
+		if (abs(diffnorm) < 1e-12 )
 		{
 			for (int i = 0; i < n ; ++i)		
 			{		

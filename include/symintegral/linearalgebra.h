@@ -61,6 +61,7 @@ int MaxElementIndex(vector<double>);
 
 void printComplexMatrix(const ComplexMatrix &);
 void printComplexVector(const ComplexVector &);
+vector<vector<double>> ComplextoRealMatrix(vector<vector<complex<double>>> &);
 complex<double> complexdivision(complex<double>, double);
 vector<complex<double>> complexvecrand_normal(double, double, int);
 vector<complex<double>> complexvecrand_normal_zeroimaginary(double, double, int);
@@ -82,6 +83,7 @@ ComplexMatrix scalarmultiplicationComplexMatrix(const ComplexMatrix &, double);
 ComplexMatrix complexnumbermultiplicationComplexMatrix(const ComplexMatrix &, complex<double> );
 ComplexVector multiplycomplexmatrixvector(const ComplexMatrix &, const ComplexVector &); 
 ComplexMatrix createIdentityComplexMatrix(int);
+ComplexMatrix createSubMatrix(vector<vector<complex<double>>> &, int, int, int, int);
 ComplexMatrix TransposeComplexMatrix(ComplexMatrix &);
 ComplexMatrix ComplexMatrixInverse(ComplexMatrix &);
 complex<double> complexquadraticmultiplication(vector<vector<complex<double>>> &, vector<complex<double>> &);
@@ -90,6 +92,7 @@ vector<vector<double>> PermutationMatrixMax(vector<double> &);
 vector<double> multiplymatrixvector(vector<vector<double>>  &, vector<double> &);
 vector<vector<double>> multiply(vector<vector<double>>  &, vector<vector<double>> &);
 vector<vector<double>> matrixsubtraction(vector<vector<double>>  &, vector<vector<double>> &);
+vector<vector<double>> subtract(vector<vector<double>>  &, vector<vector<double>> &);
 vector<vector<double>> add(vector<vector<double>>  &, vector<vector<double>> &);
 vector<vector<double>> transpose(const vector<vector<double>> &);
 void scalarmultiplication_alt(vector<vector<double>> &, double);
@@ -134,6 +137,7 @@ vector<double> compressionexpansion3d_zdirection(vector<double> &, double);
 vector<double> MarkovChain(vector<vector<double>> &, vector<double> &, int);
 
 vector<vector<double>> penrose(vector<double> &, vector<double> &);
+vector<vector<complex<double>>> penroseComplex(vector<complex<double>> &, vector<complex<double>> &);
 
 vector<vector<double>> gramschmidt(vector<vector<double>> &);
 void QRDecomposition(vector<vector<double>> &, vector<vector<double>> &, vector<vector<double>> &); 
@@ -184,7 +188,10 @@ vector<double> SVD(vector<vector<double>> &);
 
 vector<vector<complex<double>>> QRDecompositionHouseholderReflections(vector<vector<complex<double>>> &);
 vector<vector<complex<double>>> HessenbergDecomposition(vector<vector<complex<double>>> &);
+vector<vector<complex<double>>> HessenbergDecompositionResultOnly(vector<vector<complex<double>>> &);
 vector<complex<double>> QRAlgorithmwithShifts(vector<vector<complex<double>>>& , int);
+vector<complex<double>> FrancisDoubleStepQRReal(vector<vector<complex<double>>>& , int);
+vector<complex<double>> FrancisDoubleStepQR(vector<vector<complex<double>>>& , int);
 vector<complex<double>> ComplexRayleighQuotientIteration(vector<vector<complex<double>>> & , int, int, double , double);
 vector<vector<complex<double>>> SpectralDecomposition(vector<vector<complex<double>>> &, double, double);
 

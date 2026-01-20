@@ -57,5 +57,27 @@ Symbolic sphericaltocartesian(const Symbolic &r, const Symbolic &t, const Symbol
 	return sol;
 }
 
+double areaoftriangle(vector<double> &x1, vector<double> &x2, vector<double> &x3)
+{
+	double A;
+
+	if (x1.size() != x2.size() || x1.size() !=  x3.size())
+	{
+		throw std::invalid_argument("Vectors size have to be the same.");
+	}
+	vector<double> a = subtract(x2,x1);
+	vector<double> b = subtract(x3,x1);
+
+	double norm_a = norm(a);
+	double norm_b = norm(b);
+ 	double ab = dot(a,b);
+
+	double theta = acosf(divisiond(ab,norm_a*norm_b));
+	
+	A = 0.5*norm_a*norm_b*sinf(theta);
+
+	return A;
+}
+
 #endif
 #endif

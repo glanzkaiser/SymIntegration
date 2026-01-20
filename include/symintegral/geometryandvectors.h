@@ -40,6 +40,8 @@ Symbolic cartesiantocylindrical(const Symbolic &, const Symbolic &, const Symbol
 Symbolic sphericaltocartesian(const Symbolic &, const Symbolic &, const Symbolic &);
 Symbolic cartesiantospherical(const Symbolic &, const Symbolic &, const Symbolic &);
 
+double areaoftriangle(vector<double> &, vector<double> &, vector<double> &);
+
 #endif
 #endif
 
