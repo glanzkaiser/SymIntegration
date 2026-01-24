@@ -43,6 +43,7 @@
 #include "symintegral/symerror.h"  //   SymbolicError  : CloningSymbolicInterface
 #include "symintegral/constants.h"
 #include "symintegral/solve.h"
+#include "symintegral/differentialequations.h"
 #include "symintegral/divgradcurl.h"
 #include "symintegral/dsolve.h"
 #include "symintegral/dynamicalsystem.h"

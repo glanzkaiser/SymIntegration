@@ -35,6 +35,8 @@ namespace SymbolicConstant
  static const Symbolic i_symbol("i");
  static const Symbolic e       ("e");
  static const Symbolic pi      ("pi");
+ static const Symbolic n_factorial      ("n!");
+
 }
 
 #endif
