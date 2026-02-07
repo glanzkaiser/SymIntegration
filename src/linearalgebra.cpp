@@ -5850,6 +5850,75 @@ void solve_nhsystem(vector<vector<double>> &A, vector<vector<double>> &b, vector
 
 }
 
+void solve_nhsystem_resultsonly(vector<vector<double>> &A, vector<vector<double>> &b, vector<double> &x) 
+{
+	int n = A.size();
+	vector<vector<double>> augmentedMatrix(n, vector<double>(n + 1));
+	for(int i = 0; i<n; i++)
+	{
+		for(int j=0; j<=n; j++)
+		{
+			augmentedMatrix[i][j] = A[i][j];
+			if(j==n)
+			{
+				augmentedMatrix[i][j] = b[i][0];
+			}
+		}
+	}
+
+	// Forward Elimination
+	for (int i = 0; i < n; ++i) 
+	{
+		// Partial Pivoting (optional but recommended for stability)
+		int pivotRow = i;
+		for (int k = i + 1; k < n; ++k) 
+		{
+			if (abs(augmentedMatrix[k][i]) > abs(augmentedMatrix[pivotRow][i])) 
+			{
+				pivotRow = k;
+			}
+		}
+		swap(augmentedMatrix[i], augmentedMatrix[pivotRow]);
+
+		// Check for singular matrix (no unique solution)
+		if (abs(augmentedMatrix[i][i]) < 1e-12) // Using a small epsilon
+		{ 
+			
+		}
+
+		// Eliminate elements below the pivot
+		for (int k = i + 1; k < n; ++k) 
+		{
+			double factor = augmentedMatrix[k][i] / augmentedMatrix[i][i];
+			for (int j = i; j <= n; ++j) 
+			{ // Iterate up to n for the constant term
+				augmentedMatrix[k][j] -= factor * augmentedMatrix[i][j];
+			}
+		}
+	}
+	
+	// Back Substitution
+	vector<double> solution(n);
+	for (int i = n - 1; i >= 0; --i) 
+	{
+		double sum = 0.0;
+		for (int j = i + 1; j < n; ++j) 
+		{
+			sum += augmentedMatrix[i][j] * solution[j];
+		}
+		solution[i] = (augmentedMatrix[i][n] - sum) / augmentedMatrix[i][i];
+		x.push_back(solution[i]);
+	}	
+	
+	// Print Solution
+	reverse(x.begin(),x.end());	// reverse the vector because we are using back substitution
+	for (int i = 0; i < n; ++i) 
+	{
+	//	cout << "x" << i + 1 << " = " << fixed << setprecision(5) << x[i] << endl;
+	}
+
+}
+
 void solve_homogeneoussystem(vector<vector<double>> &A, vector<double> &x) // not yet finished
 {
 	int n = A.size();

@@ -155,5 +155,33 @@ Symbolic picarditeration_mathematicalinduction(const Symbolic &F, double p0, Sym
 	return p;
 }
 
+void adjointequation(const Symbolic &c1, const Symbolic &c2, const Symbolic &c3, Symbolic &x) 
+{
+	Symbolic μx("μ(x)"), dμx("μ'(x)"), ddμx("μ''(x)"), y ("y"), dy("y'"), ddy("y''") ;
+	Symbolic fx ("f(x)"), dfx("f'(x)");
+	Symbolic F = c1*μx*ddy + c2*μx*dy + c3*μx*y;
+	cout << "\nExact equation :\n" << F << " = 0" << endl;
+	
+	Symbolic F2 = df(c1,x)*μx*dy + c1*dμx*dy + c1*μx*ddy + dfx*y + fx*dy;
+	cout << F2 << " = 0" << endl;
+
+	Symbolic coeff_dy = F2.coeff(dy,1);
+	cout << "\nEquate the coefficients :\n" << coeff_dy << " = " << c2 << " * μ(x)" << endl;
+	cout << "\nf'(x) = " << c3 << " * μ(x)" << endl;
+	
+	cout << "\nDifferentiate both sides of the first equation with respect to : " << x << endl;
+	Symbolic a = coeff_dy.coeff(dμx,1);
+	Symbolic b = coeff_dy.coeff(μx,1);
+	Symbolic c = coeff_dy.coeff(fx,1);
+	Symbolic d = c2*dμx + df(c2,x)*μx;
+
+	Symbolic F3 = (df(a,x)*dμx) + (a*ddμx) + (df(b,x)*μx) + (b*dμx) + dfx - d;
+	cout << F3 << endl;
+	
+	cout << "\nSubstitute " << c3 << " * μ(x) for f'(x)\n" << endl;
+	cout << F3[dfx==c3*μx] << " = 0" << endl;
+
+}
+
 #endif
 #endif

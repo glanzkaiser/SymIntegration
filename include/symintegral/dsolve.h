@@ -39,6 +39,10 @@ Symbolic dsolve(const Symbolic &, const Symbolic &, const Symbolic &);
 Symbolic dsolve(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
 Symbolic dsolvelogistic(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
 Symbolic dsolveseparable(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
+void dsolvesecondorderlinear(double, double, double, const Symbolic &, const Symbolic &);
+void ivpsecondorderlinear(double, double, double, const Symbolic &, const Symbolic &, double, double, double);
+void wronskian(double, double, double, const Symbolic &, const Symbolic &, double);
+void wronskian_fundamentalsetofsolutions(double, double, double, const Symbolic &, const Symbolic &);
 
 Symbolic ivp(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
 

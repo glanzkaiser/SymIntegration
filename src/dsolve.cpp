@@ -234,5 +234,198 @@ Symbolic dsolveseparable(const Symbolic &fdy, const Symbolic &fdx, const Symboli
 	return dsol;
 }
 
+void dsolvesecondorderlinear(double a, double b, double c, const Symbolic &y, const Symbolic &x)
+{
+	Symbolic dsol, yt, y1, y2, c1("c1"), c2("c2");
+ 	double r1, r2;
+	if(a != 0 )
+ 	{
+		double D = (b*b) - (4*a*c);
+		if (D == 0)
+		{
+			r1 = divisiond(-b, 2*a );
+			r2 = divisiond(-b ,2*a );
+			yt = c1*exp(r1*x) + c2*x*exp(r2*x);
+			cout <<"\nThe general solution is:" << endl;
+			cout << yt << endl;
+
+		}
+		if (D > 0)
+		{
+			r1 = divisiond(-b + sqrt(D),2*a );
+			r2 = divisiond(-b - sqrt(D),2*a );
+			yt = c1*exp(r1*x) + c2*exp(r2*x);
+			cout <<"\nThe general solution is:" << endl;
+			cout << yt << endl;
+		}
+		if (D < 0)
+		{
+			complex<double> Dc(D,0);
+			complex<double> D_sqrt = sqrt(Dc);		
+			double D_real = divisiond(imag(D_sqrt),2); 	
+		
+			y1 = exp((-b/(2*a))*x) *(cos(D_real*x) + SymbolicConstant::i*sin(D_real*x));
+			y2 = exp((-b/(2*a))*x) *(cos(D_real*x) - SymbolicConstant::i*sin(D_real*x));
+
+			cout <<"\nThe general solution is:" << endl;
+			cout << "\ny_{1} (t) = " << y1 << endl;
+			cout << "\ny_{2} (t) = " << y2 << endl;
+		}
+	}
+}
+
+void ivpsecondorderlinear(double a, double b, double c, const Symbolic &y, const Symbolic &x, double t0, double y0, double dy0)
+{
+	Symbolic dsol, yt, y1, y2, c1("c1"), c2("c2");
+ 	double r1, r2;
+	if(a != 0 )
+ 	{
+		double D = (b*b) - (4*a*c);
+		if (D == 0)
+		{
+			r1 = divisiond(-b, 2*a );
+			r2 = divisiond(-b ,2*a );
+			yt = c1*exp(r1*x) + c2*x*exp(r2*x);
+			cout <<"\nThe general solution is:" << endl;
+			cout << yt << endl;
+
+			double c1_ans = y0;
+			double c2_ans = dy0 - (r1*c1_ans);
+			cout <<"\nThe solution for the initial value problem is:" << endl;
+			yt = yt[c1 == c1_ans, c2 == c2_ans] ;
+			cout << yt << endl;
+
+		}
+		if (D > 0)
+		{
+			r1 = divisiond(-b + sqrt(D),2*a );
+			r2 = divisiond(-b - sqrt(D),2*a );
+			yt = c1*exp(r1*x) + c2*exp(r2*x);
+			cout <<"\nThe general solution is:" << endl;
+			cout << yt << endl;
+
+			double c1_ans = divisiond(dy0-(r2*y0),r1-r2)*exp(-r1*t0);
+			double c2_ans = divisiond((y0*r1)-dy0,r1-r2)*exp(-r2*t0);
+			cout <<"\nThe solution for the initial value problem is:" << endl;
+			yt = yt[c1 == c1_ans, c2 == c2_ans] ;
+			cout << yt << endl;
+
+			Symbolic dyt = df(yt,x);
+			cout << "\ny' = " << dyt << endl;
+
+			double tm = NewtonRaphson(dyt,x,0);
+
+			Equations rules = (  SymbolicConstant::e == exp(1), SymbolicConstant::i == sqrt(-1));
+			yt = yt.subst_all(rules);
+			double ym = yt[x==tm];
+
+			cout << "\nCritical value t_{m} = " << tm << endl;
+			cout << "\nMaximum value y_{m} = " << ym << endl;
+		}
+		if (D < 0)
+		{
+			complex<double> Dc(D,0);
+			complex<double> D_sqrt = sqrt(Dc);
+			double D_real = divisiond(imag(D_sqrt),2*a); 			
+		
+			y1 = exp((-b/(2*a))*x) *(cos(D_real*x) + SymbolicConstant::i*sin(D_real*x));
+			y2 = exp((-b/(2*a))*x) *(cos(D_real*x) - SymbolicConstant::i*sin(D_real*x));
+
+			cout <<"\nThe complex-valued general solution is:" << endl;
+			cout << "\ny_{1} (t) = " << y1 << endl;
+			cout << "\ny_{2} (t) = " << y2 << endl;
+
+			Symbolic ut = exp((-b/(2*a))*x) *(cos(D_real*x));
+			Symbolic vt = exp((-b/(2*a))*x) *(sin(D_real*x));
+			Symbolic d_ut = df(ut,x);
+			Symbolic d_vt = df(vt,x);
+
+			cout << "\nu(t) = " << ut << endl;
+			cout << "\nv(t) = " << vt << endl;
+
+			double a11 = ut[x==t0];
+			double a12 = vt[x==t0];
+			double a21 = d_ut[x==t0];
+			double a22 = d_vt[x==t0];
+			
+			vector<vector<double>> A(2, vector<double>(2));
+			vector<vector<double>> vec_b(2, vector<double>(1));
+			A[0][0] = a11;
+			A[0][1] = a12;
+			A[1][0] = a21;
+			A[1][1] = a22;
+			vec_b[0][0] = y0;
+			vec_b[1][0] = dy0;
+			vector<double> c_solution;
+			solve_nhsystem_resultsonly(A,vec_b,c_solution);
+			//printVector(c_solution);
+
+			Symbolic y_solution = exp((-b/(2*a))*x) * (c_solution[0]*(cos(D_real*x)) + c_solution[1]*(sin(D_real*x)));
+			cout <<"\nThe real-valued initial value problem solution is:" << endl;
+			cout << "\ny (t) = " << y_solution << endl;
+			
+		}
+	}
+	 
+}
+
+void wronskian(double a, double b, double c, const Symbolic &y, const Symbolic &x, double t0)
+{
+	Symbolic dsol, yt, c1("c1"), c2("c2");
+ 	double r1, r2;
+	if(a != 0 )
+ 	{
+		r1 = divisiond(-b + sqrt((b*b) - (4*a*c)),2*a );
+		r2 = divisiond(-b - sqrt((b*b) - (4*a*c)),2*a );
+		yt = c1*exp(r1*x) + c2*exp(r2*x);
+	}
+	cout <<"\nThe general solution is:" << endl;
+	cout << yt << endl;
+	Symbolic w11 = exp(r1*x);
+	Symbolic w12 = exp(r2*x);
+	Symbolic w21 = df(w11,x);
+	Symbolic w22 = df(w12,x);
+	Symbolic W = (w11*w22) - (w12*w21);
+	cout <<"\nThe Wronskian is:" << W << endl;
+
+	cout << "\nW(t_{0}) = " << W[x==t0] << endl;
+}
+
+void wronskian_fundamentalsetofsolutions(double a, double b, double c, const Symbolic &y, const Symbolic &x)
+{
+	Symbolic dsol, yt, c1("c1"), c2("c2"), k1("k1"), k2("k2");
+ 	double r1, r2;
+	if(a != 0 )
+ 	{
+		r1 = divisiond(-b + sqrt((b*b) - (4*a*c)),2*a );
+		r2 = divisiond(-b - sqrt((b*b) - (4*a*c)),2*a );
+		yt = c1*exp(r1*x) + c2*exp(r2*x);
+	}
+	double t0 = 0;
+	double y0 = 1;
+	double dy0 = 0;
+	double c1_ans = divisiond(dy0-(r2*y0),r1-r2)*exp(-r1*t0);
+	double c2_ans = divisiond((y0*r1)-dy0,r1-r2)*exp(-r2*t0);
+	cout <<"\nThe solution that satisfies the initial value problem y(0)=1 and y'(0)=0:" << endl;
+	Symbolic yt_1 = yt[c1 == c1_ans, c2 == c2_ans] ;
+	cout << yt_1 << endl;
+
+
+	double y0_2= 0;
+	double dy0_2 = 1;
+	double c1_ans_2 = divisiond(dy0_2-(r2*y0_2),r1-r2)*exp(-r1*t0);
+	double c2_ans_2 = divisiond((y0_2*r1)-dy0_2,r1-r2)*exp(-r2*t0);
+
+	cout <<"\nThe solution that satisfies the initial value problem y(0)=0 and y'(0)=1:" << endl;
+	Symbolic yt_2 = yt[c1 == c1_ans_2, c2 == c2_ans_2] ;
+	cout << yt_2 << endl;
+
+	cout <<"\nThe general solution :" << endl;
+	Symbolic yt_general = k1*yt_1 + k2*yt_2;
+	cout << yt_general << endl;
+
+}
+
+
 #endif
 #endif

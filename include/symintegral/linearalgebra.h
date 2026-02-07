@@ -176,6 +176,7 @@ void GaussJordanComplexMatrix(ComplexMatrix &);
 void GaussJordanComplexMatrixTEST(ComplexMatrix &);// this can be used to compute complex eigenvectors
 
 void solve_nhsystem(vector<vector<double>> &,vector<vector<double>> &, vector<double> &);
+void solve_nhsystem_resultsonly(vector<vector<double>> &,vector<vector<double>> &, vector<double> &);
 void LUsolve_nhsystem(vector<vector<double>> &,vector<vector<double>> &, vector<double> &);
 
 SymbolicMatrix IVPSolution_firstorderdiffeq(vector<vector<complex<double>>> &, vector<complex<double>> &, double, double);

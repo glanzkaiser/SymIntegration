@@ -38,6 +38,8 @@
 Symbolic picarditeration(const Symbolic &, double, Symbolic &, Symbolic &, int);
 Symbolic picarditeration_mathematicalinduction(const Symbolic &, double, Symbolic &, Symbolic &);
 
+void adjointequation(const Symbolic &, const Symbolic &, const Symbolic &, Symbolic &);
+
 #endif
 #endif
 

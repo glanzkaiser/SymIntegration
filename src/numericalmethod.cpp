@@ -138,12 +138,14 @@ double NewtonRaphson(const Symbolic &f, const Symbolic &x, double x0)
 {
 	Symbolic fd;
 	fd = df(f,x);
+	Equations rules = (  SymbolicConstant::e == exp(1), SymbolicConstant::i == sqrt(-1));
+	fd = fd.subst_all(rules) ;
 
 	double root;
-	double h = f[x==x0] / fd[x==x0];
+	double h = f[x==x0].subst_all(rules)  / fd[x==x0].subst_all(rules) ;
 	while (abs(h) >= EPSILON)
 	{
-		h = f[x==x0] / fd[x==x0];
+		h = f[x==x0].subst_all(rules) / fd[x==x0].subst_all(rules) ;
 		
 		// x(i+1) = x(i) - f(x) / f'(x)  
 		x0 = x0 - h;
