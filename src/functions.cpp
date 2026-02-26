@@ -1126,6 +1126,10 @@ Symbolic Power::integrate(const Symbolic &s) const
  const Symbolic &a = parameters.front();
  const Symbolic &b = parameters.back();
  int bpower = parameters.back().coeff(s,0);
+ //if(a == s && Number<void>(parameters.back()).numerictype() == typeid(double))
+ //{	
+ //}
+
  if(a == 1 - cos(s))
  {
 	list<Equations> eq;
@@ -1832,7 +1836,7 @@ Symbolic Power::integrate(const Symbolic &s) const
  }
  if(a.type() == typeid(Csc))
  {
-	list<Equations> eq, eq2;
+	list<Equations> eq, eq1, eq2;
 	list<Equations>::iterator i;
 	UniqueSymbol c, d;
 
@@ -1849,6 +1853,16 @@ Symbolic Power::integrate(const Symbolic &s) const
 		return (0.5*ap*s - (0.5*( sin(ap*s) * cos(ap*s) ) ) ) / ap ;
 	}
 	} catch(const SymbolicError &se) {}	
+
+	eq1 = (c*sin(2*s)*csc(s)).match(a, (c,d));
+	for(i=eq.begin(); i!=eq.end(); ++i)
+	try {
+	Symbolic ap = rhs(*i, c);
+	
+	return ap*cos(s)/2 ;
+	
+	} catch(const SymbolicError &se) {}	
+
 	eq2 = (csc(s)).match(a, (c,d));
 	for(i=eq2.begin(); i!=eq2.end(); ++i)
 	try {
@@ -1981,9 +1995,15 @@ Symbolic Power::integrate(const Symbolic &s) const
   
   return - D_inv * ln(s + (-4*a1*c1*D_inv + b1*b1*D_inv + b1)/(2*a1)) + D_inv * ln(s + (4*a1*c1*D_inv - b1*b1*D_inv + b1)/(2*a1)) ;
  } 
+
+ if(b.type() == typeid(double))
+  {
+	return (a^(b+1)) / (b+1);
+  }
  if(a == s && b.df(s) == 0 )
  {
   if(b == -1) return ln(a);
+  
   return (a^(b+1)) / (b+1);
  }
  if(a == SymbolicConstant::e && b == s)
@@ -2013,6 +2033,7 @@ Power::match_parts(const Symbolic &s, const list<Symbolic> &p) const
    if((s < 0) || (t < 0) || (s < t))
     pattern_match_FALSE(l);
   }
+  
  }
 
  if(parameters.back().type() == typeid(Numeric) &&

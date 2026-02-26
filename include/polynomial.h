@@ -97,7 +97,7 @@ class Polynomial
    ostream &output1(ostream &) const;
    ostream &output2(ostream &) const;
    int constant() const;
- protected:
+ public:  // By February 16th, 2026 I change this from protected to public so we can get the order of polynomial
    void remove_zeros(void);
    string variable;
    list<pair<T,int> > terms;

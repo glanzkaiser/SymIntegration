@@ -36,6 +36,7 @@
 #define SYMINTEGRATION_CPLUSPLUS_INTEGRATE_DECLARE
 
 Symbolic fractionintegrate(const Symbolic &, const Symbolic &, const Symbolic &);
+Symbolic simplifybeforeintegrate(const Symbolic &, const Symbolic &);
 Symbolic integrate(const Symbolic &,const Symbolic &);
 Symbolic integrate(const Symbolic &,const Symbolic &,
                    const Symbolic &,const Symbolic &);

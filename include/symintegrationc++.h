@@ -22,5 +22,7 @@
 #define SYMBOLIC_CPLUSPLUS_REDIRECT
 
 #include "symintegral/symintegrationc++.h"
+#include "polynomial.h"
+#include "rational.h"
 
 #endif

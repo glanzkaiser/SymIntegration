@@ -508,6 +508,11 @@ Symbolic::operator int(void) const
  if(type() == typeid(Numeric) &&
     Number<void>(*this).numerictype() == typeid(int))
   return CastPtr<const Number<int> >(*this)->n;
+// Below are 3 lines that I put on February 10th, 2026 so that we can do integral of x^(a) with a has the double data type.
+ if(type() == typeid(Numeric) &&
+    Number<void>(*this).numerictype() == typeid(double))
+  return CastPtr<const Number<double> >(*this)->n;
+
  cerr << "Attempted to cast " << *this << " to int failed." << endl;
  throw SymbolicError(SymbolicError::NotInt);
  return 0;

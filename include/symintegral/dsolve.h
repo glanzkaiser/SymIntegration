@@ -35,6 +35,9 @@
 #ifndef SYMINTEGRATION_CPLUSPLUS_DSOLVE_DECLARE
 #define SYMINTEGRATION_CPLUSPLUS_DSOLVE_DECLARE
 
+#include "polynomial.h"
+#include "rational.h"
+
 Symbolic dsolve(const Symbolic &, const Symbolic &, const Symbolic &);
 Symbolic dsolve(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
 Symbolic dsolvelogistic(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
@@ -42,7 +45,13 @@ Symbolic dsolveseparable(const Symbolic &, const Symbolic &, const Symbolic &, c
 void dsolvesecondorderlinear(double, double, double, const Symbolic &, const Symbolic &);
 void ivpsecondorderlinear(double, double, double, const Symbolic &, const Symbolic &, double, double, double);
 void wronskian(double, double, double, const Symbolic &, const Symbolic &, double);
+Symbolic wronskian_resultonly(double, double, double, const Symbolic &, const Symbolic &);
 void wronskian_fundamentalsetofsolutions(double, double, double, const Symbolic &, const Symbolic &);
+void reductionoforder(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
+void nonhomogeneousequationssolution(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
+void nonhomogeneousequationssolution(const Symbolic &, const Symbolic &, const Symbolic &, Polynomial<double> &);
+void nonhomogeneousequationssolution(const Symbolic &, const Symbolic &, const Symbolic &, const SymbolicMatrix &, const Symbolic &, const Symbolic &);
+void nonhomogeneousequationssolution_variationofparameters(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
 
 Symbolic ivp(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
 

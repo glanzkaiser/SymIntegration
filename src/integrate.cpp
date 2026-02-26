@@ -504,6 +504,78 @@ Symbolic fractionintegrate(const Symbolic &fnum, const Symbolic &fdenom, const S
  return integral_sol;
 }
 
+Symbolic simplifybeforeintegrate(const Symbolic &F, const Symbolic &x)
+{
+  list<Equations> eq;
+  list<Equations>::iterator i;
+  UniqueSymbol a, b, c;
+  Symbolic new_integral = F;
+
+	eq = ( a*sin(2*x)*csc(x)).match(F, (a,b)); 
+ 	for(i=eq.begin(); i!=eq.end(); ++i) 
+ 	try {
+ 	Symbolic ap = rhs(*i, a); 
+ 
+	new_integral = ap*2*cos(x);   
+  
+ 	} catch(const SymbolicError &se) {}
+ 
+	eq = ( a*sin(2*b*x)*csc(b*x)).match(F, (a,b)); 
+ 	for(i=eq.begin(); i!=eq.end(); ++i) 
+ 	try {
+ 	Symbolic ap = rhs(*i, a), bp = rhs(*i,b); 
+ 	int b_int = bp;
+	if((2*b_int % 2) == 0) // if 2*b is even 
+	{
+		new_integral = ap*2*cos(bp*x);   
+	}  
+  
+ 	} catch(const SymbolicError &se) {}
+
+	eq = ( a*cos(x)*cos(2*x)/sin(2*x)).match(F, (a,b)); 
+ 	for(i=eq.begin(); i!=eq.end(); ++i) 
+ 	try {
+ 	Symbolic ap = rhs(*i, a); 
+ 
+	new_integral = ap*(csc(x)/2 +sin(x));   
+  
+ 	} catch(const SymbolicError &se) {}
+
+	eq = ( a*cos(b*x)*cos(2*b*x)/sin(2*b*x)).match(F, (a,b)); 
+ 	for(i=eq.begin(); i!=eq.end(); ++i) 
+ 	try {
+ 	Symbolic ap = rhs(*i, a), bp = rhs(*i, b); 
+ 	int b_int = bp;
+	if((2*b_int % 2) == 0) // if 2*b is even 
+	{
+		new_integral = ap*(csc(bp*x)/2 +sin(bp*x));   
+	}  
+ 	} catch(const SymbolicError &se) {}
+
+	eq = ( a*cos(2*x)*csc(x)).match(F, (a,b)); 
+ 	for(i=eq.begin(); i!=eq.end(); ++i) 
+ 	try {
+ 	Symbolic ap = rhs(*i, a); 
+ 
+	new_integral = ap*(csc(x) - 2*sin(x));   
+  
+ 	} catch(const SymbolicError &se) {}
+
+	eq = ( a*cos(2*b*x)*csc(b*x)).match(F, (a,b)); 
+ 	for(i=eq.begin(); i!=eq.end(); ++i) 
+ 	try {
+ 	Symbolic ap = rhs(*i, a), bp = rhs(*i, b); 
+ 	int b_int = bp;
+	if((2*b_int % 2) == 0) // if 2*b is even 
+	{
+		new_integral = ap*(csc(bp*x) - 2*sin(bp*x));  
+	}  
+  
+ 	} catch(const SymbolicError &se) {}
+
+ return new_integral;
+}
+
 Symbolic integrate(const Symbolic &f,const Symbolic &x,
                    const Symbolic &a, const Symbolic &b)
 {
