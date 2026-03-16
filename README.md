@@ -38,21 +38,22 @@ It is able to compute
 6. The integral of $`\sin(ax) \cos(bx), \cos(ax) \cos (bx), \sin(ax) \sin (bx)`$.
 7. The integral of $`\int \sin^{n} (x) \ dx , \int \cos^{n} (x) \ dx, \int \tan^{n} (x) \ dx, \int \sec^{n} (x) \ dx, \int \csc^{n} (x) \ dx `$, but the speed to show the whole symbolic integral is slow compared to SymPy, needs to be fixed.
 8. The solution ($`y(t)`$) of first order linear ordinary differential equation of type $`ay' + ty = b`$, separable equation of type $`\frac{dy}{dx} = \frac{f(x)}{g(y)}`$, and separable equation with homogeneous ratio equations of type $`\frac{dy}{dx} = \frac{f(x,y)}{g(x,y)}`$ along with the initial value problem solution.
-9. The computation of divergence, gradient, and curl.
-10. The probability mass function, mean, variance, moment generating function of discrete distributions.
-11. The probability density function, cumulative distribution function, mean, variance, moment generating function of continuous distributions.
-12. The regression line equation along with Pearson's correlation ($`r`$) with input of vector of 2 columns
-13. Bond pricing and amortization table for mortgage loan or other credit related loan.
-14. Compute direction fields and plot it with gnuplot.
-15. Linear programming solution with Simplex Method.
-16. Numerical differentiation and Richardson's Extrapolation.
-17. Matrices multiplication, addition, LU decomposition, SVD, eigenvalues and eigenvectors approximation, QR-decomposition, Cholesky decomposition, Schur decomposition, Hessenberg decomposition, QR Algorithm with shifts
-18. Generate random number that has certain distribution (uniform, gamma, beta, normal, F, chi-squared) and plot the histogram with Hamzstplot
-19. Compute one-way ANOVA, two-way ANOVA, three-way ANOVA, multiple regression model.
-20. Compute one-tailed and two-tailed hypothesis testing. One- and Two-Sample Estimation Problem, e.g. Confidence Interval and Prediction Interval.
-21. Compute cdf of Normal, student's t distribution, F distribution, chi-squared distribution, beta distribution, gamma distribution without Boost.
-22. Compute the quantile of standard normal distribution / inverse of cdf without Boost.
-23. Transcription and translation from DNA to mRNA to polypeptide (Molecular biology).
+9. The solution ($`y(t)`$) of second order linear ordinary differential equation of type $`ay'' +by'+ cy = g(t)`$ (for homogeneous and non-homogeneous equation) along with the initial value problem solution.
+10. The computation of divergence, gradient, and curl.
+11. The probability mass function, mean, variance, moment generating function of discrete distributions.
+12. The probability density function, cumulative distribution function, mean, variance, moment generating function of continuous distributions.
+13. The regression line equation along with Pearson's correlation ($`r`$) with input of vector of 2 columns
+14. Bond pricing and amortization table for mortgage loan or other credit related loan.
+15. Compute direction fields and plot it with gnuplot.
+16. Linear programming solution with Simplex Method.
+17. Numerical differentiation and Richardson's Extrapolation.
+18. Matrices multiplication, addition, LU decomposition, SVD, eigenvalues and eigenvectors approximation, QR-decomposition, Cholesky decomposition, Schur decomposition, Hessenberg decomposition, QR Algorithm with shifts
+19. Generate random number that has certain distribution (uniform, gamma, beta, normal, F, chi-squared) and plot the histogram with Hamzstplot
+20. Compute one-way ANOVA, two-way ANOVA, three-way ANOVA, multiple regression model.
+21. Compute one-tailed and two-tailed hypothesis testing. One- and Two-Sample Estimation Problem, e.g. Confidence Interval and Prediction Interval.
+22. Compute cdf of Normal, student's t distribution, F distribution, chi-squared distribution, beta distribution, gamma distribution without Boost.
+23. Compute the quantile of standard normal distribution / inverse of cdf without Boost.
+24. Transcription and translation from DNA to mRNA to polypeptide (Molecular biology).
 
 # Learning the Code
 
@@ -145,6 +146,7 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Compute integral with Integration by parts				| Done
 |:sunflower:   | Compute definite integral with improper integrals			| Done (write `INFINITY` to substitute `Inf`)
 |:sunflower:   | Compute the solution of first order linear ODE of several types	| Done
+|:sunflower:   | Compute the solution of second order linear ODE 			| Done
 |:sunflower:   | Compute the probability mass function, mean, variance, moment generating function of geometric distribution, binomial distribution, negative binomial distribution, and Poisson distribution	| Done
 |:sunflower:   | Compute the probability density function, cumulative distribution function, mean, variance, moment generating function of uniform distribution, normal distribution, gamma, exponential, beta, cauchy, laplace, logistic, chi-squared, students't, and F distribution	| Done
 |:sunflower:   | Compute the root / solution of a function of one variable with bisection method and Newton-Raphson method	| Done

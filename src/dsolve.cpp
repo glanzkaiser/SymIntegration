@@ -8,6 +8,8 @@
 #ifndef SYMINTEGRATION_CPLUSPLUS_DSOLVE_DEFINE
 #define SYMINTEGRATION_CPLUSPLUS_DSOLVE_DEFINE
 
+#define pi  3.1415926535897
+
 Symbolic dsolve(const Symbolic &fx, const Symbolic &y, const Symbolic &x)
 {
 	Symbolic dsol, mu, C("C");
@@ -374,6 +376,195 @@ void ivpsecondorderlinear(double a, double b, double c, const Symbolic &y, const
 	 
 }
 
+void springmasssystemsecondorderlinear(double a, double b, double c, const Symbolic &y, const Symbolic &x, double y0, double dy0)
+{
+	Symbolic yt, y1, y2, c1("c1"), c2("c2");
+ 	double r1, r2;
+	double t0 = 0;
+	if(a != 0 )
+ 	{
+		double D = (b*b) - (4*a*c);
+		if (D == 0)
+		{
+			r1 = divisiond(-b, 2*a );
+			r2 = divisiond(-b ,2*a );
+			yt = c1*exp(r1*x) + c2*x*exp(r2*x);
+			cout <<"\nThe general solution is:" << endl;
+			cout << yt << endl;
+
+			double c1_ans = y0;
+			double c2_ans = dy0 - (r1*c1_ans);
+			cout <<"\nThe solution for the initial value problem is:" << endl;
+			yt = yt[c1 == c1_ans, c2 == c2_ans] ;
+			cout << yt << endl;
+
+		}
+		if (D > 0)
+		{
+			r1 = divisiond(-b + sqrt(D),2*a );
+			r2 = divisiond(-b - sqrt(D),2*a );
+			yt = c1*exp(r1*x) + c2*exp(r2*x);
+			cout <<"\nThe general solution is:" << endl;
+			cout << yt << endl;
+
+			double c1_ans = divisiond(dy0-(r2*y0),r1-r2)*exp(-r1*t0);
+			double c2_ans = divisiond((y0*r1)-dy0,r1-r2)*exp(-r2*t0);
+			cout <<"\nThe solution for the initial value problem is:" << endl;
+			yt = yt[c1 == c1_ans, c2 == c2_ans] ;
+			cout << yt << endl;
+
+			Symbolic dyt = df(yt,x);
+			cout << "\ny' = " << dyt << endl;
+
+			double tm = NewtonRaphson(dyt,x,0);
+
+			Equations rules = (  SymbolicConstant::e == exp(1), SymbolicConstant::i == sqrt(-1));
+			yt = yt.subst_all(rules);
+			double ym = yt[x==tm];
+
+			cout << "\nCritical value t_{m} = " << tm << endl;
+			cout << "\nMaximum value y_{m} = " << ym << endl;
+		}
+		if (D < 0)
+		{
+			complex<double> Dc(D,0);
+			complex<double> D_sqrt = sqrt(Dc);
+			double D_real = divisiond(imag(D_sqrt),2*a); 			
+		
+			y1 = exp((-b/(2*a))*x) *(cos(D_real*x) + SymbolicConstant::i*sin(D_real*x));
+			y2 = exp((-b/(2*a))*x) *(cos(D_real*x) - SymbolicConstant::i*sin(D_real*x));
+
+			Symbolic ut = exp((-b/(2*a))*x) *(cos(D_real*x));
+			Symbolic vt = exp((-b/(2*a))*x) *(sin(D_real*x));
+			Symbolic d_ut = df(ut,x);
+			Symbolic d_vt = df(vt,x);
+
+			double a11 = ut[x==t0];
+			double a12 = vt[x==t0];
+			double a21 = d_ut[x==t0];
+			double a22 = d_vt[x==t0];
+			
+			vector<vector<double>> A(2, vector<double>(2));
+			vector<vector<double>> vec_b(2, vector<double>(1));
+			A[0][0] = a11;
+			A[0][1] = a12;
+			A[1][0] = a21;
+			A[1][1] = a22;
+			vec_b[0][0] = y0;
+			vec_b[1][0] = dy0;
+			vector<double> c_solution;
+			solve_nhsystem_resultsonly(A,vec_b,c_solution);
+			//printVector(c_solution);
+
+			Symbolic y_solution = exp((-b/(2*a))*x) * (c_solution[0]*(cos(D_real*x)) + c_solution[1]*(sin(D_real*x)));
+			cout <<"\nThe real-valued initial value problem solution is:" << endl;
+			cout << "\nu (t) = " << y_solution << endl;
+			
+			double mu = D_real;
+			double Td = divisiond(2*pi,mu);
+			double delta = atan(divisiond(c_solution[1],c_solution[0]));
+			double t_eq = divisiond(1,mu)*(0.5*pi + delta);
+			cout << "\nδ = " << delta << endl;
+			cout << "\nT_{d} = " << Td << endl;
+			cout << "\nThe time when the mass passes through its equilibrium position:\nt = " << t_eq << endl;
+
+		}
+	}
+	 
+}
+
+void RLCserieselectriccircuit(double R, double L, double C, double y0, double dy0)
+{
+	Symbolic qt, q1, q2, c1("c1"), c2("c2"), q("q"), t("t");
+ 	double r1, r2;
+	double t0 = 0;
+	double a = 1;
+	double b = divisiond(R,L);
+	double c = divisiond(1,L*C);
+	if(a != 0 )
+ 	{
+		double D = (b*b) - (4*a*c);
+		if (D == 0)
+		{
+			r1 = divisiond(-b, 2*a );
+			r2 = divisiond(-b ,2*a );
+			qt = c1*exp(r1*t) + c2*t*exp(r2*t);
+			cout <<"\nThe general solution is:" << endl;
+			cout << qt << endl;
+
+			double c1_ans = y0;
+			double c2_ans = dy0 - (r1*c1_ans);
+			cout <<"\nThe solution for the initial value problem / the charge Q at any time t is:" << endl;
+			qt = qt[c1 == c1_ans, c2 == c2_ans] ;
+			cout << "\nq(t) = " << qt << endl;
+
+		}
+		if (D > 0)
+		{
+			r1 = divisiond(-b + sqrt(D),2*a );
+			r2 = divisiond(-b - sqrt(D),2*a );
+			qt = c1*exp(r1*t) + c2*exp(r2*t);
+			cout <<"\nThe general solution is:" << endl;
+			cout << qt << endl;
+
+			double c1_ans = divisiond(dy0-(r2*y0),r1-r2)*exp(-r1*t0);
+			double c2_ans = divisiond((y0*r1)-dy0,r1-r2)*exp(-r2*t0);
+			cout <<"\nThe solution for the initial value problem / the charge Q at any time t is:" << endl;
+			qt = qt[c1 == c1_ans, c2 == c2_ans] ;
+			cout << "\nq(t) = " << qt << endl;
+
+			/*Symbolic dqt = df(qt,t);
+			cout << "\nq'(t) = " << dqt << endl;
+
+			double tm = NewtonRaphson(dqt,t,0);
+
+			Equations rules = (  SymbolicConstant::e == exp(1), SymbolicConstant::i == sqrt(-1));
+			qt = qt.subst_all(rules);
+			double ym = qt[t==tm];
+
+			cout << "\nCritical value t_{m} = " << tm << endl;
+			cout << "\nMaximum value y_{m} = " << ym << endl;*/
+		}
+		if (D < 0)
+		{
+			complex<double> Dc(D,0);
+			complex<double> D_sqrt = sqrt(Dc);
+			double D_real = divisiond(imag(D_sqrt),2*a); 			
+		
+			q1 = exp((-b/(2*a))*t) *(cos(D_real*t) + SymbolicConstant::i*sin(D_real*t));
+			q2 = exp((-b/(2*a))*t) *(cos(D_real*t) - SymbolicConstant::i*sin(D_real*t));
+
+			Symbolic ut = exp((-b/(2*a))*t) *(cos(D_real*t));
+			Symbolic vt = exp((-b/(2*a))*t) *(sin(D_real*t));
+			Symbolic d_ut = df(ut,t);
+			Symbolic d_vt = df(vt,t);
+
+			double a11 = ut[t==t0];
+			double a12 = vt[t==t0];
+			double a21 = d_ut[t==t0];
+			double a22 = d_vt[t==t0];
+			
+			vector<vector<double>> A(2, vector<double>(2));
+			vector<vector<double>> vec_b(2, vector<double>(1));
+			A[0][0] = a11;
+			A[0][1] = a12;
+			A[1][0] = a21;
+			A[1][1] = a22;
+			vec_b[0][0] = y0;
+			vec_b[1][0] = dy0;
+			vector<double> c_solution;
+			solve_nhsystem_resultsonly(A,vec_b,c_solution);
+			//printVector(c_solution);
+
+			Symbolic y_solution = exp((-b/(2*a))*t) * (c_solution[0]*(cos(D_real*t)) + c_solution[1]*(sin(D_real*t)));
+			cout <<"\nThe solution for the initial value problem / the charge Q at any time t is:" << endl;
+			cout << "\nq (t) = " << y_solution << endl;
+			
+		}
+	}
+	 
+}
+
 Symbolic wronskian_resultonly(double a, double b, double c, const Symbolic &y, const Symbolic &x)
 {
 	Symbolic yt, c1("c1"), c2("c2");
@@ -584,6 +775,57 @@ void nonhomogeneousequationssolution(const Symbolic &lhs_a, const Symbolic &lhs_
 		//printVector(c_solution);
 		cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
 	}
+	
+	Symbolic ut, yt, y1, y2, c1s("c1"), c2s("c2");
+	double a = lhs_a;
+	double b = lhs_b;
+	double c = lhs_c;
+ 	double r1, r2;
+	if(a != 0 )
+ 	{
+		double D = (b*b) - (4*a*c);
+		if (D == 0)
+		{
+			r1 = divisiond(-b, 2*a );
+			r2 = divisiond(-b ,2*a );
+			yt = c1s*exp(r1*t) + c2s*t*exp(r2*t);
+			cout <<"\nThe general solution for the homogeneous equation is:" << endl;
+			cout << yt << endl;
+
+			ut = yt + Yt_final;
+			cout <<"\nThe general solution for the nonhomogeneous equation is:" << endl;
+			cout << ut << endl;
+			
+		}
+		if (D > 0)
+		{
+			r1 = divisiond(-b + sqrt(D),2*a );
+			r2 = divisiond(-b - sqrt(D),2*a );
+			yt = c1s*exp(r1*t) + c2s*exp(r2*t);
+			cout <<"\nThe general solution for the homogeneous equation is:" << endl;
+			cout << yt << endl;
+
+			ut = yt + Yt_final;
+			cout <<"\nThe general solution for the nonhomogeneous equation is:" << endl;
+			cout << ut << endl;
+			
+		}
+		if (D < 0)
+		{
+			complex<double> Dc(D,0);
+			complex<double> D_sqrt = sqrt(Dc);
+			double D_real = divisiond(imag(D_sqrt),2*a); 			
+
+			yt = exp((-b/(2*a))*t) * (c1s*(cos(D_real*t)) + c2s*(sin(D_real*t)));
+			cout <<"\nThe general solution for the homogeneous equation is:" << endl;
+			cout << "\ny(t) = " << yt << endl;
+
+			ut = yt + Yt_final;
+			cout <<"\nThe general solution for the nonhomogeneous equation is:" << endl;
+			cout << ut << endl;
+		}
+	}
+
 	/*if (n == 3 )
 	{
 		Symbolic Yt = A*t*t*t + B*t*t + C*t + D;
@@ -1298,18 +1540,674 @@ void nonhomogeneousequationssolution(const Symbolic &lhs_a, const Symbolic &lhs_
 		} catch(const SymbolicError &se) {}
 		}
 	}
+	Symbolic ut, yt, y1, y2, c1s("c1"), c2s("c2");
+	double a = lhs_a;
+	double b = lhs_b;
+	double c = lhs_c;
+ 	double r1, r2;
+	if(a != 0 )
+ 	{
+		double D = (b*b) - (4*a*c);
+		if (D == 0)
+		{
+			r1 = divisiond(-b, 2*a );
+			r2 = divisiond(-b ,2*a );
+			yt = c1s*exp(r1*x) + c2s*x*exp(r2*x);
+			cout <<"\nThe general solution for the homogeneous equation is:" << endl;
+			cout << yt << endl;
+
+			ut = yt + Yt_final;
+			cout <<"\nThe general solution for the nonhomogeneous equation is:" << endl;
+			cout << ut << endl;
+			
+		}
+		if (D > 0)
+		{
+			r1 = divisiond(-b + sqrt(D),2*a );
+			r2 = divisiond(-b - sqrt(D),2*a );
+			yt = c1s*exp(r1*x) + c2s*exp(r2*x);
+			cout <<"\nThe general solution for the homogeneous equation is:" << endl;
+			cout << yt << endl;
+
+			ut = yt + Yt_final;
+			cout <<"\nThe general solution for the nonhomogeneous equation is:" << endl;
+			cout << ut << endl;
+			
+		}
+		if (D < 0)
+		{
+			complex<double> Dc(D,0);
+			complex<double> D_sqrt = sqrt(Dc);
+			double D_real = divisiond(imag(D_sqrt),2*a); 			
+
+			yt = exp((-b/(2*a))*x) * (c1s*(cos(D_real*x)) + c2s*(sin(D_real*x)));
+			cout <<"\nThe general solution for the homogeneous equation is:" << endl;
+			cout << "\ny(t) = " << yt << endl;
+
+			ut = yt + Yt_final;
+			cout <<"\nThe general solution for the nonhomogeneous equation is:" << endl;
+			cout << ut << endl;
+		}
+	}
 }
 
+void nonhomogeneousequationsivpsolution(const Symbolic &lhs_a, const Symbolic &lhs_b, const Symbolic &lhs_c, const Symbolic &rhs_function,  double y0, double dy0, const Symbolic &y, const Symbolic &x)
+{
+	Symbolic A("A"), B("B");
+
+	double c_final, c1, c2, c3, lhs_final, rhs_final;
+	Symbolic Yt_final;
+
+	if(rhs_function != 0 )
+ 	{
+		list<Equations> eq;
+		list<Equations>::iterator i;
+		UniqueSymbol a, b, c, d, f;
+		// Case 1 : g(t) = a*exp(b*t)
+		eq = (a*exp(b*x)).match(rhs_function, (a,b));
+		
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a), bp = rhs(*i, b);
+		
+		Symbolic Yt = exp(bp*x);
+		Symbolic dy = df(Yt,x);
+	 	Symbolic ddy = df(dy,x);
+
+		c1 = ddy.coeff(exp(bp*x),1);
+		c2 = dy.coeff(exp(bp*x),1);
+		c3 = Yt.coeff(exp(bp*x),1);
+		lhs_final = c1*lhs_a + c2* lhs_b + c3*lhs_c;
+		rhs_final = rhs_function.coeff(exp(bp*x),1);
+		c_final = divisiond(rhs_final,lhs_final);
+		if(c_final != INFINITY) 
+		{
+			Yt_final = c_final*Yt;
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		if(c_final ==  INFINITY) 
+		{
+			Symbolic Yt = x*exp(bp*x);
+			Symbolic dy = df(Yt,x);
+		 	Symbolic ddy = df(dy,x);
+
+			Symbolic c1 = ddy.coeff(exp(bp*x),1);
+			Symbolic c2 = dy.coeff(exp(bp*x),1);
+			Symbolic c3 = Yt.coeff(exp(bp*x),1);
+			lhs_final = c1*lhs_a + c2* lhs_b + c3*lhs_c ;
+			Symbolic subtract = lhs_final;
+			lhs_final = lhs_final - subtract.coeff(x*exp(bp*x),1)*x*exp(bp*x) ;
+			rhs_final = rhs_function.coeff(exp(bp*x),1);
+			c_final = divisiond(rhs_final,lhs_final);
+	
+			Yt_final = c_final*Yt;
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 2 : g(t) = exp(b*t)
+		eq = (exp(b*x)).match(rhs_function, (a,b));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic bp = rhs(*i, b);
+		Symbolic Yt = exp(bp*x);
+		Symbolic dy = df(Yt,x);
+	 	Symbolic ddy = df(dy,x);
+
+		c1 = ddy.coeff(exp(bp*x),1);
+		c2 = dy.coeff(exp(bp*x),1);
+		c3 = Yt.coeff(exp(bp*x),1);
+		lhs_final = c1*lhs_a + c2* lhs_b + c3*lhs_c;
+		rhs_final = rhs_function.coeff(exp(bp*x),1);
+		c_final = divisiond(rhs_final,lhs_final);
+
+		Yt_final = c_final*Yt;
+		if(df(rhs(*i, b), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 3 : g(t) = a*exp(t)
+		eq = (a*exp(x)).match(rhs_function, (a,b));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a);
+		Symbolic Yt = exp(x);
+		Symbolic dy = df(Yt,x);
+	 	Symbolic ddy = df(dy,x);
+
+		c1 = ddy.coeff(exp(x),1);
+		c2 = dy.coeff(exp(x),1);
+		c3 = Yt.coeff(exp(x),1);
+		lhs_final = c1*lhs_a + c2* lhs_b + c3*lhs_c;
+		rhs_final = rhs_function.coeff(exp(x),1);
+		c_final = divisiond(rhs_final,lhs_final);
+
+		Yt_final = c_final*Yt;
+
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 4 : g(t) = a*sin(t)
+		eq = (a*sin(x)).match(rhs_function, (a,b));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a);
+		Symbolic Yt = A*sin(x) + B*cos(x);
+		Symbolic dy = df(Yt,x);
+	 	Symbolic ddy = df(dy,x);
+		//cout << "\nY(t) = " << Yt << endl;
+		//cout << "\nY'(t) = " << dy << endl;
+		//cout << "\nY''(t) = " << ddy << endl;
+		
+		Symbolic Ly = lhs_a*ddy + lhs_b*dy + lhs_c*Yt;
+		Symbolic coeff_sin = Ly.coeff(sin(x),1);
+		Symbolic coeff_cos = Ly.coeff(cos(x),1);
+
+		//cout << Ly << endl;
+		//cout << coeff_sin << endl;
+		//cout << coeff_cos << endl;
+
+		// We use Gaussian elimination here to obtain A and B
+		vector<vector<double>> mat_A(2, vector<double>(2));
+		vector<vector<double>> vec_b(2, vector<double>(1));
+		mat_A[0][0] = coeff_sin.coeff(A,1);
+		mat_A[0][1] = coeff_sin.coeff(B,1);
+		mat_A[1][0] = coeff_cos.coeff(A,1);
+		mat_A[1][1] = coeff_cos.coeff(B,1);
+		vec_b[0][0] = rhs_function.coeff(sin(x),1);
+		vec_b[1][0] = 0;
+		vector<double> c_solution;
+		solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+
+		//printVector(c_solution);
+		Yt_final = c_solution[0]*sin(x) + c_solution[1]*cos(x) ;
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 5 : g(t) = a*cos(t)
+		eq = (a*cos(x)).match(rhs_function, (a,b));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a);
+		Symbolic Yt = A*sin(x) + B*cos(x);
+		Symbolic dy = df(Yt,x);
+	 	Symbolic ddy = df(dy,x);
+		//cout << "\nY(t) = " << Yt << endl;
+		//cout << "\nY'(t) = " << dy << endl;
+		//cout << "\nY''(t) = " << ddy << endl;
+		
+		Symbolic Ly = lhs_a*ddy + lhs_b*dy + lhs_c*Yt;
+		Symbolic coeff_sin = Ly.coeff(sin(x),1);
+		Symbolic coeff_cos = Ly.coeff(cos(x),1);
+
+		//cout << Ly << endl;
+		//cout << coeff_sin << endl;
+		//cout << coeff_cos << endl;
+
+		// We use Gaussian elimination here to obtain A and B
+		vector<vector<double>> mat_A(2, vector<double>(2));
+		vector<vector<double>> vec_b(2, vector<double>(1));
+		mat_A[0][0] = coeff_sin.coeff(A,1);
+		mat_A[0][1] = coeff_sin.coeff(B,1);
+		mat_A[1][0] = coeff_cos.coeff(A,1);
+		mat_A[1][1] = coeff_cos.coeff(B,1);
+		vec_b[0][0] = 0;
+		vec_b[1][0] = rhs_function.coeff(cos(x),1);
+		vector<double> c_solution;
+		solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+
+		//printVector(c_solution);
+		Yt_final = c_solution[0]*sin(x) + c_solution[1]*cos(x) ;
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 6 : g(t) = a*sin(b*t)
+		eq = (a*sin(b*x)).match(rhs_function, (a,b));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a), bp = rhs(*i,b);
+		Symbolic Yt = A*sin(bp*x) + B*cos(bp*x);
+		Symbolic dy = df(Yt,x);
+	 	Symbolic ddy = df(dy,x);
+		//cout << "\nY(t) = " << Yt << endl;
+		//cout << "\nY'(t) = " << dy << endl;
+		//cout << "\nY''(t) = " << ddy << endl;
+		
+		Symbolic Ly = lhs_a*ddy + lhs_b*dy + lhs_c*Yt;
+		Symbolic coeff_sin = Ly.coeff(sin(bp*x),1);
+		Symbolic coeff_cos = Ly.coeff(cos(bp*x),1);
+
+		//cout << Ly << endl;
+		//cout << coeff_sin << endl;
+		//cout << coeff_cos << endl;
+
+		// We use Gaussian elimination here to obtain A and B
+		vector<vector<double>> mat_A(2, vector<double>(2));
+		vector<vector<double>> vec_b(2, vector<double>(1));
+		mat_A[0][0] = coeff_sin.coeff(A,1);
+		mat_A[0][1] = coeff_sin.coeff(B,1);
+		mat_A[1][0] = coeff_cos.coeff(A,1);
+		mat_A[1][1] = coeff_cos.coeff(B,1);
+		vec_b[0][0] = rhs_function.coeff(sin(bp*x),1);
+		vec_b[1][0] = 0;
+		vector<double> c_solution;
+		solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+
+		//printVector(c_solution);
+		Yt_final = c_solution[0]*sin(bp*x) + c_solution[1]*cos(bp*x) ;
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 7 : g(t) = a*cos(b*t)
+		eq = (a*cos(b*x)).match(rhs_function, (a,b));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a), bp = rhs(*i,b);
+		Symbolic Yt = A*sin(bp*x) + B*cos(bp*x);
+		Symbolic dy = df(Yt,x);
+	 	Symbolic ddy = df(dy,x);
+		//cout << "\nY(t) = " << Yt << endl;
+		//cout << "\nY'(t) = " << dy << endl;
+		//cout << "\nY''(t) = " << ddy << endl;
+		
+		Symbolic Ly = lhs_a*ddy + lhs_b*dy + lhs_c*Yt;
+		Symbolic coeff_sin = Ly.coeff(sin(bp*x),1);
+		Symbolic coeff_cos = Ly.coeff(cos(bp*x),1);
+
+		//cout << Ly << endl;
+		//cout << coeff_sin << endl;
+		//cout << coeff_cos << endl;
+
+		// We use Gaussian elimination here to obtain A and B
+		vector<vector<double>> mat_A(2, vector<double>(2));
+		vector<vector<double>> vec_b(2, vector<double>(1));
+		mat_A[0][0] = coeff_sin.coeff(A,1);
+		mat_A[0][1] = coeff_sin.coeff(B,1);
+		mat_A[1][0] = coeff_cos.coeff(A,1);
+		mat_A[1][1] = coeff_cos.coeff(B,1);
+		vec_b[0][0] = 0;
+		vec_b[1][0] = rhs_function.coeff(cos(bp*x),1);
+		vector<double> c_solution;
+		solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+
+		//printVector(c_solution);
+		Yt_final = c_solution[0]*sin(bp*x) + c_solution[1]*cos(bp*x) ;
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 8 : g(t) = a*exp(t)*sin(b*t)
+		eq = (a*exp(x)*sin(b*x)).match(rhs_function, (a,b));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a), bp = rhs(*i,b);
+		Symbolic Yt = A*exp(x)*sin(bp*x) + B*exp(x)*cos(bp*x);
+		Symbolic dy = A*exp(x)*sin(bp*x) + A*bp*exp(x)*cos(bp*x) + B*exp(x)*cos(bp*x) - B*bp*exp(x)*sin(bp*x) ;
+	 	Symbolic ddy = A*exp(x)*sin(bp*x) + A*bp*exp(x)*cos(bp*x) + A*bp*exp(x)*cos(bp*x) - A*bp*bp*exp(x)*sin(bp*x) + B*exp(x)*cos(bp*x) - B*bp*exp(x)*sin(bp*x) - B*bp*exp(x)*sin(bp*x) - B*bp*bp*exp(x)*cos(bp*x) ;
+		//cout << "\nY(t) = " << Yt << endl;
+		//cout << "\nY'(t) = " << dy << endl;
+		//cout << "\nY''(t) = " << ddy << endl;
+		
+		Symbolic Ly = lhs_a*ddy + lhs_b*dy + lhs_c*Yt;
+		Symbolic coeff_sin = Ly.coeff(exp(x)*sin(bp*x),1);
+		Symbolic coeff_cos = Ly.coeff(exp(x)*cos(bp*x),1);
+
+		//cout << Ly << endl;
+		//cout << coeff_sin << endl;
+		//cout << coeff_cos << endl;
+
+		// We use Gaussian elimination here to obtain A and B
+		vector<vector<double>> mat_A(2, vector<double>(2));
+		vector<vector<double>> vec_b(2, vector<double>(1));
+		mat_A[0][0] = coeff_sin.coeff(A,1);
+		mat_A[0][1] = coeff_sin.coeff(B,1);
+		mat_A[1][0] = coeff_cos.coeff(A,1);
+		mat_A[1][1] = coeff_cos.coeff(B,1);
+		vec_b[0][0] = rhs_function.coeff(exp(x)*sin(bp*x),1);
+		vec_b[1][0] = 0;
+		vector<double> c_solution;
+		solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+
+		//printVector(c_solution);
+		Yt_final = c_solution[0]*exp(x)*sin(bp*x) + c_solution[1]*exp(x)*cos(bp*x) ;
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 9 : g(t) = a*exp(t)*cos(b*t)
+		eq = (a*exp(x)*cos(b*x)).match(rhs_function, (a,b));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a), bp = rhs(*i,b);
+		Symbolic Yt = A*exp(x)*sin(bp*x) + B*exp(x)*cos(bp*x);
+		Symbolic dy = A*exp(x)*sin(bp*x) + A*bp*exp(x)*cos(bp*x) + B*exp(x)*cos(bp*x) - B*bp*exp(x)*sin(bp*x) ;
+	 	Symbolic ddy = A*exp(x)*sin(bp*x) + A*bp*exp(x)*cos(bp*x) + A*bp*exp(x)*cos(bp*x) - A*bp*bp*exp(x)*sin(bp*x) + B*exp(x)*cos(bp*x) - B*bp*exp(x)*sin(bp*x) - B*bp*exp(x)*sin(bp*x) - B*bp*bp*exp(x)*cos(bp*x) ;
+		//cout << "\nY(t) = " << Yt << endl;
+		//cout << "\nY'(t) = " << dy << endl;
+		//cout << "\nY''(t) = " << ddy << endl;
+		
+		Symbolic Ly = lhs_a*ddy + lhs_b*dy + lhs_c*Yt;
+		Symbolic coeff_sin = Ly.coeff(exp(x)*sin(bp*x),1);
+		Symbolic coeff_cos = Ly.coeff(exp(x)*cos(bp*x),1);
+
+		//cout << Ly << endl;
+		//cout << coeff_sin << endl;
+		//cout << coeff_cos << endl;
+
+		// We use Gaussian elimination here to obtain A and B
+		vector<vector<double>> mat_A(2, vector<double>(2));
+		vector<vector<double>> vec_b(2, vector<double>(1));
+		mat_A[0][0] = coeff_sin.coeff(A,1);
+		mat_A[0][1] = coeff_sin.coeff(B,1);
+		mat_A[1][0] = coeff_cos.coeff(A,1);
+		mat_A[1][1] = coeff_cos.coeff(B,1);
+		vec_b[0][0] = 0;
+		vec_b[1][0] = rhs_function.coeff(exp(x)*cos(bp*x),1);
+		vector<double> c_solution;
+		solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+
+		//printVector(c_solution);
+		Yt_final = c_solution[0]*exp(x)*sin(bp*x) + c_solution[1]*exp(x)*cos(bp*x) ;
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 10 : g(t) = a*exp(c*t)*sin(b*t)
+		eq = (a*exp(c*x)*sin(b*x)).match(rhs_function, (a,c,b));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a), bp = rhs(*i,b), cp = rhs(*i,c);
+		Symbolic Yt = A*exp(cp*x)*sin(bp*x) + B*exp(cp*x)*cos(bp*x);
+		Symbolic dy = A*cp*exp(cp*x)*sin(bp*x) + A*bp*exp(cp*x)*cos(bp*x) + B*cp*exp(cp*x)*cos(bp*x) - B*bp*exp(cp*x)*sin(bp*x) ;
+	 	Symbolic ddy = A*cp*cp*exp(cp*x)*sin(bp*x) + A*cp*bp*exp(cp*x)*cos(bp*x) + A*bp*cp*exp(cp*x)*cos(bp*x) - A*bp*bp*exp(cp*x)*sin(bp*x) + B*cp*cp*exp(cp*x)*cos(bp*x) - B*cp*bp*exp(cp*x)*sin(bp*x) - B*cp*bp*exp(cp*x)*sin(bp*x) - B*bp*bp*exp(cp*x)*cos(bp*x) ;
+		//cout << "\nY(t) = " << Yt << endl;
+		//cout << "\nY'(t) = " << dy << endl;
+		//cout << "\nY''(t) = " << ddy << endl;
+		
+		Symbolic Ly = lhs_a*ddy + lhs_b*dy + lhs_c*Yt;
+		Symbolic coeff_sin = Ly.coeff(exp(cp*x)*sin(bp*x),1);
+		Symbolic coeff_cos = Ly.coeff(exp(cp*x)*cos(bp*x),1);
+
+		//cout << Ly << endl;
+		//cout << coeff_sin << endl;
+		//cout << coeff_cos << endl;
+
+		// We use Gaussian elimination here to obtain A and B
+		vector<vector<double>> mat_A(2, vector<double>(2));
+		vector<vector<double>> vec_b(2, vector<double>(1));
+		mat_A[0][0] = coeff_sin.coeff(A,1);
+		mat_A[0][1] = coeff_sin.coeff(B,1);
+		mat_A[1][0] = coeff_cos.coeff(A,1);
+		mat_A[1][1] = coeff_cos.coeff(B,1);
+		vec_b[0][0] = rhs_function.coeff(exp(cp*x)*sin(bp*x),1);
+		vec_b[1][0] = 0;
+		vector<double> c_solution;
+		solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+
+		//printVector(c_solution);
+		Yt_final = c_solution[0]*exp(cp*x)*sin(bp*x) + c_solution[1]*exp(cp*x)*cos(bp*x) ;
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 11 : g(t) = a*exp(c*t)*cos(b*t)
+		eq = (a*exp(c*x)*cos(b*x)).match(rhs_function, (a,c,b));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a), bp = rhs(*i,b), cp= rhs(*i,c);
+		Symbolic Yt = A*exp(cp*x)*sin(bp*x) + B*exp(cp*x)*cos(bp*x);
+		Symbolic dy = A*cp*exp(cp*x)*sin(bp*x) + A*bp*exp(cp*x)*cos(bp*x) + B*cp*exp(cp*x)*cos(bp*x) - B*bp*exp(cp*x)*sin(bp*x) ;
+	 	Symbolic ddy = A*cp*cp*exp(cp*x)*sin(bp*x) + A*cp*bp*exp(cp*x)*cos(bp*x) + A*bp*cp*exp(cp*x)*cos(bp*x) - A*bp*bp*exp(cp*x)*sin(bp*x) + B*cp*cp*exp(cp*x)*cos(bp*x) - B*cp*bp*exp(cp*x)*sin(bp*x) - B*cp*bp*exp(cp*x)*sin(bp*x) - B*bp*bp*exp(cp*x)*cos(bp*x) ;
+		//cout << "\nY(t) = " << Yt << endl;
+		//cout << "\nY'(t) = " << dy << endl;
+		//cout << "\nY''(t) = " << ddy << endl;
+		
+		Symbolic Ly = lhs_a*ddy + lhs_b*dy + lhs_c*Yt;
+		Symbolic coeff_sin = Ly.coeff(exp(cp*x)*sin(bp*x),1);
+		Symbolic coeff_cos = Ly.coeff(exp(cp*x)*cos(bp*x),1);
+
+		//cout << Ly << endl;
+		//cout << coeff_sin << endl;
+		//cout << coeff_cos << endl;
+
+		// We use Gaussian elimination here to obtain A and B
+		vector<vector<double>> mat_A(2, vector<double>(2));
+		vector<vector<double>> vec_b(2, vector<double>(1));
+		mat_A[0][0] = coeff_sin.coeff(A,1);
+		mat_A[0][1] = coeff_sin.coeff(B,1);
+		mat_A[1][0] = coeff_cos.coeff(A,1);
+		mat_A[1][1] = coeff_cos.coeff(B,1);
+		vec_b[0][0] = 0;
+		vec_b[1][0] = rhs_function.coeff(exp(cp*x)*cos(bp*x),1);
+		vector<double> c_solution;
+		solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+
+		//printVector(c_solution);
+		Yt_final = c_solution[0]*exp(cp*x)*sin(bp*x) + c_solution[1]*exp(cp*x)*cos(bp*x) ;
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 12 : g(t) = a*exp(c*t)*sin(t)
+		eq = (a*exp(c*x)*sin(x)).match(rhs_function, (a,c));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a), cp = rhs(*i,c);
+		Symbolic Yt = A*exp(cp*x)*sin(x) + B*exp(cp*x)*cos(x);
+		Symbolic dy = A*cp*exp(cp*x)*sin(x) + A*exp(cp*x)*cos(x) + B*cp*exp(cp*x)*cos(x) - B*exp(cp*x)*sin(x) ;
+	 	Symbolic ddy = A*cp*cp*exp(cp*x)*sin(x) + A*cp*exp(cp*x)*cos(x) + A*cp*exp(cp*x)*cos(x) - A*exp(cp*x)*sin(x) + B*cp*cp*exp(cp*x)*cos(x) - B*cp*exp(cp*x)*sin(x) - B*cp*exp(cp*x)*sin(x) - B*exp(cp*x)*cos(x) ;
+		//cout << "\nY(t) = " << Yt << endl;
+		//cout << "\nY'(t) = " << dy << endl;
+		//cout << "\nY''(t) = " << ddy << endl;
+		
+		Symbolic Ly = lhs_a*ddy + lhs_b*dy + lhs_c*Yt;
+		Symbolic coeff_sin = Ly.coeff(exp(cp*x)*sin(x),1);
+		Symbolic coeff_cos = Ly.coeff(exp(cp*x)*cos(x),1);
+
+		//cout << Ly << endl;
+		//cout << coeff_sin << endl;
+		//cout << coeff_cos << endl;
+
+		// We use Gaussian elimination here to obtain A and B
+		vector<vector<double>> mat_A(2, vector<double>(2));
+		vector<vector<double>> vec_b(2, vector<double>(1));
+		mat_A[0][0] = coeff_sin.coeff(A,1);
+		mat_A[0][1] = coeff_sin.coeff(B,1);
+		mat_A[1][0] = coeff_cos.coeff(A,1);
+		mat_A[1][1] = coeff_cos.coeff(B,1);
+		vec_b[0][0] = rhs_function.coeff(exp(cp*x)*sin(x),1);
+		vec_b[1][0] = 0;
+		vector<double> c_solution;
+		solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+
+		//printVector(c_solution);
+		Yt_final = c_solution[0]*exp(cp*x)*sin(x) + c_solution[1]*exp(cp*x)*cos(x) ;
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 13 : g(t) = a*exp(c*t)*cos(t)
+		eq = (a*exp(c*x)*cos(x)).match(rhs_function, (a,c));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a), cp = rhs(*i,c);
+		Symbolic Yt = A*exp(cp*x)*sin(x) + B*exp(cp*x)*cos(x);
+		Symbolic dy = A*cp*exp(cp*x)*sin(x) + A*exp(cp*x)*cos(x) + B*cp*exp(cp*x)*cos(x) - B*exp(cp*x)*sin(x) ;
+	 	Symbolic ddy = A*cp*cp*exp(cp*x)*sin(x) + A*cp*exp(cp*x)*cos(x) + A*cp*exp(cp*x)*cos(x) - A*exp(cp*x)*sin(x) + B*cp*cp*exp(cp*x)*cos(x) - B*cp*exp(cp*x)*sin(x) - B*cp*exp(cp*x)*sin(x) - B*exp(cp*x)*cos(x) ;
+		//cout << "\nY(t) = " << Yt << endl;
+		//cout << "\nY'(t) = " << dy << endl;
+		//cout << "\nY''(t) = " << ddy << endl;
+		
+		Symbolic Ly = lhs_a*ddy + lhs_b*dy + lhs_c*Yt;
+		Symbolic coeff_sin = Ly.coeff(exp(cp*x)*sin(x),1);
+		Symbolic coeff_cos = Ly.coeff(exp(cp*x)*cos(x),1);
+
+		//cout << Ly << endl;
+		//cout << coeff_sin << endl;
+		//cout << coeff_cos << endl;
+
+		// We use Gaussian elimination here to obtain A and B
+		vector<vector<double>> mat_A(2, vector<double>(2));
+		vector<vector<double>> vec_b(2, vector<double>(1));
+		mat_A[0][0] = coeff_sin.coeff(A,1);
+		mat_A[0][1] = coeff_sin.coeff(B,1);
+		mat_A[1][0] = coeff_cos.coeff(A,1);
+		mat_A[1][1] = coeff_cos.coeff(B,1);
+		vec_b[0][0] = 0;
+		vec_b[1][0] = rhs_function.coeff(exp(cp*x)*cos(x),1);
+		vector<double> c_solution;
+		solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+
+		//printVector(c_solution);
+		Yt_final = c_solution[0]*exp(cp*x)*sin(x) + c_solution[1]*exp(cp*x)*cos(x) ;
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+	}
+
+	Symbolic ut, ut0, ut1, yt, y1, y2, c1s("c1"), c2s("c2");
+	double a = lhs_a;
+	double b = lhs_b;
+	double c = lhs_c;
+	double t0 = 0;
+ 	double r1, r2;
+	if(a != 0 )
+ 	{
+		double D = (b*b) - (4*a*c);
+		if (D == 0)
+		{
+			r1 = divisiond(-b, 2*a );
+			r2 = divisiond(-b ,2*a );
+			yt = c1s*exp(r1*x) + c2s*x*exp(r2*x);
+			cout <<"\nThe general solution for the homogeneous equation is:" << endl;
+			cout << yt << endl;
+
+			ut = yt + Yt_final;
+			ut0 = ut[x==t0];
+			ut1 = df(ut,x);
+			ut1 = ut1[x==t0];
+			
+			double c1_ans = solve(ut0-y0,c1s).front().rhs;
+			ut1 = (ut1 - dy0);
+			ut1 = ut1[c1s == c1_ans];
+			double c2_ans = solve(ut1,c2s).front().rhs;
+			cout <<"\nThe solution for the initial value problem is:" << endl;
+			ut = ut[c1s == c1_ans, c2s == c2_ans] ;
+			cout << ut << endl;
+
+		}
+		if (D > 0)
+		{
+			r1 = divisiond(-b + sqrt(D),2*a );
+			r2 = divisiond(-b - sqrt(D),2*a );
+			yt = c1s*exp(r1*x) + c2s*exp(r2*x);
+			cout <<"\nThe general solution for the homogeneous equation is:" << endl;
+			cout << yt << endl;
+
+			ut = yt + Yt_final;
+			ut0 = ut[x==t0];
+			ut1 = df(ut,x);
+			ut1 = ut1[x==t0];
+			
+			double c1_ans = solve(ut0-y0,c1s).front().rhs;
+			ut1 = (ut1 - dy0);
+			ut1 = ut1[c1s == c1_ans];
+			double c2_ans = solve(ut1,c2s).front().rhs;
+			cout <<"\nThe solution for the initial value problem is:" << endl;
+			ut = ut[c1s == c1_ans, c2s == c2_ans] ;
+			cout << ut << endl;
+
+		}
+		if (D < 0)
+		{
+			complex<double> Dc(D,0);
+			complex<double> D_sqrt = sqrt(Dc);
+			double D_real = divisiond(imag(D_sqrt),2*a); 			
+
+			yt = exp((-b/(2*a))*x) * (c1s*(cos(D_real*x)) + c2s*(sin(D_real*x)));
+			cout <<"\nThe general solution for the homogeneous equation is:" << endl;
+			cout << "\ny(t) = " << yt << endl;
+
+			ut = yt + Yt_final;
+			ut0 = ut[x==t0];
+			ut1 = df(ut,x);
+			ut1 = ut1[x==t0];
+			
+			double c1_ans = solve(ut0-y0,c1s).front().rhs;
+			ut1 = (ut1 - dy0);
+			ut1 = ut1[c1s == c1_ans];
+			double c2_ans = solve(ut1,c2s).front().rhs;
+			cout <<"\nThe solution for the initial value problem is:" << endl;
+			ut = ut[c1s == c1_ans, c2s == c2_ans] ;
+			cout << ut << endl;
+			
+		}
+	}
+
+}
 void nonhomogeneousequationssolution(const Symbolic &lhs_a, const Symbolic &lhs_b, const Symbolic &lhs_c, const SymbolicMatrix &Matrix_A, const Symbolic &y, const Symbolic &x)
 { //Code it in 51 minutes, a silly bug on redeclaring Symbolic Yt_final occurs, it should be done in 30 minutes, on February 14th, 2026
 	Symbolic A("A"), B("B");
 	
-	Symbolic Yt_solution;
+	Symbolic Yt_solution, Yt_final;
  	int n_row = Matrix_A.rows();
 
 	for (int i = 0; i < n_row ; ++i)
 	{
-		Symbolic Yt_final;	
 		double c_final, c1, c2, c3, lhs_final, rhs_final;
 		Symbolic rhs_function = Matrix_A[i][0];
 		cout << "\n***********************************************************"<< endl;
@@ -1785,12 +2683,703 @@ void nonhomogeneousequationssolution(const Symbolic &lhs_a, const Symbolic &lhs_
 			cout << "\nThe current solution is\nY(t) = " << Yt_final ;
 			Yt_solution += Yt_final;
 		}
-		cout << "\n***********************************************************"<< endl;
-		cout << "\n***********************************************************"<< endl;
+	cout << "\n***********************************************************"<< endl;
+	cout << "\n***********************************************************"<< endl;
 
-		cout << "\nThe particular solution is\nY(t) = " << Yt_solution ;
+	cout << "\nThe particular solution is\nY(t) = " << Yt_solution ;
+
+	Symbolic ut, yt, y1, y2, c1s("c1"), c2s("c2");
+	double a = lhs_a;
+	double b = lhs_b;
+	double c = lhs_c;
+ 	double r1, r2;
+	if(a != 0 )
+ 	{
+		double D = (b*b) - (4*a*c);
+		if (D == 0)
+		{
+			r1 = divisiond(-b, 2*a );
+			r2 = divisiond(-b ,2*a );
+			yt = c1s*exp(r1*x) + c2s*x*exp(r2*x);
+			cout <<"\nThe general solution for the homogeneous equation is:" << endl;
+			cout << yt << endl;
+
+			ut = yt + Yt_final;
+			cout <<"\nThe general solution for the nonhomogeneous equation is:" << endl;
+			cout << ut << endl;
+			
+		}
+		if (D > 0)
+		{
+			r1 = divisiond(-b + sqrt(D),2*a );
+			r2 = divisiond(-b - sqrt(D),2*a );
+			yt = c1s*exp(r1*x) + c2s*exp(r2*x);
+			cout <<"\nThe general solution for the homogeneous equation is:" << endl;
+			cout << yt << endl;
+
+			ut = yt + Yt_final;
+			cout <<"\nThe general solution for the nonhomogeneous equation is:" << endl;
+			cout << ut << endl;
+			
+		}
+		if (D < 0)
+		{
+			complex<double> Dc(D,0);
+			complex<double> D_sqrt = sqrt(Dc);
+			double D_real = divisiond(imag(D_sqrt),2*a); 			
+
+			yt = exp((-b/(2*a))*x) * (c1s*(cos(D_real*x)) + c2s*(sin(D_real*x)));
+			cout <<"\nThe general solution for the homogeneous equation is:" << endl;
+			cout << "\ny(t) = " << yt << endl;
+
+			ut = yt + Yt_final;
+			cout <<"\nThe general solution for the nonhomogeneous equation is:" << endl;
+			cout << ut << endl;
+		}
+	}
+}
+
+void nonhomogeneousequationsivpforcedvibrationssolution(const Symbolic &lhs_a, const Symbolic &lhs_b, const Symbolic &lhs_c, const Symbolic &rhs_function,  double y0, double dy0, const Symbolic &y, const Symbolic &x)
+{
+	Symbolic A("A"), B("B");
+	Symbolic Yt_final;
+
+	double c_final, c1, c2, c3, lhs_final, rhs_final;
+	double F0, omega;
+	double m = lhs_a;
+	double gamma = lhs_b;
+	double k = lhs_c;
+	
+	if(rhs_function != 0 )
+ 	{
+		list<Equations> eq;
+		list<Equations>::iterator i;
+		UniqueSymbol a, b, c, d, f;
+		// Case 1 : g(t) = a*exp(b*t)
+		eq = (a*exp(b*x)).match(rhs_function, (a,b));
+		
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a), bp = rhs(*i, b);
+		
+		Symbolic Yt = exp(bp*x);
+		Symbolic dy = df(Yt,x);
+	 	Symbolic ddy = df(dy,x);
+
+		c1 = ddy.coeff(exp(bp*x),1);
+		c2 = dy.coeff(exp(bp*x),1);
+		c3 = Yt.coeff(exp(bp*x),1);
+		lhs_final = c1*lhs_a + c2* lhs_b + c3*lhs_c;
+		rhs_final = rhs_function.coeff(exp(bp*x),1);
+		c_final = divisiond(rhs_final,lhs_final);
+		if(c_final != INFINITY) 
+		{
+			Yt_final = c_final*Yt;
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		if(c_final ==  INFINITY) 
+		{
+			Symbolic Yt = x*exp(bp*x);
+			Symbolic dy = df(Yt,x);
+		 	Symbolic ddy = df(dy,x);
+
+			Symbolic c1 = ddy.coeff(exp(bp*x),1);
+			Symbolic c2 = dy.coeff(exp(bp*x),1);
+			Symbolic c3 = Yt.coeff(exp(bp*x),1);
+			lhs_final = c1*lhs_a + c2* lhs_b + c3*lhs_c ;
+			Symbolic subtract = lhs_final;
+			lhs_final = lhs_final - subtract.coeff(x*exp(bp*x),1)*x*exp(bp*x) ;
+			rhs_final = rhs_function.coeff(exp(bp*x),1);
+			c_final = divisiond(rhs_final,lhs_final);
+	
+			Yt_final = c_final*Yt;
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 2 : g(t) = exp(b*t)
+		eq = (exp(b*x)).match(rhs_function, (a,b));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic bp = rhs(*i, b);
+		Symbolic Yt = exp(bp*x);
+		Symbolic dy = df(Yt,x);
+	 	Symbolic ddy = df(dy,x);
+
+		c1 = ddy.coeff(exp(bp*x),1);
+		c2 = dy.coeff(exp(bp*x),1);
+		c3 = Yt.coeff(exp(bp*x),1);
+		lhs_final = c1*lhs_a + c2* lhs_b + c3*lhs_c;
+		rhs_final = rhs_function.coeff(exp(bp*x),1);
+		c_final = divisiond(rhs_final,lhs_final);
+
+		Yt_final = c_final*Yt;
+		if(df(rhs(*i, b), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 3 : g(t) = a*exp(t)
+		eq = (a*exp(x)).match(rhs_function, (a,b));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a);
+		Symbolic Yt = exp(x);
+		Symbolic dy = df(Yt,x);
+	 	Symbolic ddy = df(dy,x);
+
+		c1 = ddy.coeff(exp(x),1);
+		c2 = dy.coeff(exp(x),1);
+		c3 = Yt.coeff(exp(x),1);
+		lhs_final = c1*lhs_a + c2* lhs_b + c3*lhs_c;
+		rhs_final = rhs_function.coeff(exp(x),1);
+		c_final = divisiond(rhs_final,lhs_final);
+
+		Yt_final = c_final*Yt;
+
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 4 : g(t) = a*sin(t)
+		eq = (a*sin(x)).match(rhs_function, (a,b));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a);
+		F0 = ap;
+		omega = 1;
+		Symbolic Yt = A*sin(x) + B*cos(x);
+		Symbolic dy = df(Yt,x);
+	 	Symbolic ddy = df(dy,x);
+		//cout << "\nY(t) = " << Yt << endl;
+		//cout << "\nY'(t) = " << dy << endl;
+		//cout << "\nY''(t) = " << ddy << endl;
+		
+		Symbolic Ly = lhs_a*ddy + lhs_b*dy + lhs_c*Yt;
+		Symbolic coeff_sin = Ly.coeff(sin(x),1);
+		Symbolic coeff_cos = Ly.coeff(cos(x),1);
+
+		//cout << Ly << endl;
+		//cout << coeff_sin << endl;
+		//cout << coeff_cos << endl;
+
+		// We use Gaussian elimination here to obtain A and B
+		vector<vector<double>> mat_A(2, vector<double>(2));
+		vector<vector<double>> vec_b(2, vector<double>(1));
+		mat_A[0][0] = coeff_sin.coeff(A,1);
+		mat_A[0][1] = coeff_sin.coeff(B,1);
+		mat_A[1][0] = coeff_cos.coeff(A,1);
+		mat_A[1][1] = coeff_cos.coeff(B,1);
+		vec_b[0][0] = rhs_function.coeff(sin(x),1);
+		vec_b[1][0] = 0;
+		vector<double> c_solution;
+		solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+
+		//printVector(c_solution);
+		Yt_final = c_solution[0]*sin(x) + c_solution[1]*cos(x) ;
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 5 : g(t) = a*cos(t)
+		eq = (a*cos(x)).match(rhs_function, (a,b));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a);
+		F0 = ap;
+		omega = 1;
+		Symbolic Yt = A*sin(x) + B*cos(x);
+		Symbolic dy = df(Yt,x);
+	 	Symbolic ddy = df(dy,x);
+		//cout << "\nY(t) = " << Yt << endl;
+		//cout << "\nY'(t) = " << dy << endl;
+		//cout << "\nY''(t) = " << ddy << endl;
+		
+		Symbolic Ly = lhs_a*ddy + lhs_b*dy + lhs_c*Yt;
+		Symbolic coeff_sin = Ly.coeff(sin(x),1);
+		Symbolic coeff_cos = Ly.coeff(cos(x),1);
+
+		//cout << Ly << endl;
+		//cout << coeff_sin << endl;
+		//cout << coeff_cos << endl;
+
+		// We use Gaussian elimination here to obtain A and B
+		vector<vector<double>> mat_A(2, vector<double>(2));
+		vector<vector<double>> vec_b(2, vector<double>(1));
+		mat_A[0][0] = coeff_sin.coeff(A,1);
+		mat_A[0][1] = coeff_sin.coeff(B,1);
+		mat_A[1][0] = coeff_cos.coeff(A,1);
+		mat_A[1][1] = coeff_cos.coeff(B,1);
+		vec_b[0][0] = 0;
+		vec_b[1][0] = rhs_function.coeff(cos(x),1);
+		vector<double> c_solution;
+		solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+
+		//printVector(c_solution);
+		Yt_final = c_solution[0]*sin(x) + c_solution[1]*cos(x) ;
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 6 : g(t) = a*sin(b*t)
+		eq = (a*sin(b*x)).match(rhs_function, (a,b));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a), bp = rhs(*i,b);
+		F0 = ap;
+		omega = bp;
+		Symbolic Yt = A*sin(bp*x) + B*cos(bp*x);
+		Symbolic dy = df(Yt,x);
+	 	Symbolic ddy = df(dy,x);
+		//cout << "\nY(t) = " << Yt << endl;
+		//cout << "\nY'(t) = " << dy << endl;
+		//cout << "\nY''(t) = " << ddy << endl;
+		
+		Symbolic Ly = lhs_a*ddy + lhs_b*dy + lhs_c*Yt;
+		Symbolic coeff_sin = Ly.coeff(sin(bp*x),1);
+		Symbolic coeff_cos = Ly.coeff(cos(bp*x),1);
+
+		//cout << Ly << endl;
+		//cout << coeff_sin << endl;
+		//cout << coeff_cos << endl;
+
+		// We use Gaussian elimination here to obtain A and B
+		vector<vector<double>> mat_A(2, vector<double>(2));
+		vector<vector<double>> vec_b(2, vector<double>(1));
+		mat_A[0][0] = coeff_sin.coeff(A,1);
+		mat_A[0][1] = coeff_sin.coeff(B,1);
+		mat_A[1][0] = coeff_cos.coeff(A,1);
+		mat_A[1][1] = coeff_cos.coeff(B,1);
+		vec_b[0][0] = rhs_function.coeff(sin(bp*x),1);
+		vec_b[1][0] = 0;
+		vector<double> c_solution;
+		solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+
+		//printVector(c_solution);
+		Yt_final = c_solution[0]*sin(bp*x) + c_solution[1]*cos(bp*x) ;
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 7 : g(t) = a*cos(b*t)
+		eq = (a*cos(b*x)).match(rhs_function, (a,b));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a), bp = rhs(*i,b);
+		F0 = ap;
+		omega = bp;
+		Symbolic Yt = A*sin(bp*x) + B*cos(bp*x);
+		Symbolic dy = df(Yt,x);
+	 	Symbolic ddy = df(dy,x);
+		//cout << "\nY(t) = " << Yt << endl;
+		//cout << "\nY'(t) = " << dy << endl;
+		//cout << "\nY''(t) = " << ddy << endl;
+		
+		Symbolic Ly = lhs_a*ddy + lhs_b*dy + lhs_c*Yt;
+		Symbolic coeff_sin = Ly.coeff(sin(bp*x),1);
+		Symbolic coeff_cos = Ly.coeff(cos(bp*x),1);
+
+		//cout << Ly << endl;
+		//cout << coeff_sin << endl;
+		//cout << coeff_cos << endl;
+
+		// We use Gaussian elimination here to obtain A and B
+		vector<vector<double>> mat_A(2, vector<double>(2));
+		vector<vector<double>> vec_b(2, vector<double>(1));
+		mat_A[0][0] = coeff_sin.coeff(A,1);
+		mat_A[0][1] = coeff_sin.coeff(B,1);
+		mat_A[1][0] = coeff_cos.coeff(A,1);
+		mat_A[1][1] = coeff_cos.coeff(B,1);
+		vec_b[0][0] = 0;
+		vec_b[1][0] = rhs_function.coeff(cos(bp*x),1);
+		vector<double> c_solution;
+		solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+
+		//printVector(c_solution);
+		Yt_final = c_solution[0]*sin(bp*x) + c_solution[1]*cos(bp*x) ;
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 8 : g(t) = a*exp(t)*sin(b*t)
+		eq = (a*exp(x)*sin(b*x)).match(rhs_function, (a,b));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a), bp = rhs(*i,b);
+		Symbolic Yt = A*exp(x)*sin(bp*x) + B*exp(x)*cos(bp*x);
+		Symbolic dy = A*exp(x)*sin(bp*x) + A*bp*exp(x)*cos(bp*x) + B*exp(x)*cos(bp*x) - B*bp*exp(x)*sin(bp*x) ;
+	 	Symbolic ddy = A*exp(x)*sin(bp*x) + A*bp*exp(x)*cos(bp*x) + A*bp*exp(x)*cos(bp*x) - A*bp*bp*exp(x)*sin(bp*x) + B*exp(x)*cos(bp*x) - B*bp*exp(x)*sin(bp*x) - B*bp*exp(x)*sin(bp*x) - B*bp*bp*exp(x)*cos(bp*x) ;
+		//cout << "\nY(t) = " << Yt << endl;
+		//cout << "\nY'(t) = " << dy << endl;
+		//cout << "\nY''(t) = " << ddy << endl;
+		
+		Symbolic Ly = lhs_a*ddy + lhs_b*dy + lhs_c*Yt;
+		Symbolic coeff_sin = Ly.coeff(exp(x)*sin(bp*x),1);
+		Symbolic coeff_cos = Ly.coeff(exp(x)*cos(bp*x),1);
+
+		//cout << Ly << endl;
+		//cout << coeff_sin << endl;
+		//cout << coeff_cos << endl;
+
+		// We use Gaussian elimination here to obtain A and B
+		vector<vector<double>> mat_A(2, vector<double>(2));
+		vector<vector<double>> vec_b(2, vector<double>(1));
+		mat_A[0][0] = coeff_sin.coeff(A,1);
+		mat_A[0][1] = coeff_sin.coeff(B,1);
+		mat_A[1][0] = coeff_cos.coeff(A,1);
+		mat_A[1][1] = coeff_cos.coeff(B,1);
+		vec_b[0][0] = rhs_function.coeff(exp(x)*sin(bp*x),1);
+		vec_b[1][0] = 0;
+		vector<double> c_solution;
+		solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+
+		//printVector(c_solution);
+		Yt_final = c_solution[0]*exp(x)*sin(bp*x) + c_solution[1]*exp(x)*cos(bp*x) ;
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 9 : g(t) = a*exp(t)*cos(b*t)
+		eq = (a*exp(x)*cos(b*x)).match(rhs_function, (a,b));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a), bp = rhs(*i,b);
+		Symbolic Yt = A*exp(x)*sin(bp*x) + B*exp(x)*cos(bp*x);
+		Symbolic dy = A*exp(x)*sin(bp*x) + A*bp*exp(x)*cos(bp*x) + B*exp(x)*cos(bp*x) - B*bp*exp(x)*sin(bp*x) ;
+	 	Symbolic ddy = A*exp(x)*sin(bp*x) + A*bp*exp(x)*cos(bp*x) + A*bp*exp(x)*cos(bp*x) - A*bp*bp*exp(x)*sin(bp*x) + B*exp(x)*cos(bp*x) - B*bp*exp(x)*sin(bp*x) - B*bp*exp(x)*sin(bp*x) - B*bp*bp*exp(x)*cos(bp*x) ;
+		//cout << "\nY(t) = " << Yt << endl;
+		//cout << "\nY'(t) = " << dy << endl;
+		//cout << "\nY''(t) = " << ddy << endl;
+		
+		Symbolic Ly = lhs_a*ddy + lhs_b*dy + lhs_c*Yt;
+		Symbolic coeff_sin = Ly.coeff(exp(x)*sin(bp*x),1);
+		Symbolic coeff_cos = Ly.coeff(exp(x)*cos(bp*x),1);
+
+		//cout << Ly << endl;
+		//cout << coeff_sin << endl;
+		//cout << coeff_cos << endl;
+
+		// We use Gaussian elimination here to obtain A and B
+		vector<vector<double>> mat_A(2, vector<double>(2));
+		vector<vector<double>> vec_b(2, vector<double>(1));
+		mat_A[0][0] = coeff_sin.coeff(A,1);
+		mat_A[0][1] = coeff_sin.coeff(B,1);
+		mat_A[1][0] = coeff_cos.coeff(A,1);
+		mat_A[1][1] = coeff_cos.coeff(B,1);
+		vec_b[0][0] = 0;
+		vec_b[1][0] = rhs_function.coeff(exp(x)*cos(bp*x),1);
+		vector<double> c_solution;
+		solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+
+		//printVector(c_solution);
+		Yt_final = c_solution[0]*exp(x)*sin(bp*x) + c_solution[1]*exp(x)*cos(bp*x) ;
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 10 : g(t) = a*exp(c*t)*sin(b*t)
+		eq = (a*exp(c*x)*sin(b*x)).match(rhs_function, (a,c,b));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a), bp = rhs(*i,b), cp = rhs(*i,c);
+		Symbolic Yt = A*exp(cp*x)*sin(bp*x) + B*exp(cp*x)*cos(bp*x);
+		Symbolic dy = A*cp*exp(cp*x)*sin(bp*x) + A*bp*exp(cp*x)*cos(bp*x) + B*cp*exp(cp*x)*cos(bp*x) - B*bp*exp(cp*x)*sin(bp*x) ;
+	 	Symbolic ddy = A*cp*cp*exp(cp*x)*sin(bp*x) + A*cp*bp*exp(cp*x)*cos(bp*x) + A*bp*cp*exp(cp*x)*cos(bp*x) - A*bp*bp*exp(cp*x)*sin(bp*x) + B*cp*cp*exp(cp*x)*cos(bp*x) - B*cp*bp*exp(cp*x)*sin(bp*x) - B*cp*bp*exp(cp*x)*sin(bp*x) - B*bp*bp*exp(cp*x)*cos(bp*x) ;
+		//cout << "\nY(t) = " << Yt << endl;
+		//cout << "\nY'(t) = " << dy << endl;
+		//cout << "\nY''(t) = " << ddy << endl;
+		
+		Symbolic Ly = lhs_a*ddy + lhs_b*dy + lhs_c*Yt;
+		Symbolic coeff_sin = Ly.coeff(exp(cp*x)*sin(bp*x),1);
+		Symbolic coeff_cos = Ly.coeff(exp(cp*x)*cos(bp*x),1);
+
+		//cout << Ly << endl;
+		//cout << coeff_sin << endl;
+		//cout << coeff_cos << endl;
+
+		// We use Gaussian elimination here to obtain A and B
+		vector<vector<double>> mat_A(2, vector<double>(2));
+		vector<vector<double>> vec_b(2, vector<double>(1));
+		mat_A[0][0] = coeff_sin.coeff(A,1);
+		mat_A[0][1] = coeff_sin.coeff(B,1);
+		mat_A[1][0] = coeff_cos.coeff(A,1);
+		mat_A[1][1] = coeff_cos.coeff(B,1);
+		vec_b[0][0] = rhs_function.coeff(exp(cp*x)*sin(bp*x),1);
+		vec_b[1][0] = 0;
+		vector<double> c_solution;
+		solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+
+		//printVector(c_solution);
+		Yt_final = c_solution[0]*exp(cp*x)*sin(bp*x) + c_solution[1]*exp(cp*x)*cos(bp*x) ;
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 11 : g(t) = a*exp(c*t)*cos(b*t)
+		eq = (a*exp(c*x)*cos(b*x)).match(rhs_function, (a,c,b));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a), bp = rhs(*i,b), cp= rhs(*i,c);
+		Symbolic Yt = A*exp(cp*x)*sin(bp*x) + B*exp(cp*x)*cos(bp*x);
+		Symbolic dy = A*cp*exp(cp*x)*sin(bp*x) + A*bp*exp(cp*x)*cos(bp*x) + B*cp*exp(cp*x)*cos(bp*x) - B*bp*exp(cp*x)*sin(bp*x) ;
+	 	Symbolic ddy = A*cp*cp*exp(cp*x)*sin(bp*x) + A*cp*bp*exp(cp*x)*cos(bp*x) + A*bp*cp*exp(cp*x)*cos(bp*x) - A*bp*bp*exp(cp*x)*sin(bp*x) + B*cp*cp*exp(cp*x)*cos(bp*x) - B*cp*bp*exp(cp*x)*sin(bp*x) - B*cp*bp*exp(cp*x)*sin(bp*x) - B*bp*bp*exp(cp*x)*cos(bp*x) ;
+		//cout << "\nY(t) = " << Yt << endl;
+		//cout << "\nY'(t) = " << dy << endl;
+		//cout << "\nY''(t) = " << ddy << endl;
+		
+		Symbolic Ly = lhs_a*ddy + lhs_b*dy + lhs_c*Yt;
+		Symbolic coeff_sin = Ly.coeff(exp(cp*x)*sin(bp*x),1);
+		Symbolic coeff_cos = Ly.coeff(exp(cp*x)*cos(bp*x),1);
+
+		//cout << Ly << endl;
+		//cout << coeff_sin << endl;
+		//cout << coeff_cos << endl;
+
+		// We use Gaussian elimination here to obtain A and B
+		vector<vector<double>> mat_A(2, vector<double>(2));
+		vector<vector<double>> vec_b(2, vector<double>(1));
+		mat_A[0][0] = coeff_sin.coeff(A,1);
+		mat_A[0][1] = coeff_sin.coeff(B,1);
+		mat_A[1][0] = coeff_cos.coeff(A,1);
+		mat_A[1][1] = coeff_cos.coeff(B,1);
+		vec_b[0][0] = 0;
+		vec_b[1][0] = rhs_function.coeff(exp(cp*x)*cos(bp*x),1);
+		vector<double> c_solution;
+		solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+
+		//printVector(c_solution);
+		Yt_final = c_solution[0]*exp(cp*x)*sin(bp*x) + c_solution[1]*exp(cp*x)*cos(bp*x) ;
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 12 : g(t) = a*exp(c*t)*sin(t)
+		eq = (a*exp(c*x)*sin(x)).match(rhs_function, (a,c));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a), cp = rhs(*i,c);
+		Symbolic Yt = A*exp(cp*x)*sin(x) + B*exp(cp*x)*cos(x);
+		Symbolic dy = A*cp*exp(cp*x)*sin(x) + A*exp(cp*x)*cos(x) + B*cp*exp(cp*x)*cos(x) - B*exp(cp*x)*sin(x) ;
+	 	Symbolic ddy = A*cp*cp*exp(cp*x)*sin(x) + A*cp*exp(cp*x)*cos(x) + A*cp*exp(cp*x)*cos(x) - A*exp(cp*x)*sin(x) + B*cp*cp*exp(cp*x)*cos(x) - B*cp*exp(cp*x)*sin(x) - B*cp*exp(cp*x)*sin(x) - B*exp(cp*x)*cos(x) ;
+		//cout << "\nY(t) = " << Yt << endl;
+		//cout << "\nY'(t) = " << dy << endl;
+		//cout << "\nY''(t) = " << ddy << endl;
+		
+		Symbolic Ly = lhs_a*ddy + lhs_b*dy + lhs_c*Yt;
+		Symbolic coeff_sin = Ly.coeff(exp(cp*x)*sin(x),1);
+		Symbolic coeff_cos = Ly.coeff(exp(cp*x)*cos(x),1);
+
+		//cout << Ly << endl;
+		//cout << coeff_sin << endl;
+		//cout << coeff_cos << endl;
+
+		// We use Gaussian elimination here to obtain A and B
+		vector<vector<double>> mat_A(2, vector<double>(2));
+		vector<vector<double>> vec_b(2, vector<double>(1));
+		mat_A[0][0] = coeff_sin.coeff(A,1);
+		mat_A[0][1] = coeff_sin.coeff(B,1);
+		mat_A[1][0] = coeff_cos.coeff(A,1);
+		mat_A[1][1] = coeff_cos.coeff(B,1);
+		vec_b[0][0] = rhs_function.coeff(exp(cp*x)*sin(x),1);
+		vec_b[1][0] = 0;
+		vector<double> c_solution;
+		solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+
+		//printVector(c_solution);
+		Yt_final = c_solution[0]*exp(cp*x)*sin(x) + c_solution[1]*exp(cp*x)*cos(x) ;
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+
+		// Case 13 : g(t) = a*exp(c*t)*cos(t)
+		eq = (a*exp(c*x)*cos(x)).match(rhs_function, (a,c));
+		for(i=eq.begin(); i!=eq.end(); ++i)
+		{
+		try {
+		Symbolic ap = rhs(*i, a), cp = rhs(*i,c);
+		Symbolic Yt = A*exp(cp*x)*sin(x) + B*exp(cp*x)*cos(x);
+		Symbolic dy = A*cp*exp(cp*x)*sin(x) + A*exp(cp*x)*cos(x) + B*cp*exp(cp*x)*cos(x) - B*exp(cp*x)*sin(x) ;
+	 	Symbolic ddy = A*cp*cp*exp(cp*x)*sin(x) + A*cp*exp(cp*x)*cos(x) + A*cp*exp(cp*x)*cos(x) - A*exp(cp*x)*sin(x) + B*cp*cp*exp(cp*x)*cos(x) - B*cp*exp(cp*x)*sin(x) - B*cp*exp(cp*x)*sin(x) - B*exp(cp*x)*cos(x) ;
+		//cout << "\nY(t) = " << Yt << endl;
+		//cout << "\nY'(t) = " << dy << endl;
+		//cout << "\nY''(t) = " << ddy << endl;
+		
+		Symbolic Ly = lhs_a*ddy + lhs_b*dy + lhs_c*Yt;
+		Symbolic coeff_sin = Ly.coeff(exp(cp*x)*sin(x),1);
+		Symbolic coeff_cos = Ly.coeff(exp(cp*x)*cos(x),1);
+
+		//cout << Ly << endl;
+		//cout << coeff_sin << endl;
+		//cout << coeff_cos << endl;
+
+		// We use Gaussian elimination here to obtain A and B
+		vector<vector<double>> mat_A(2, vector<double>(2));
+		vector<vector<double>> vec_b(2, vector<double>(1));
+		mat_A[0][0] = coeff_sin.coeff(A,1);
+		mat_A[0][1] = coeff_sin.coeff(B,1);
+		mat_A[1][0] = coeff_cos.coeff(A,1);
+		mat_A[1][1] = coeff_cos.coeff(B,1);
+		vec_b[0][0] = 0;
+		vec_b[1][0] = rhs_function.coeff(exp(cp*x)*cos(x),1);
+		vector<double> c_solution;
+		solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+
+		//printVector(c_solution);
+		Yt_final = c_solution[0]*exp(cp*x)*sin(x) + c_solution[1]*exp(cp*x)*cos(x) ;
+		if(df(rhs(*i, a), x) == 0) 
+		{
+			cout << "\nThe particular solution is\nY(t) = " << Yt_final << endl;
+		}
+		} catch(const SymbolicError &se) {}
+		}
+	}
+
+	Symbolic ut, ut0, ut1, yt, y1, y2, c1s("c1"), c2s("c2");
+	double a = lhs_a;
+	double b = lhs_b;
+	double c = lhs_c;
+	double t0 = 0;
+ 	double r1, r2;
+	if(a != 0 )
+ 	{
+		double D = (b*b) - (4*a*c);
+		if (D == 0)
+		{
+			r1 = divisiond(-b, 2*a );
+			r2 = divisiond(-b ,2*a );
+			yt = c1s*exp(r1*x) + c2s*x*exp(r2*x);
+			cout <<"\nThe general solution for the homogeneous equation is:" << endl;
+			cout << yt << endl;
+
+			ut = yt + Yt_final;
+			ut0 = ut[x==t0];
+			ut1 = df(ut,x);
+			ut1 = ut1[x==t0];
+			
+			double c1_ans = solve(ut0-y0,c1s).front().rhs;
+			ut1 = (ut1 - dy0);
+			ut1 = ut1[c1s == c1_ans];
+			double c2_ans = solve(ut1,c2s).front().rhs;
+			cout <<"\nThe solution for the initial value problem is:" << endl;
+			ut = ut[c1s == c1_ans, c2s == c2_ans] ;
+			cout << ut << endl;
+
+		}
+		if (D > 0)
+		{
+			r1 = divisiond(-b + sqrt(D),2*a );
+			r2 = divisiond(-b - sqrt(D),2*a );
+			yt = c1s*exp(r1*x) + c2s*exp(r2*x);
+			cout <<"\nThe general solution for the homogeneous equation is:" << endl;
+			cout << yt << endl;
+
+			ut = yt + Yt_final;
+			ut0 = ut[x==t0];
+			ut1 = df(ut,x);
+			ut1 = ut1[x==t0];
+			
+			double c1_ans = solve(ut0-y0,c1s).front().rhs;
+			ut1 = (ut1 - dy0);
+			ut1 = ut1[c1s == c1_ans];
+			double c2_ans = solve(ut1,c2s).front().rhs;
+			cout <<"\nThe solution for the initial value problem is:" << endl;
+			ut = ut[c1s == c1_ans, c2s == c2_ans] ;
+			cout << ut << endl;
+
+		}
+		if (D < 0)
+		{
+			complex<double> Dc(D,0);
+			complex<double> D_sqrt = sqrt(Dc);
+			double D_real = divisiond(imag(D_sqrt),2*a); 			
+
+			yt = exp((-b/(2*a))*x) * (c1s*(cos(D_real*x)) + c2s*(sin(D_real*x)));
+			cout <<"\nThe general solution for the homogeneous equation is:" << endl;
+			cout << "\ny(t) = " << yt << endl;
+
+			ut = yt + Yt_final;
+			ut0 = ut[x==t0];
+			ut1 = df(ut,x);
+			ut1 = ut1[x==t0];
+			
+			double c1_ans = solve(ut0-y0,c1s).front().rhs;
+			ut1 = (ut1 - dy0);
+			ut1 = ut1[c1s == c1_ans];
+			double c2_ans = solve(ut1,c2s).front().rhs;
+			cout <<"\nThe solution for the initial value problem is:" << endl;
+			ut = ut[c1s == c1_ans, c2s == c2_ans] ;
+			cout << ut << endl;
+			
+		}
+	}
+	double omega0=sqrt(divisiond(k,m));
+	double triangle = sqrt(m*m*pow(omega0*omega0 - omega*omega,2) + gamma*gamma*omega*omega);
+	double Gamma= divisiond(gamma*gamma,m*k);
+	double R = divisiond(F0,triangle);
+	double delta = asin(divisiond(gamma*omega,triangle));
+	//double delta2 = acos(divisiond(m*(omega0*omega0 - omega*omega),triangle));
+	double omega_max = sqrt(omega0*omega0 -divisiond(gamma*gamma,2*m*m));
+	double R_max = divisiond(F0,gamma*omega0*sqrt(1-divisiond(gamma*gamma,4*m*k)));
+	cout << "\nThe forced vibrations parameters: " << endl;
+	cout << "F_{0} = "<< F0 << endl;
+	cout << "ω = "<< omega << endl;
+	cout << "ω_{0} = "<< omega0 << endl;
+	cout << "ω_{max} = "<< omega_max << endl;
+	cout << "Γ = "<< Gamma << endl;
+	cout << "R = "<< R << endl;
+	cout << "R_{max} = "<< R_max << endl;
+	cout << "△ = "<< triangle << endl;
+	cout << "𝛿 = "<< delta << endl;
+	//cout << "𝛿 from acos= "<< delta2 << endl;
 
 }
+
+
 
 void nonhomogeneousequationssolution_variationofparameters(const Symbolic &lhs_a, const Symbolic &lhs_b, const Symbolic &lhs_c, const Symbolic &rhs_function, const Symbolic &y, const Symbolic &x)
 {
