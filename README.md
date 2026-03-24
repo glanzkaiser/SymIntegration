@@ -169,7 +169,7 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Compute one-tailed and two-tailed hypothesis testing			| Done
 |:sunflower:   | One- and Two-Sample Estimation Problem, e.g. Confidence Interval and Prediction Interval		| Done
 |:sunflower:   | Transcription and translation from DNA to mRNA to polypeptide (Molecular biology)			| Done
-|:sunflower:   | Genetic algorithms for unconstained problem of a function with two variables				| Done
+|:sunflower:   | Genetic algorithms for unconstained optimization of a function with two variables			| Done
 
 We write the definitions, theorems, examples, how to run the source code and use the functions in the book. If you are curious, then read the book.
 
