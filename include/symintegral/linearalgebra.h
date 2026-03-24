@@ -59,6 +59,8 @@ vector<vector<double>> deleteColumn(vector<vector<double>> &, int);
 vector<vector<double>> deleteRow(vector<vector<double>> &, int);
 int MaxElementIndex(vector<double>);
 
+bool isQuasiUpperTriangular(const vector<vector<double>>&);
+
 void printComplexMatrix(const ComplexMatrix &);
 void printComplexVector(const ComplexVector &);
 vector<vector<double>> ComplextoRealMatrix(vector<vector<complex<double>>> &);

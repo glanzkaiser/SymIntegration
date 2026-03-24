@@ -54,6 +54,7 @@ It is able to compute
 22. Compute cdf of Normal, student's t distribution, F distribution, chi-squared distribution, beta distribution, gamma distribution without Boost.
 23. Compute the quantile of standard normal distribution / inverse of cdf without Boost.
 24. Transcription and translation from DNA to mRNA to polypeptide (Molecular biology).
+25. Genetic algorithms.
 
 # Learning the Code
 
@@ -168,6 +169,7 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Compute one-tailed and two-tailed hypothesis testing			| Done
 |:sunflower:   | One- and Two-Sample Estimation Problem, e.g. Confidence Interval and Prediction Interval		| Done
 |:sunflower:   | Transcription and translation from DNA to mRNA to polypeptide (Molecular biology)			| Done
+|:sunflower:   | Genetic algorithms for unconstained problem of a function with two variables				| Done
 
 We write the definitions, theorems, examples, how to run the source code and use the functions in the book. If you are curious, then read the book.
 
@@ -447,3 +449,7 @@ By January 1st, 2026: On new year eve we have created a function that can handle
 The computation of real and complex eigenvalues with Francis double step QR algorithm with complex arithmetic:
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/51.png" width="60%">
+
+By March 23rd, 2026: We have created a function to compute the maximum value of a function of two variables (unconstrained optimization) with simple genetic algorithms:
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/52.gif" width="60%">

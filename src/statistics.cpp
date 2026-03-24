@@ -154,74 +154,6 @@ double combinationsd(int n, int r) {
 	return factoriald(n) / (factoriald(r) * factoriald(n - r));
 }
 
-vector<string> loadStringVector(const string& filename) 
-{
-	vector<string> vecx;
-	ifstream inputFile(filename);
-
-	if (!inputFile.is_open()) 
-	{
-		cerr << "Error: Could not open file " << filename << endl;
-		return vecx; // Return empty matrix on error
-	}
-
-	if (inputFile.is_open()) 
-	{
-		string line;
-		while (getline(inputFile,line)) 
-		{ // Reads numbers separated by whitespace
-			vecx.push_back(line);
-		}
-		inputFile.close();
-		
-	} 
-	inputFile.close();
-	return vecx;
-}
-
-vector<vector<string>> loadStringMatrix(const string& filename) 
-{
-	vector<vector<string>> matrix;
-	ifstream inputFile(filename);
-
-	if (!inputFile.is_open()) 
-	{
-		cerr << "Error: Could not open file " << filename << endl;
-		return matrix; // Return empty matrix on error
-	}
-
-	if (inputFile.is_open()) 
-	{
-		string line;
-		while (getline(inputFile, line)) 
-		{
-		if (line.empty()) 
-		{ // Skip empty lines
-		    continue;
-		}
-		istringstream iss(line);
-		vector<string> row;
-		string value;
-		while (iss >> value) 
-		{
-			row.push_back(value);
-		}
-		matrix.push_back(row);
-		}
-		inputFile.close();
-	} 
-	return matrix;
-}
-
-void printStringVector(vector<string> vectorx)
-{
-	//int n = vectorx.size();
-	for (const std::string& s : vectorx) 
-	{
-		cout << s << endl;
-	}
-}
-
 void saveVectordouble(vector<double> vecx, const string& filename) 
 {
 	// Create an ofstream object and open the file for writing
@@ -280,7 +212,7 @@ double randomnumberreal(double a, double b, int n)
 	// For floating-point numbers within a specific range (e.g., 0.0 to 1.0)
 	std::uniform_real_distribution<> real_distrib(a, b);
 
-	for(int i=1; i<n; i++)
+	for(int i=1; i<=n; i++)
 	{
 		cout << real_distrib(generate) << endl;
 	}
@@ -299,7 +231,7 @@ double randomnumbergamma(double alpha, double beta, int n)
 	// alpha (shape parameter) and beta (scale parameter)
 	std::gamma_distribution<> distribution(alpha, beta);
 
-	for(int i=1; i<n; i++)
+	for(int i=1; i<=n; i++)
 	{
 		cout << distribution(generate) << endl;
 	}

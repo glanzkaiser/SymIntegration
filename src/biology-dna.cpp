@@ -18,39 +18,6 @@
 #ifndef SYMINTEGRATION_CPLUSPLUS_BIOLOGYDNA_DEFINE
 #define SYMINTEGRATION_CPLUSPLUS_BIOLOGYDNA_DEFINE
 
-void printStringMatrix(vector<vector<string>> matrix) 
-{
-	 for (const auto& row : matrix) 
-	{
-		for (const auto& s : row) 
-		{
-			cout << s << " ";
-		}
-		cout << endl;
-	}
-}
-
-vector<vector<string>> transposeStringMatrix(vector<vector<string>> &matrix) // Done beautifully
-{
-	if (matrix.empty() || matrix[0].empty() ) 
-	{
-        	// Handle empty matrices or invalid dimensions
-		return {};
-	}	
-	size_t rows = matrix.size();
-	size_t cols = matrix[0].size();
-
-	vector<vector<string>> transposed_matrix(cols, vector<string>(rows, ""));
-	for (size_t i = 0; i < rows; ++i) 
-	{
-		for (size_t j = 0; j < cols; ++j) 
-		{
-			transposed_matrix[j][i] = matrix[i][j];	
-		}
-	}
-	return transposed_matrix;
-}
-
 vector<vector<string>> DNA_full(vector<string> DNA)
 {
 	vector<string> DNA_pair;

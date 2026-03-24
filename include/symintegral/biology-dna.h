@@ -36,9 +36,6 @@
 #ifndef SYMINTEGRATION_CPLUSPLUS_BIOLOGYDNA_DECLARE
 #define SYMINTEGRATION_CPLUSPLUS_BIOLOGYDNA_DECLARE
 
-void printStringMatrix(vector<vector<string>>); 
-//vector<vector<string>> transposeStringMatrix(vector<vector<string>>&); 
-
 vector<vector<string>> DNA_full (vector<string>);
 vector<vector<string>> polypeptide (vector<string>);
 void mRNA(vector<string>);

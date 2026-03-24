@@ -47,6 +47,7 @@
 #include "symintegral/divgradcurl.h"
 #include "symintegral/dsolve.h"
 #include "symintegral/dynamicalsystem.h"
+#include "symintegral/geneticalgorithms.h"
 #include "symintegral/geometryandvectors.h"
 #include "symintegral/linearalgebra.h"
 #include "symintegral/mathematicalfinance.h"
@@ -56,6 +57,7 @@
 #include "symintegral/statistics.h"
 #include "symintegral/statistics-mle.h"
 #include "symintegral/specialfunctions.h"
+#include "symintegral/vectormatrixoperations.h"
 
 #include "symintegral/biology-dna.h"
 
