@@ -64,6 +64,7 @@ bool isQuasiUpperTriangular(const vector<vector<double>>&);
 void printComplexMatrix(const ComplexMatrix &);
 void printComplexVector(const ComplexVector &);
 vector<vector<double>> ComplextoRealMatrix(vector<vector<complex<double>>> &);
+void ComplexVector_removeConjugates(vector<complex<double>> &); 
 complex<double> complexdivision(complex<double>, double);
 vector<complex<double>> complexvecrand_normal(double, double, int);
 vector<complex<double>> complexvecrand_normal_zeroimaginary(double, double, int);

@@ -47,13 +47,13 @@ int main(void)
 	Symbolic y("y"),t("t");
 
 	cout << "\nSpring mass system solution for y'' + 0.125y'+ y = 0 with u(0) = 2, u'(0) = 0\n" <<endl;
-	springmasssystemsecondorderlinear(1,0.125,1,y,t,2,0);		
+	secondorderlineardiffeq_springmasssystem(1,0.125,1,y,t,2,0);		
 
 	cout << "\nSpring mass system solution for y'' + y = 0 with u(0) = 2, u'(0) = 0\n" <<endl;
-	springmasssystemsecondorderlinear(1,0,1,y,t,2,0);		
+	secondorderlineardiffeq_springmasssystem(1,0,1,y,t,2,0);		
 
 	cout << "\nSpring mass system solution for y'' + 192y = 0 with u(0) = 1/6, u'(0) = -1\n" <<endl;
-	springmasssystemsecondorderlinear(1,0,192,y,t,divisiond(1,6),-1);		
+	secondorderlineardiffeq_springmasssystem(1,0,192,y,t,divisiond(1,6),-1);		
 
 
 	// Get ending timepoint

@@ -52,16 +52,16 @@ int main(void)
 	Polynomial<double> p4 = 50.0 ;
 	
 	cout << "\nSolution for y'' - 3y' - 4y = 4t^{2} - 1 \n" <<endl;
-	nonhomogeneousequationssolution(1,-3,-4,p);		
+	secondorderlineardiffeq_nonhomogeneousequationssolution(1,-3,-4,p);		
 
 	cout << "\nSolution for y'' - 3y' - 4y = 5t^{3} + 2t^{2} - 1 \n" <<endl;
-	nonhomogeneousequationssolution(1,-3,-4,p2);		
+	secondorderlineardiffeq_nonhomogeneousequationssolution(1,-3,-4,p2);		
 	
 	cout << "\nSolution for y'' - 3y' - 4y = 5t - 10 \n" <<endl;
-	nonhomogeneousequationssolution(1,-3,-4,p3);		
+	secondorderlineardiffeq_nonhomogeneousequationssolution(1,-3,-4,p3);		
 
 	cout << "\nSolution for y'' - 3y' - 4y = 50 \n" <<endl;
-	nonhomogeneousequationssolution(1,-3,-4,p4);		
+	secondorderlineardiffeq_nonhomogeneousequationssolution(1,-3,-4,p4);		
 
 	//cout << "p(x) = " << p << endl;
 	//cout << "Diff(p) = " << Diff(p,"x") << endl;

@@ -154,6 +154,144 @@ double NewtonRaphson(const Symbolic &f, const Symbolic &x, double x0)
 	return root;
 }
 
+void AberthEhrlich(const vector<complex<double>> &P, const vector<complex<double>> &vec_x0,  int N)
+{
+// Done on March 23rd, 2026
+	int n_Polynomial = P.size();
+	complex<double> nP(n_Polynomial,0.0);
+	int n = vec_x0.size();
+	complex<double> root(0.0,0.0);
+	complex<double> c1(1.0, 0.0); // means complex number with real part 1 and imag part 0
+	complex<double> c0(0.0, 0.0);
+	vector<complex<double>> P_derivative;
+	vector<complex<double>> vec_update;
+	vector<complex<double>> vec_dummy;
+	vector<complex<double>> vec_check;
+	complex<double> i_derivative(1.0,0.0);
+
+	if(n != n_Polynomial-1)	
+	{
+		cerr << "Error: Initial guess has to be: the number of highest order of the derivative." << endl;
+	}
+	for (int i = 0; i < n_Polynomial - 1; ++i)
+	{
+		P_derivative.push_back((nP - i_derivative)*P[i]);
+		i_derivative = i_derivative + c1;
+	}
+	cout << "P: " << endl;
+	printComplexVector(P);
+	cout << "\nP': " << endl;
+	printComplexVector(P_derivative);
+	//cout << "\n accumulate P: " << accumulate(P.begin(), P.end(), c0) << endl;
+	//cout << "\n accumulate P': " << accumulate(P_derivative.begin(), P_derivative.end(), c0) << endl;
+	
+	for (int i = 0; i < n; ++i)
+	{
+		vec_dummy.push_back(vec_x0[i]);
+	}
+
+	cout << "\nInitial guess: " << endl;
+	printComplexVector(vec_dummy);
+	
+	for (int k = 0; k < N ; ++k)
+	{
+		cout <<"\niteration: " << k << endl;
+
+		vec_check.clear();
+		for (int i = 0; i < n; ++i)
+		{
+			vec_check.push_back(vec_dummy[i]);
+		}
+
+		for (int i = 0; i < n; ++i)
+		{
+			//cout <<"\ni: " << i << endl;
+
+			// Newton step
+			complex<double> P_zi(0.0,0.0);
+			complex<double> P_zi_derivative(0.0,0.0);
+			complex<double> i_der(1.0,0.0);
+			complex<double> i_der2(2.0,0.0);
+			for (int j = 0; j < n_Polynomial ; ++j)
+			{
+				P_zi += P[j]*pow(vec_dummy[i], nP - i_der); 
+
+				i_der = i_der + c1;
+			}		
+			//cout <<" P(z_{i}) : " << P_zi << endl;
+			for (int j = 0; j < n_Polynomial - 1 ; ++j)
+			{
+				P_zi_derivative += P_derivative[j]*pow(vec_dummy[i], nP - i_der2); 
+
+				i_der2 = i_der2 + c1;
+			}
+			//cout <<" P'(z_{i}) : " << P_zi_derivative << endl;
+
+			complex<double> N_zi =P_zi/P_zi_derivative;
+			//cout <<" N(z_{i}) : " << N_zi << endl;
+
+			// Shift
+			complex<double> shift(0.0,0.0);
+			for (int j = 0; j < n ; ++j)
+			{
+				if(i != j)
+				{
+					shift += c1/(vec_dummy[i]-vec_dummy[j]);
+				}
+				else if(i == j)
+				{
+					shift += 0;
+				}
+			}
+			//cout <<" S(z_{i}) : " << shift << endl;
+
+			vec_dummy[i] = vec_dummy[i] - (N_zi)/(c1 - N_zi*shift);
+		}
+
+		cout << "\nz_{i} new: " << endl;
+		printComplexVector(vec_dummy);
+
+		complex<double> epsilon(0.0,0.0);		
+		for (int i = 0; i < n; ++i)
+		{
+			epsilon += vec_dummy[i]-vec_check[i];
+		}
+		double diffnorm = moduluscomplex(epsilon);
+		if( diffnorm < 1e-12)
+		{
+			cout << "\nRoots found at iteration: " << k << endl;
+			k = N-1;		
+		}
+		
+	}
+
+	for(int i = 0; i < n;++i)
+	{
+		if(abs(imag(vec_dummy[i])) < 1e-12 && abs(real(vec_dummy[i])) > 1e-12)
+		{
+			complex<double> root(real(vec_dummy[i]), 0.0);
+			vec_update.push_back(root);
+		}
+		if(abs(real(vec_dummy[i])) < 1e-12 && abs(imag(vec_dummy[i])) > 1e-12)
+		{
+			complex<double> root(0.0,imag(vec_dummy[i]));
+			vec_update.push_back(root);
+		}
+		if(abs(real(vec_dummy[i])) > 1e-12 && abs(imag(vec_dummy[i])) > 1e-12)
+		{
+			complex<double> root(real(vec_dummy[i]),imag(vec_dummy[i]));
+			vec_update.push_back(root);
+		}
+
+	}
+
+	cout << "\n************************************************************************" << endl;
+	cout << "\nEnd of iteration" << endl;
+	cout << "\nz_{i} final: " << endl;
+	printComplexVector(vec_update);
+		
+}
+
 Symbolic eulermethod(const Symbolic &f, const Symbolic &y, const Symbolic &x, const Symbolic &y0, const Symbolic &x0, const Symbolic &x1, double h)
 {
  	Symbolic tangent, t("t");

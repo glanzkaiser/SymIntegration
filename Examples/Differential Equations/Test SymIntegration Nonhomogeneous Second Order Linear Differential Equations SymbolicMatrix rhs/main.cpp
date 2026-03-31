@@ -54,7 +54,7 @@ int main(void)
 	cout << "W:\n" << W <<endl;
 	
 	cout << "\nSolution for y'' - 3y' - 4y = 3e^{2t} + 2 sin(t) - 8e^{t} cos(2t) \n" <<endl;
-	nonhomogeneousequationssolution(1,-3,-4,W,y,t);		
+	secondorderlineardiffeq_nonhomogeneousequationssolution(1,-3,-4,W,y,t);		
 
 	// Get ending timepoint
 	auto stop = high_resolution_clock::now();

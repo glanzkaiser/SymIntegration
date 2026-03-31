@@ -202,6 +202,63 @@ vector<vector<double>> ComplextoRealMatrix(vector<vector<complex<double>>> &A)
 	return matrix;
 }
 
+void ComplexVector_removeConjugates(vector<complex<double>>& vec) 
+{
+	// Methods to Delete Complex Conjugates
+	// Using C++20 std::erase_if (Recommended)
+	// This method removes all elements
+	// where conj(z) also exists later in the vector, or simply removes elements based on a conjugate property.
+	/*
+	std::erase_if(vec, [](const std::complex<double>& z) 
+	{
+        // Example logic: Remove if imaginary part is negative (removes a+bi pairs)
+        // Adjust condition based on specifically which conjugate to delete
+	return std::imag(z) < 0;
+	});*/
+
+	 // Sort the vector to group conjugates together (optional, simplifies the logic but changes order)
+	// std::sort(vec.begin(), vec.end(), [](const std::complex<double>& a, const std::complex<double>& b) { ... });
+
+	// Use std::remove_if and the erase-remove idiom to remove duplicates/conjugates
+	// The following is a conceptual approach; the actual predicate logic is complex to implement correctly inline.
+	// A more robust way is to use a set to track encountered elements/conjugates.
+
+	// A practical, though less efficient, approach using a set:
+	vector<complex<double>> unique_vec;
+	vector<double> encountered_reals;
+	vector<double> encountered_imags;
+
+	for (const auto& c : vec) 
+	{
+		bool is_conjugate_found = false;
+		for (size_t i = 0; i < encountered_reals.size(); ++i) 
+		{
+			// Check if either the element itself or its conjugate was already added
+			if ((std::abs(c.real() - encountered_reals[i]) < 1e-8 && std::abs(c.imag() - encountered_imags[i]) < 1e-8) ||
+				(std::abs(c.real() - encountered_reals[i]) < 1e-8 && std::abs(c.imag() + encountered_imags[i]) < 1e-8)) 
+			{
+				is_conjugate_found = true;
+				break;
+			}
+		}
+		if (!is_conjugate_found) 
+		{
+			unique_vec.push_back(c);
+			encountered_reals.push_back(c.real());
+			encountered_imags.push_back(c.imag());
+		}
+	}
+	vec = std::move(unique_vec);
+
+	// Print the result
+	/*for (const auto& c : vec) 
+	{
+		cout << c << " ";
+	}
+	cout << endl;*/
+}
+
+
 complex<double> complexdivision(complex<double> a, double b)
 {
 	double acomplex = divisiond(real(a),b);

@@ -47,13 +47,13 @@ int main(void)
 	Symbolic y("y"),t("t");
 	
 	cout << "\nGeneral solution for y'' + y'+ 9.25y = 0 with t_{0} = 0, y(t_{0}) = 2, y'(t_{0}) = 8\n" <<endl;
-	dsolvesecondorderlinear(1,1,9.25,y,t);		
+	secondorderlineardiffeq_dsolve(1,1,9.25,y,t);		
 
 	cout << "\nInitial Value Problem solution for y'' + y'+ 9.25y = 0 with t_{0} = 0, y(t_{0}) = 2, y'(t_{0}) = 8\n" <<endl;
-	ivpsecondorderlinear(1,1,9.25,y,t,0,2,8);		
+	secondorderlineardiffeq_ivpsolution(1,1,9.25,y,t,0,2,8);		
 
 	cout << "\nInitial Value Problem solution for 16y'' - 8y'+ 145y = 0 with t_{0} = 0, y(t_{0}) = -2, y'(t_{0}) = 1\n" <<endl;
-	ivpsecondorderlinear(16,-8,145,y,t,0,-2,1);		
+	secondorderlineardiffeq_ivpsolution(16,-8,145,y,t,0,-2,1);		
 
 	// Get ending timepoint
 	auto stop = high_resolution_clock::now();

@@ -42,20 +42,26 @@ Symbolic dsolve(const Symbolic &, const Symbolic &, const Symbolic &);
 Symbolic dsolve(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
 Symbolic dsolvelogistic(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
 Symbolic dsolveseparable(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
-void dsolvesecondorderlinear(double, double, double, const Symbolic &, const Symbolic &);
-void ivpsecondorderlinear(double, double, double, const Symbolic &, const Symbolic &, double, double, double);
-void springmasssystemsecondorderlinear(double, double, double, const Symbolic &, const Symbolic &, double, double);
-void RLCserieselectriccircuit(double, double, double, double, double);
+
+void secondorderlineardiffeq_dsolve(double, double, double, const Symbolic &, const Symbolic &);
+void secondorderlineardiffeq_ivpsolution(double, double, double, const Symbolic &, const Symbolic &, double, double, double);
+void secondorderlineardiffeq_springmasssystem(double, double, double, const Symbolic &, const Symbolic &, double, double);
+void secondorderlineardiffeq_RLCserieselectriccircuit(double, double, double, double, double);
+
 void wronskian(double, double, double, const Symbolic &, const Symbolic &, double);
 Symbolic wronskian_resultonly(double, double, double, const Symbolic &, const Symbolic &);
 void wronskian_fundamentalsetofsolutions(double, double, double, const Symbolic &, const Symbolic &);
-void reductionoforder(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
-void nonhomogeneousequationssolution(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
-void nonhomogeneousequationsivpsolution(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, double, double, const Symbolic &, const Symbolic &);
-void nonhomogeneousequationsivpforcedvibrationssolution(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, double, double, const Symbolic &, const Symbolic &);
-void nonhomogeneousequationssolution(const Symbolic &, const Symbolic &, const Symbolic &, Polynomial<double> &);
-void nonhomogeneousequationssolution(const Symbolic &, const Symbolic &, const Symbolic &, const SymbolicMatrix &, const Symbolic &, const Symbolic &);
-void nonhomogeneousequationssolution_variationofparameters(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
+
+void reductionoforder(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &); 
+
+void secondorderlineardiffeq_nonhomogeneousequationssolution(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
+void secondorderlineardiffeq_nonhomogeneousequationsivpsolution(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, double, double, const Symbolic &, const Symbolic &);
+void secondorderlineardiffeq_nonhomogeneousequationsivpforcedvibrationssolution(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, double, double, const Symbolic &, const Symbolic &);
+void secondorderlineardiffeq_nonhomogeneousequationssolution(const Symbolic &, const Symbolic &, const Symbolic &, Polynomial<double> &);
+void secondorderlineardiffeq_nonhomogeneousequationssolution(const Symbolic &, const Symbolic &, const Symbolic &, const SymbolicMatrix &, const Symbolic &, const Symbolic &);
+void secondorderlineardiffeq_nonhomogeneousequationssolution_variationofparameters(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
+
+void higherorderlineardiffeq_homogeneousequationsivpsolution(const vector<complex<double>> &,  const vector<complex<double>> &, const vector<complex<double>> &,  int);
 
 Symbolic ivp(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
 

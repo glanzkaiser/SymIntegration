@@ -47,10 +47,10 @@ int main(void)
 	Symbolic y("y"),t("t");
 
 	cout << "\nRLC series electric circuit solution for R = 0, L = 1 H, C = 0.25 * 10^{-6} F with q(0) = 10^{-6}, q'(0) = 0\n" <<endl;
-	RLCserieselectriccircuit(0,1,0.25*pow(10,-6),pow(10,-6),0);		
+	secondorderlineardiffeq_RLCserieselectriccircuit(0,1,0.25*pow(10,-6),pow(10,-6),0);		
 
 	cout << "\nRLC series electric circuit solution for R = 3* 10^{2} Ohm, L = 0.2 H, C = 10^{-5} F with q(0) = 10^{-6}, q'(0) = 0\n" <<endl;
-	RLCserieselectriccircuit(3*pow(10,2),0.2,pow(10,-5),pow(10,-6),0);		
+	secondorderlineardiffeq_RLCserieselectriccircuit(3*pow(10,2),0.2,pow(10,-5),pow(10,-6),0);		
 
 	// Get ending timepoint
 	auto stop = high_resolution_clock::now();

@@ -47,16 +47,16 @@ int main(void)
 	Symbolic y("y"),t("t");
 
 	cout << "\nSolution for u'' + u' + 1.25u = 3 cos(t), u(0) = 2, u'(0) = 3 \n" <<endl;
-	nonhomogeneousequationsivpsolution(1,1,1.25,3*cos(t),2,3,y,t);		
+	secondorderlineardiffeq_nonhomogeneousequationsivpsolution(1,1,1.25,3*cos(t),2,3,y,t);		
 
 	cout << "\nSolution for u'' + 0.125u' + u = 3 cos(t), u(0) = 2, u'(0) = 0 \n" <<endl;
-	nonhomogeneousequationsivpforcedvibrationssolution(1,0.125,1,3*cos(t),2,0,y,t);
+	secondorderlineardiffeq_nonhomogeneousequationsivpforcedvibrationssolution(1,0.125,1,3*cos(t),2,0,y,t);
 
 	cout << "\nSolution for u'' + u = 0.5 cos(0.8t), u(0) = 0, u'(0) = 0 \n" <<endl;
-	nonhomogeneousequationsivpforcedvibrationssolution(1,0,1,0.5*cos(0.8*t),0,0,y,t);
+	secondorderlineardiffeq_nonhomogeneousequationsivpforcedvibrationssolution(1,0,1,0.5*cos(0.8*t),0,0,y,t);
 
 	cout << "\nSolution for u'' + 0.25u' + 2u = 2 cos(1.403t), u(0) = 0, u'(0) = 2 \n" <<endl;
-	nonhomogeneousequationsivpforcedvibrationssolution(1,0.25,2,2*cos(1.403*t),0,2,y,t);
+	secondorderlineardiffeq_nonhomogeneousequationsivpforcedvibrationssolution(1,0.25,2,2*cos(1.403*t),0,2,y,t);
 
 	// Get ending timepoint
 	auto stop = high_resolution_clock::now();

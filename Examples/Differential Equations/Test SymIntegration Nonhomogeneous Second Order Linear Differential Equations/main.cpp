@@ -47,31 +47,31 @@ int main(void)
 	Symbolic y("y"),t("t");
 	
 	cout << "\nSolution for y'' - 3y' - 4y = e^{2t} \n" <<endl;
-	nonhomogeneousequationssolution(1,-3,-4,exp(2*t),y,t);		
+	secondorderlineardiffeq_nonhomogeneousequationssolution(1,-3,-4,exp(2*t),y,t);		
 
 	cout << "\nSolution for y'' - 3y' - 4y = 2e^{t} \n" <<endl;
-	nonhomogeneousequationssolution(1,-3,-4,2*exp(t),y,t);		
+	secondorderlineardiffeq_nonhomogeneousequationssolution(1,-3,-4,2*exp(t),y,t);		
 
 	cout << "\nSolution for y'' - 3y' - 4y = 3e^{2t} \n" <<endl;
-	nonhomogeneousequationssolution(1,-3,-4,3*exp(2*t),y,t);		
+	secondorderlineardiffeq_nonhomogeneousequationssolution(1,-3,-4,3*exp(2*t),y,t);		
 
 	cout << "\nSolution for y'' - 3y' - 4y = 2 sin(t) \n" <<endl;
-	nonhomogeneousequationssolution(1,-3,-4,2*sin(t),y,t);		
+	secondorderlineardiffeq_nonhomogeneousequationssolution(1,-3,-4,2*sin(t),y,t);		
 
 	cout << "\nSolution for y'' - 3y' - 4y = 5 cos(t) \n" <<endl;
-	nonhomogeneousequationssolution(1,-3,-4,5*cos(t),y,t);		
+	secondorderlineardiffeq_nonhomogeneousequationssolution(1,-3,-4,5*cos(t),y,t);		
 
 	cout << "\nSolution for y'' - 3y' - 4y = 2 sin(3t) \n" <<endl;
-	nonhomogeneousequationssolution(1,-3,-4,2*sin(3*t),y,t);		
+	secondorderlineardiffeq_nonhomogeneousequationssolution(1,-3,-4,2*sin(3*t),y,t);		
 
 	cout << "\nSolution for y'' - 3y' - 4y = 2 cos(3t) \n" <<endl;
-	nonhomogeneousequationssolution(1,-3,-4,2*cos(3*t),y,t);		
+	secondorderlineardiffeq_nonhomogeneousequationssolution(1,-3,-4,2*cos(3*t),y,t);		
 
 	cout << "\nSolution for y'' - 3y' - 4y = -8e^{t} sin(2t) \n" <<endl;
-	nonhomogeneousequationssolution(1,-3,-4,-8*exp(t)*sin(2*t),y,t);		
+	secondorderlineardiffeq_nonhomogeneousequationssolution(1,-3,-4,-8*exp(t)*sin(2*t),y,t);		
 
 	cout << "\nSolution for y'' - 3y' - 4y = -8e^{t} cos(2t) \n" <<endl;
-	nonhomogeneousequationssolution(1,-3,-4,-8*exp(t)*cos(2*t),y,t);		
+	secondorderlineardiffeq_nonhomogeneousequationssolution(1,-3,-4,-8*exp(t)*cos(2*t),y,t);		
 
 	// Get ending timepoint
 	auto stop = high_resolution_clock::now();

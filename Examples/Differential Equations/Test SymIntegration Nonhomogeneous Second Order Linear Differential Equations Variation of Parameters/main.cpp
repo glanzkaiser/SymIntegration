@@ -47,7 +47,7 @@ int main(void)
 	Symbolic y("y"),t("t");
 	
 	cout << "\nSolution for y'' + 4y = 3csc(t) \n" <<endl;
-	nonhomogeneousequationssolution_variationofparameters(1,0,4,3*csc(t),y,t);		
+	secondorderlineardiffeq_nonhomogeneousequationssolution_variationofparameters(1,0,4,3*csc(t),y,t);		
 	
 	//cout << integrate(csc(t),t) << endl;
 	// Get ending timepoint

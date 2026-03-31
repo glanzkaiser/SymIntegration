@@ -47,10 +47,10 @@ int main(void)
 	Symbolic y("y"),t("t");
 	
 	cout << "\nGeneral solution for y'' - 3y' - 4y = 0\n" <<endl;
-	dsolvesecondorderlinear(1,-3,-4,y,t);		
+	secondorderlineardiffeq_dsolve(1,-3,-4,y,t);		
 
 	cout << "\nParticular solution for y'' - 3y' - 4y = 2e^{-t}\n" <<endl;
-	nonhomogeneousequationssolution(1,-3,-4,2*exp(-t),y,t);		
+	secondorderlineardiffeq_nonhomogeneousequationssolution(1,-3,-4,2*exp(-t),y,t);		
 	// Get ending timepoint
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<microseconds>(stop - start);

@@ -47,13 +47,13 @@ int main(void)
 	//dsolvesecondorderlinear(1,5,6,y,t);		
 
 	cout << "\nIVP Solve for y'' + 5y'+ 6y = 0 with y(0) = 2, y'(0) = 3\n" <<endl;
-	ivpsecondorderlinear(1,5,6,y,t,0,2,3);		
+	secondorderlineardiffeq_ivpsolution(1,5,6,y,t,0,2,3);		
 
 	cout << "\nIVP Solve for y'' - y = 0 with y(0) = 2, y'(0) = -1\n" <<endl;
-	ivpsecondorderlinear(1,0,-1,y,t,0,2,-1);		
+	secondorderlineardiffeq_ivpsolution(1,0,-1,y,t,0,2,-1);		
 
 	cout << "\nIVP Solve for 4y'' - 8y' +  3y = 0 with y(0) = 2, y'(0) = 1/2\n" <<endl;
-	ivpsecondorderlinear(4,-8,3,y,t,0,2,0.5);		
+	secondorderlineardiffeq_ivpsolution(4,-8,3,y,t,0,2,0.5);		
 
 	return 0; 
 }

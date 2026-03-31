@@ -47,7 +47,7 @@ int main(void)
 	Symbolic y("y"),t("t");
 	
 	cout << "\nInitial Value Problem solution for y'' - y'+ 0.25y = 0 with t_{0} = 0, y(t_{0}) = 2, y'(t_{0}) = 1/3\n" <<endl;
-	ivpsecondorderlinear(1,-1,0.25,y,t,0,2,divisiond(1,3));		
+	secondorderlineardiffeq_ivpsolution(1,-1,0.25,y,t,0,2,divisiond(1,3));		
 
 	// Get ending timepoint
 	auto stop = high_resolution_clock::now();

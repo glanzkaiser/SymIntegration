@@ -45,6 +45,8 @@ Symbolic directionfield(const Symbolic &, const Symbolic &, const Symbolic &, do
 double NewtonRaphson(const Symbolic &, const Symbolic &, double);
 double secantmethod(const Symbolic &, const Symbolic &, double,  double, double, int);
 
+void AberthEhrlich(const vector<complex<double>> &,  const vector<complex<double>> &,  int);
+
 double numericaldifferentiation(const Symbolic &, const Symbolic &, double, double);
 double numericaldifferentiation3pointoneside(const Symbolic &, const Symbolic &, double, double);
 double numericaldifferentiation3pointbothsides(const Symbolic &, const Symbolic &, double, double);

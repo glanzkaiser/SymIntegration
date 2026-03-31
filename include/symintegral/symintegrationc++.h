@@ -41,6 +41,7 @@
 #include "symintegral/functions.h" //     Sin    : Symbol ...
 #include "symintegral/symmatrix.h" //   SymbolicMatrix : CloningSymbolicInterface
 #include "symintegral/symerror.h"  //   SymbolicError  : CloningSymbolicInterface
+#include "symintegral/complexanalysis.h"
 #include "symintegral/constants.h"
 #include "symintegral/solve.h"
 #include "symintegral/differentialequations.h"

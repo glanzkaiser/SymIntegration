@@ -241,7 +241,7 @@ Symbolic dsolveseparable(const Symbolic &fdy, const Symbolic &fdx, const Symboli
 	return dsol;
 }
 
-void dsolvesecondorderlinear(double a, double b, double c, const Symbolic &y, const Symbolic &x)
+void secondorderlineardiffeq_dsolve(double a, double b, double c, const Symbolic &y, const Symbolic &x)
 {
 	Symbolic yt, y1, y2, c1("c1"), c2("c2");
  	double r1, r2;
@@ -281,7 +281,7 @@ void dsolvesecondorderlinear(double a, double b, double c, const Symbolic &y, co
 	}
 }
 
-void ivpsecondorderlinear(double a, double b, double c, const Symbolic &y, const Symbolic &x, double t0, double y0, double dy0)
+void secondorderlineardiffeq_ivpsolution(double a, double b, double c, const Symbolic &y, const Symbolic &x, double t0, double y0, double dy0)
 {
 	Symbolic yt, y1, y2, c1("c1"), c2("c2");
  	double r1, r2;
@@ -376,7 +376,7 @@ void ivpsecondorderlinear(double a, double b, double c, const Symbolic &y, const
 	 
 }
 
-void springmasssystemsecondorderlinear(double a, double b, double c, const Symbolic &y, const Symbolic &x, double y0, double dy0)
+void secondorderlineardiffeq_springmasssystem(double a, double b, double c, const Symbolic &y, const Symbolic &x, double y0, double dy0)
 {
 	Symbolic yt, y1, y2, c1("c1"), c2("c2");
  	double r1, r2;
@@ -473,7 +473,7 @@ void springmasssystemsecondorderlinear(double a, double b, double c, const Symbo
 	 
 }
 
-void RLCserieselectriccircuit(double R, double L, double C, double y0, double dy0)
+void secondorderlineardiffeq_RLCserieselectriccircuit(double R, double L, double C, double y0, double dy0)
 {
 	Symbolic qt, q1, q2, c1("c1"), c2("c2"), q("q"), t("t");
  	double r1, r2;
@@ -715,7 +715,7 @@ void wronskian_fundamentalsetofsolutions(double a, double b, double c, const Sym
 #include "polynomial.h"
 #include "rational.h"
 
-void nonhomogeneousequationssolution(const Symbolic &lhs_a, const Symbolic &lhs_b, const Symbolic &lhs_c, Polynomial<double> &rhs_function)
+void secondorderlineardiffeq_nonhomogeneousequationssolution(const Symbolic &lhs_a, const Symbolic &lhs_b, const Symbolic &lhs_c, Polynomial<double> &rhs_function)
 {
 	Symbolic A("A"), t("t");
 	Symbolic lhs_final, Yt_final;
@@ -1013,7 +1013,7 @@ void nonhomogeneousequationssolution(const Symbolic &lhs_a, const Symbolic &lhs_
 	}*/
 }
 
-void nonhomogeneousequationssolution(const Symbolic &lhs_a, const Symbolic &lhs_b, const Symbolic &lhs_c, const Symbolic &rhs_function, const Symbolic &y, const Symbolic &x)
+void secondorderlineardiffeq_nonhomogeneousequationssolution(const Symbolic &lhs_a, const Symbolic &lhs_b, const Symbolic &lhs_c, const Symbolic &rhs_function, const Symbolic &y, const Symbolic &x)
 {
 	Symbolic A("A"), B("B");
 	
@@ -1591,7 +1591,7 @@ void nonhomogeneousequationssolution(const Symbolic &lhs_a, const Symbolic &lhs_
 	}
 }
 
-void nonhomogeneousequationsivpsolution(const Symbolic &lhs_a, const Symbolic &lhs_b, const Symbolic &lhs_c, const Symbolic &rhs_function,  double y0, double dy0, const Symbolic &y, const Symbolic &x)
+void secondorderlineardiffeq_nonhomogeneousequationsivpsolution(const Symbolic &lhs_a, const Symbolic &lhs_b, const Symbolic &lhs_c, const Symbolic &rhs_function,  double y0, double dy0, const Symbolic &y, const Symbolic &x)
 {
 	Symbolic A("A"), B("B");
 
@@ -2199,7 +2199,7 @@ void nonhomogeneousequationsivpsolution(const Symbolic &lhs_a, const Symbolic &l
 	}
 
 }
-void nonhomogeneousequationssolution(const Symbolic &lhs_a, const Symbolic &lhs_b, const Symbolic &lhs_c, const SymbolicMatrix &Matrix_A, const Symbolic &y, const Symbolic &x)
+void secondorderlineardiffeq_nonhomogeneousequationssolution(const Symbolic &lhs_a, const Symbolic &lhs_b, const Symbolic &lhs_c, const SymbolicMatrix &Matrix_A, const Symbolic &y, const Symbolic &x)
 { //Code it in 51 minutes, a silly bug on redeclaring Symbolic Yt_final occurs, it should be done in 30 minutes, on February 14th, 2026
 	Symbolic A("A"), B("B");
 	
@@ -2739,7 +2739,7 @@ void nonhomogeneousequationssolution(const Symbolic &lhs_a, const Symbolic &lhs_
 	}
 }
 
-void nonhomogeneousequationsivpforcedvibrationssolution(const Symbolic &lhs_a, const Symbolic &lhs_b, const Symbolic &lhs_c, const Symbolic &rhs_function,  double y0, double dy0, const Symbolic &y, const Symbolic &x)
+void secondorderlineardiffeq_nonhomogeneousequationsivpforcedvibrationssolution(const Symbolic &lhs_a, const Symbolic &lhs_b, const Symbolic &lhs_c, const Symbolic &rhs_function,  double y0, double dy0, const Symbolic &y, const Symbolic &x)
 {
 	Symbolic A("A"), B("B");
 	Symbolic Yt_final;
@@ -3381,7 +3381,7 @@ void nonhomogeneousequationsivpforcedvibrationssolution(const Symbolic &lhs_a, c
 
 
 
-void nonhomogeneousequationssolution_variationofparameters(const Symbolic &lhs_a, const Symbolic &lhs_b, const Symbolic &lhs_c, const Symbolic &rhs_function, const Symbolic &y, const Symbolic &x)
+void secondorderlineardiffeq_nonhomogeneousequationssolution_variationofparameters(const Symbolic &lhs_a, const Symbolic &lhs_b, const Symbolic &lhs_c, const Symbolic &rhs_function, const Symbolic &y, const Symbolic &x)
 {
 
 	Symbolic Yt, yt, y1, y2, c1("c1"), c2("c2");
@@ -3439,6 +3439,637 @@ void nonhomogeneousequationssolution_variationofparameters(const Symbolic &lhs_a
 	yt = Yt + y1 + y2;
 	cout << "\nThe general solution is\ny_{t} = " << yt << endl;
 
+}
+
+void higherorderlineardiffeq_homogeneousequationsivpsolution(const vector<complex<double>> &P, const vector<complex<double>> &vec_ic, const vector<complex<double>> &vec_x0,  int N)
+{
+// Done on March 23rd, 2026
+	int n_Polynomial = P.size();
+	int n_ic = vec_ic.size();
+	complex<double> nP(n_Polynomial,0.0);
+	int n = vec_x0.size();
+	complex<double> root(0.0,0.0);
+	complex<double> c1(1.0, 0.0); // means complex number with real part 1 and imag part 0
+	complex<double> c0(0.0, 0.0);
+	vector<complex<double>> P_derivative;
+	vector<complex<double>> vec_update;
+	vector<complex<double>> vec_imagroots;
+	vector<complex<double>> vec_dummy;
+	vector<complex<double>> vec_check;
+	complex<double> i_derivative(1.0,0.0);
+
+	if(n != n_Polynomial-1)	
+	{
+		cerr << "Error: Initial guess has to be: the number of highest order of the derivative." << endl;
+	}
+	if(n_ic != n_Polynomial-1)	
+	{
+		cerr << "Error: The number of initial conditions has to be: the number of highest order of the derivative." << endl;
+	}
+	for (int i = 0; i < n_Polynomial - 1; ++i)
+	{
+		P_derivative.push_back((nP - i_derivative)*P[i]);
+		i_derivative = i_derivative + c1;
+	}
+	cout << "P: " << endl;
+	printComplexVector(P);
+	cout << "\nP': " << endl;
+	printComplexVector(P_derivative);
+	//cout << "\n accumulate P: " << accumulate(P.begin(), P.end(), c0) << endl;
+	//cout << "\n accumulate P': " << accumulate(P_derivative.begin(), P_derivative.end(), c0) << endl;
+	
+	for (int i = 0; i < n; ++i)
+	{
+		vec_dummy.push_back(vec_x0[i]);
+	}
+
+	cout << "\nInitial guess: " << endl;
+	printComplexVector(vec_dummy);
+	
+	for (int k = 0; k < N ; ++k)
+	{
+		vec_check.clear();
+		for (int i = 0; i < n; ++i)
+		{
+			vec_check.push_back(vec_dummy[i]);
+		}
+
+		for (int i = 0; i < n; ++i)
+		{
+			//cout <<"\ni: " << i << endl;
+
+			// Newton step
+			complex<double> P_zi(0.0,0.0);
+			complex<double> P_zi_derivative(0.0,0.0);
+			complex<double> i_der(1.0,0.0);
+			complex<double> i_der2(2.0,0.0);
+			for (int j = 0; j < n_Polynomial ; ++j)
+			{
+				P_zi += P[j]*pow(vec_dummy[i], nP - i_der); 
+
+				i_der = i_der + c1;
+			}		
+			//cout <<" P(z_{i}) : " << P_zi << endl;
+			for (int j = 0; j < n_Polynomial - 1 ; ++j)
+			{
+				P_zi_derivative += P_derivative[j]*pow(vec_dummy[i], nP - i_der2); 
+
+				i_der2 = i_der2 + c1;
+			}
+			//cout <<" P'(z_{i}) : " << P_zi_derivative << endl;
+
+			complex<double> N_zi =P_zi/P_zi_derivative;
+			//cout <<" N(z_{i}) : " << N_zi << endl;
+
+			// Shift
+			complex<double> shift(0.0,0.0);
+			for (int j = 0; j < n ; ++j)
+			{
+				if(i != j)
+				{
+					shift += c1/(vec_dummy[i]-vec_dummy[j]);
+				}
+				else if(i == j)
+				{
+					shift += 0;
+				}
+			}
+			//cout <<" S(z_{i}) : " << shift << endl;
+
+			vec_dummy[i] = vec_dummy[i] - (N_zi)/(c1 - N_zi*shift);
+		}
+
+		// To show the process of the Abert-Ehrlich
+		//cout <<"\niteration: " << k << endl;
+		//cout << "\nz_{i} new: " << endl;
+		//printComplexVector(vec_dummy);
+
+		complex<double> epsilon(0.0,0.0);		
+		for (int i = 0; i < n; ++i)
+		{
+			epsilon += vec_dummy[i]-vec_check[i];
+		}
+		double diffnorm = moduluscomplex(epsilon);
+		if( diffnorm < 1e-12)
+		{
+			cout << "\nRoots found at iteration: " << k << endl;
+			k = N-1;		
+		}
+		
+	}
+
+	for(int i = 0; i < n;++i)
+	{
+	// We use lround because there is an occurence if the root is obtained at very small decimal 
+	// if a root obtained is like this: 1.00000004575, and another root is : 0.9999999765,  it is hard to split them into duplicate and unique vector without lround
+
+		if(abs(imag(vec_dummy[i])) < 1e-8 && abs(real(vec_dummy[i])) > 1e-8)
+		{
+			complex<double> root(lround(real(vec_dummy[i])), 0.0);
+			vec_update.push_back(root);
+		}
+		if(abs(real(vec_dummy[i])) < 1e-8 && abs(imag(vec_dummy[i])) > 1e-8)
+		{
+			complex<double> root(0.0,lround(imag(vec_dummy[i])));
+			vec_update.push_back(root);
+		}
+		if(abs(real(vec_dummy[i])) > 1e-8 && abs(imag(vec_dummy[i])) > 1e-8)
+		{
+			complex<double> root(lround(real(vec_dummy[i])),lround(imag(vec_dummy[i])));
+			vec_update.push_back(root);
+		}
+
+	}
+
+	cout << "\n************************************************************************" << endl;
+	cout << "\nEnd of iteration" << endl;
+	cout << "\nz_{i} final: " << endl;
+	printComplexVector(vec_update);
+		
+	// Splitting vec_update into unique vector(vector with unique element) and duplicate vector (vector with element that occurs more than 1)
+	// Complex Equality: std::complex uses operator== which checks if both real and imaginary parts are equal.
+	vector<std::complex<double>> vec_unique;
+	vector<std::complex<double>> vec_duplicate;
+
+	int m = vec_update.size();
+	for (int i = 0 ; i < m ; ++i)
+	{
+		double a  = real(vec_update[i]);
+		double b  = imag(vec_update[i]);
+
+		std::complex<double> target(a, b);
+
+		// Get number of occurrences
+		long count = std::count(vec_update.begin(), vec_update.end(), target);
+
+		//std::cout << "Element "  << i << "-th occurs " << count << " times." << std::endl;
+	
+		if(count == 1)
+		{
+			vec_unique.push_back(vec_update[i]);
+		}
+		else if(count > 1)
+		{
+			vec_duplicate.push_back(vec_update[i]);
+		}
+	}
+	std::cout << "\nUnique vector:" << std::endl;
+	printComplexVector(vec_unique);
+	std::cout << "\nDuplicate vector:" << std::endl;
+    	printComplexVector(vec_duplicate);
+
+	// End of splitting into duplicate and unique vectors
+
+	int n_unique = vec_unique.size();
+	int n_duplicate = vec_duplicate.size();
+	
+	// This is for the case when the roots are unique, no duplicate / repeated roots.
+	if(n_duplicate == 0)
+	{
+		Symbolic t("t"), c("c");
+		Symbolic general_solution, ivp_solution, df_solution;
+		for(int i = 0; i < n;++i)
+		{
+			complex<double> root(real(vec_unique[i]),abs(imag(vec_unique[i])));
+			vec_imagroots.push_back(root) ;
+		}
+		//cout << "\nThe abs imag roots" << endl ;
+		//printComplexVector(vec_imagroots);
+
+		// 1. Sort the vector using a custom comparator
+		/*
+		std::sort(vec_imagroots.begin(), vec_imagroots.end(), [](const std::complex<double>& a, const std::complex<double>& b) 
+		{
+		if (a.real() != b.real()) 
+		{
+			return a.real() < b.real();
+		}
+		else
+		{	
+			return a.imag() < b.imag();
+		}
+		});	*/
+
+		//    Use std::unique to move all non-duplicate elements to the front
+		//    and return an iterator to the new logical end of the unique range.
+		auto last = std::unique(vec_imagroots.begin(), vec_imagroots.end());
+
+		//    Erase the duplicate elements from the end of the vector.
+		vec_imagroots.erase(last, vec_imagroots.end());
+
+		//cout << "\nThe abs imag roots after delete duplicate" << endl ;
+		//printComplexVector(vec_imagroots);
+		for(int i = 0; i < n;++i)
+		{
+			double mu = imag(vec_imagroots[i]);
+			double lambda = real(vec_imagroots[i]);
+			if(mu != 0)
+			{
+				general_solution += exp(lambda*t)*c[i] *cos(mu*t) + exp(lambda*t)*c[i+1] *sin(mu*t) ;
+				i=i+1;
+			}
+			else if(mu == 0)
+			{
+				general_solution += exp(lambda*t)*c[i] *cos(mu*t) + exp(lambda*t)*c[i] *sin(mu*t) ;
+				
+			}
+		}
+		cout << "\nThe general solution is: \ny(t) = "<< general_solution << endl;
+		df_solution = general_solution;
+		/*for(int i = 0; i < n;++i)
+		{
+			df_solution = df(df_solution,t);
+			cout << "\ny^{(" << i << ")} = " << df_solution << endl;
+			cout << "\ny^{(" << i << ")} (0)= " << df_solution[t==0] << endl;
+		}*/
+
+		vector<vector<double>> mat_A(n, vector<double>(n));
+		vector<vector<double>> vec_b(n, vector<double>(1));
+		for(int i = 0; i < n;++i)
+		{
+			Symbolic df_solution_ivp = df_solution[t==0] ;
+			for(int j = 0; j < n;++j)
+			{
+				mat_A[i][j] = df_solution_ivp.coeff(c[j],1);
+			}	
+			df_solution = df(df_solution,t);		
+		}		
+		for(int i = 0; i < n;++i)
+		{
+			vec_b[i][0] = real(vec_ic[i]);
+		}
+
+		vector<double> c_solution;
+		solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+		//printVector(c_solution);
+
+		for(int i = 0; i < n;++i)
+		{
+			double mu = imag(vec_imagroots[i]);
+			double lambda = real(vec_imagroots[i]);
+			if(mu != 0)
+			{
+				ivp_solution += exp(lambda*t)*c_solution[i] *cos(mu*t) + exp(lambda*t)*c_solution[i+1] *sin(mu*t) ;
+				i=i+1;
+			}
+			else if(mu == 0)
+			{
+				ivp_solution += exp(lambda*t)*c_solution[i] *cos(mu*t) + exp(lambda*t)*c_solution[i] *sin(mu*t) ;
+				
+			}
+		}
+		cout << "\nThe initial value problem solution is: \ny(t) = "<< ivp_solution << endl;
+	}
+
+	else if(n_duplicate != 0 )
+	{
+		
+		Symbolic t("t"), c("c");
+		Symbolic general_solution, ivp_solution, df_solution;
+		if (n_unique != 0 && n_duplicate != n)
+		{
+			// We handle for the unique roots first
+			for(int i = 0; i < n_unique;++i)
+			{
+				complex<double> root(real(vec_unique[i]),abs(imag(vec_unique[i])));
+				vec_imagroots.push_back(root) ;
+			}
+
+			//    Use std::unique to move all non-duplicate elements to the front
+			//    and return an iterator to the new logical end of the unique range.
+			auto last = std::unique(vec_imagroots.begin(), vec_imagroots.end());
+
+			//    Erase the duplicate elements from the end of the vector.
+			vec_imagroots.erase(last, vec_imagroots.end());
+
+			//cout << "\nThe abs imag unique roots after delete duplicate" << endl ;
+			//printComplexVector(vec_imagroots);
+
+			/*
+
+				TEST 
+
+			*/
+
+			vector<int> vec_occurence;
+			
+			// 1. Sort the vector using a custom comparator
+			std::sort(vec_duplicate.begin(), vec_duplicate.end(), [](const std::complex<double>& a, const std::complex<double>& b) 
+			{
+			if (a.real() != b.real()) 
+			{
+				return a.real() < b.real();
+			}
+			else
+			{	
+				return a.imag() < b.imag();
+			}
+			});	
+			cout << "\nSorted Duplicate vector:" << endl;
+    			printComplexVector(vec_duplicate);
+			int m_stop;
+
+			for (int i = 0 ; i < n_duplicate ; ++i)
+			{
+				//cout << "i = " << i << endl;
+				double a  = real(vec_duplicate[i]);
+				double b  = imag(vec_duplicate[i]);
+
+				std::complex<double> target(a, b);
+
+				// Get number of occurrences
+				int count = std::count(vec_duplicate.begin(), vec_duplicate.end(), target);
+
+				//cout << "Element "  << i << "-th occurs " << count << " times." << endl;
+				vec_occurence.push_back(count);
+				m_stop = std::accumulate(vec_occurence.begin(), vec_occurence.end(), 0) ;
+				//cout << "vec occurence = " << vec_occurence[i] << endl;
+				//cout << "m stop = " << m_stop << endl;
+				if (m_stop == n_duplicate )
+				{
+					i = n_duplicate-1;		
+				}
+			}
+			//    Use std::unique to move all non-duplicate elements to the front
+			//    and return an iterator to the new logical end of the unique range.
+			auto last2 = std::unique(vec_duplicate.begin(), vec_duplicate.end());
+
+			//    Erase the duplicate elements from the end of the vector.
+			vec_duplicate.erase(last2, vec_duplicate.end());
+			cout << "\nDeleted Duplicate vector:" << endl;
+    			printComplexVector(vec_duplicate);
+
+			int n_duplicate2 = vec_duplicate.size();
+			// Remove the complex conjugate and store the last final root/s in vec_imagroots
+			for(int i = 0; i < n_duplicate2;++i)
+			{
+				complex<double> root(real(vec_duplicate[i]),abs(imag(vec_duplicate[i])));
+				vec_imagroots.push_back(root) ;
+			}
+
+			//    Use std::unique to move all non-duplicate elements to the front
+			//    and return an iterator to the new logical end of the unique range.
+			auto last3 = std::unique(vec_imagroots.begin(), vec_imagroots.end());
+
+			//    Erase the duplicate elements from the end of the vector.
+			vec_imagroots.erase(last3, vec_imagroots.end());
+			cout << "\nFinal Duplicate vector:" << endl;
+    			printComplexVector(vec_imagroots);
+			int n_duplicatefinal = vec_imagroots.size() - n_unique;
+
+
+			
+			int index_i_continuing;
+			for(int i = 0; i < n_unique;++i)
+			{
+				double mu = imag(vec_imagroots[i]);
+				double lambda = real(vec_imagroots[i]);
+				if(mu != 0)
+				{
+					general_solution += exp(lambda*t)*c[i] *cos(mu*t) + exp(lambda*t)*c[i+1] *sin(mu*t) ;
+					i=i+1;
+				}
+				else if(mu == 0)
+				{
+					general_solution += exp(lambda*t)*c[i] *cos(mu*t) + exp(lambda*t)*c[i] *sin(mu*t) ;
+					
+				}
+				index_i_continuing = i+1;
+			}
+
+			for(int i = index_i_continuing; i <= n_duplicatefinal;++i)
+			{
+				double mu = imag(vec_imagroots[i]);
+				double lambda = real(vec_imagroots[i]);
+				int n_occurence = vec_occurence[i];
+				if(mu != 0)
+				{					
+					int k = 0;
+					for(int j = index_i_continuing; j <= n_occurence + n_unique; j++)
+					{
+						//cout <<" j = "<< j << endl;
+						general_solution += exp(lambda*t)*c[j] *cos(mu*t) * pow(t,Symbolic(k)) + exp(lambda*t)*c[j+1] *sin(mu*t) * pow(t,Symbolic(k));
+						//cout << "\nThe general solution is: \ny(t) = "<< general_solution << endl;
+						k = k+1;		
+						j = j+1;				
+					}
+				}
+				else if(mu == 0)
+				{
+					general_solution += exp(lambda*t)*c[i] *cos(mu*t) + exp(lambda*t)*c[i] *sin(mu*t) ;		
+				}
+			}
+		
+			/*
+
+				END OF TEST 
+
+			*/
+
+			cout << "\nThe general solution is: \ny(t) = "<< general_solution << endl;
+			df_solution = general_solution;
+		
+			vector<vector<double>> mat_A(n, vector<double>(n));
+			vector<vector<double>> vec_b(n, vector<double>(1));
+			for(int i = 0; i < n;++i)
+			{
+				Symbolic df_solution_ivp = df_solution[t==0] ;
+				for(int j = 0; j < n;++j)
+				{
+					mat_A[i][j] = df_solution_ivp.coeff(c[j],1);
+				}	
+				df_solution = df(df_solution,t);		
+			}		
+			for(int i = 0; i < n;++i)
+			{
+				vec_b[i][0] = real(vec_ic[i]);
+			}
+
+			vector<double> c_solution;
+			solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+			//printMatrix(mat_A);
+			//printVector(c_solution);
+
+			for(int i = 0; i < n_unique;++i)
+			{
+				double mu = imag(vec_imagroots[i]);
+				double lambda = real(vec_imagroots[i]);
+				if(mu != 0)
+				{
+					ivp_solution += exp(lambda*t)*c_solution[i] *cos(mu*t) + exp(lambda*t)*c_solution[i+1] *sin(mu*t) ;
+					i=i+1;
+				}
+				else if(mu == 0)
+				{
+					ivp_solution += exp(lambda*t)*c_solution[i] *cos(mu*t) + exp(lambda*t)*c_solution[i] *sin(mu*t) ;
+				}
+			}
+			for(int i = index_i_continuing; i <= n_duplicatefinal;++i)
+			{
+				double mu = abs(imag(vec_duplicate[i]));
+				double lambda = real(vec_duplicate[i]);
+				int n_occurence = vec_occurence[i];
+				cout << "n_occurence = "<< n_occurence<< endl;
+				if(mu != 0)
+				{			
+					int k = 0;		
+					for(int j = index_i_continuing; j <= n_occurence + index_i_continuing ; j++)
+					{
+						ivp_solution += exp(lambda*t)*c_solution[j] *cos(mu*t) * pow(t,Symbolic(k)) + exp(lambda*t)*c_solution[j+1] *sin(mu*t) * pow(t,Symbolic(k)) ;
+						k= k+1;
+						j = j+1;
+					}
+					i=i+n_occurence;
+				}
+				else if(mu == 0)
+				{
+					ivp_solution += exp(lambda*t)*c_solution[i] *cos(mu*t) + exp(lambda*t)*c_solution[i] *sin(mu*t) ;
+					
+				}
+				
+			}
+		}
+		else if (n_duplicate == n)
+		{
+			//cout << "\nn unique == 0 "<< endl;
+			vector<int> vec_occurence;
+			
+			// 1. Sort the vector using a custom comparator
+		
+			std::sort(vec_duplicate.begin(), vec_duplicate.end(), [](const std::complex<double>& a, const std::complex<double>& b) 
+			{
+			if (a.real() != b.real()) 
+			{
+				return a.real() < b.real();
+			}
+			else
+			{	
+				return a.imag() < b.imag();
+			}
+			});	
+			//cout << "\nSorted Duplicate vector:" << endl;
+    			//printComplexVector(vec_duplicate);
+			int m_stop;
+
+			for (int i = 0 ; i < n_duplicate ; ++i)
+			{
+				double a  = real(vec_duplicate[i]);
+				double b  = imag(vec_duplicate[i]);
+
+				std::complex<double> target(a, b);
+
+				// Get number of occurrences
+				int count = std::count(vec_duplicate.begin(), vec_duplicate.end(), target);
+
+				//cout << "Element "  << i << "-th occurs " << count << " times." << endl;
+				vec_occurence.push_back(count);
+				m_stop = std::accumulate(vec_occurence.begin(), vec_occurence.end(), 0) ;
+				//cout << "m stop = " << m_stop << endl;
+				if (m_stop == n_duplicate )
+				{
+					i = n_duplicate-1;		
+				}
+			}
+			//    Use std::unique to move all non-duplicate elements to the front
+			//    and return an iterator to the new logical end of the unique range.
+			auto last = std::unique(vec_duplicate.begin(), vec_duplicate.end());
+
+			//    Erase the duplicate elements from the end of the vector.
+			vec_duplicate.erase(last, vec_duplicate.end());
+			cout << "\nDeleted Duplicate vector:" << endl;
+    			printComplexVector(vec_duplicate);
+
+			int n_duplicate2 = vec_duplicate.size();
+			// Remove the complex conjugate and store the last final root/s in vec_imagroots
+			for(int i = 0; i < n_duplicate2;++i)
+			{
+				complex<double> root(real(vec_duplicate[i]),abs(imag(vec_duplicate[i])));
+				vec_imagroots.push_back(root) ;
+			}
+
+			//    Use std::unique to move all non-duplicate elements to the front
+			//    and return an iterator to the new logical end of the unique range.
+			auto last2 = std::unique(vec_imagroots.begin(), vec_imagroots.end());
+
+			//    Erase the duplicate elements from the end of the vector.
+			vec_imagroots.erase(last2, vec_imagroots.end());
+			cout << "\nFinal Duplicate vector:" << endl;
+    			printComplexVector(vec_imagroots);
+			int n_duplicatefinal = vec_imagroots.size();
+
+			for(int i = 0; i < n_duplicatefinal;++i)
+			{
+				double mu = imag(vec_imagroots[i]);
+				double lambda = real(vec_imagroots[i]);
+				int n_occurence = vec_occurence[i];
+				if(mu != 0)
+				{					
+					int k = 0;
+					for(int j = 0; j <= n_occurence ; j++)
+					{
+						//cout <<" j = "<< j << endl;
+						general_solution += exp(lambda*t)*c[j] *cos(mu*t) * pow(t,Symbolic(k)) + exp(lambda*t)*c[j+1] *sin(mu*t) * pow(t,Symbolic(k));
+						//cout << "\nThe general solution is: \ny(t) = "<< general_solution << endl;
+						k = k+1;		
+						j = j+1;				
+					}
+				}
+				else if(mu == 0)
+				{
+					general_solution += exp(lambda*t)*c[i] *cos(mu*t) + exp(lambda*t)*c[i] *sin(mu*t) ;		
+				}
+			}
+			cout << "\nThe general solution is: \ny(t) = "<< general_solution << endl;
+			df_solution = general_solution;
+		
+			vector<vector<double>> mat_A(n, vector<double>(n));
+			vector<vector<double>> vec_b(n, vector<double>(1));
+			for(int i = 0; i < n;++i)
+			{
+				Symbolic df_solution_ivp = df_solution[t==0] ;
+				for(int j = 0; j < n;++j)
+				{
+					mat_A[i][j] = df_solution_ivp.coeff(c[j],1);
+				}	
+				df_solution = df(df_solution,t);		
+			}		
+			for(int i = 0; i < n;++i)
+			{
+				vec_b[i][0] = real(vec_ic[i]);
+			}
+
+			vector<double> c_solution;
+			solve_nhsystem_resultsonly(mat_A,vec_b,c_solution);
+			//printMatrix(mat_A);
+			//printVector(c_solution);
+
+			for(int i = 0; i < n_duplicatefinal;++i)
+			{
+				double mu = abs(imag(vec_duplicate[i]));
+				double lambda = real(vec_duplicate[i]);
+				int n_occurence = vec_occurence[i];
+				if(mu != 0)
+				{			
+					int k = 0;		
+					for(int j = 0; j <= n_occurence ; j++)
+					{
+						ivp_solution += exp(lambda*t)*c_solution[j] *cos(mu*t) * pow(t,Symbolic(k)) + exp(lambda*t)*c_solution[j+1] *sin(mu*t) * pow(t,Symbolic(k)) ;
+						k= k+1;
+						j = j+1;
+					}
+					i=i+n_occurence;
+				}
+				else if(mu == 0)
+				{
+					ivp_solution += exp(lambda*t)*c_solution[i] *cos(mu*t) + exp(lambda*t)*c_solution[i] *sin(mu*t) ;
+					
+				}
+				
+			}
+
+		}
+		cout << "\nThe initial value problem solution is: \ny(t) = "<< ivp_solution << endl;
+	}
 }
 #endif
 #endif
