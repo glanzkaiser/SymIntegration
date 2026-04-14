@@ -47,10 +47,12 @@ int main(void)
 	cvec x0 = loadComplexVectorFromFile("initialguess.txt");
 
 	//Symbolic F= pow(r,Symbolic(4)) - 1;
-	Symbolic F= pow(r,Symbolic(4)) +pow(r,Symbolic(3)) - 7*pow(r,Symbolic(2)) - r + 6;
+	//Symbolic F= pow(r,Symbolic(4)) +pow(r,Symbolic(3)) - 7*pow(r,Symbolic(2)) - r + 6;
+	Symbolic F= pow(r,Symbolic(5)) - 3*pow(r,Symbolic(4)) + 2*pow(r,Symbolic(3)) - 6*pow(r,Symbolic(2))  + r - 3;
 	cout << "Poynomial : " << F <<endl;
 	
-	higherorderlineardiffeq_homogeneousequationsivpsolution(P,ic, x0,50);
+	//higherorderlineardiffeq_homogeneousequationsivpsolution(P,ic, x0,50);
+	higherorderlineardiffeq_homogeneousequationsivpsolution(P,ic);
 
 	// Get ending timepoint
 	auto stop = high_resolution_clock::now();

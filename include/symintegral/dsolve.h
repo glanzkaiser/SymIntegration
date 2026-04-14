@@ -38,6 +38,8 @@
 #include "polynomial.h"
 #include "rational.h"
 
+double roundToDecimal(double, int); 
+
 Symbolic dsolve(const Symbolic &, const Symbolic &, const Symbolic &);
 Symbolic dsolve(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
 Symbolic dsolvelogistic(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
@@ -61,7 +63,15 @@ void secondorderlineardiffeq_nonhomogeneousequationssolution(const Symbolic &, c
 void secondorderlineardiffeq_nonhomogeneousequationssolution(const Symbolic &, const Symbolic &, const Symbolic &, const SymbolicMatrix &, const Symbolic &, const Symbolic &);
 void secondorderlineardiffeq_nonhomogeneousequationssolution_variationofparameters(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
 
+vector<complex<double>> higherorderlineardiffeq_vectorize(const Symbolic &,const Symbolic &,const Symbolic &, int);
+
 void higherorderlineardiffeq_homogeneousequationsivpsolution(const vector<complex<double>> &,  const vector<complex<double>> &, const vector<complex<double>> &,  int);
+void higherorderlineardiffeq_homogeneousequationsivpsolution(const vector<complex<double>> &,  const vector<complex<double>> &);
+void higherorderlineardiffeq_twospringtwomasssystem(double, double, double, double, Symbolic &, const vector<complex<double>> &);
+void higherorderlineardiffeq_nonhomogeneousequationsgeneralsolution(const vector<complex<double>> &, const Symbolic &, const Symbolic &);
+void higherorderlineardiffeq_nonhomogeneousequationsgeneralsolution(const vector<complex<double>> &, const SymbolicMatrix &, const Symbolic &);
+void higherorderlineardiffeq_nonhomogeneousequations_undeterminedcoefficients(const Symbolic &, const Symbolic &, const Symbolic &);
+void higherorderlineardiffeq_nonhomogeneousequations_variationofparameters(const vector<complex<double>> &, const Symbolic &, const Symbolic &);
 
 Symbolic ivp(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
 
