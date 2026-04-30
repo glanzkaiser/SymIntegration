@@ -41,6 +41,7 @@
 #include "symintegral/functions.h" //     Sin    : Symbol ...
 #include "symintegral/symmatrix.h" //   SymbolicMatrix : CloningSymbolicInterface
 #include "symintegral/symerror.h"  //   SymbolicError  : CloningSymbolicInterface
+#include "symintegral/artificialneuralnetworks.h"
 #include "symintegral/complexanalysis.h"
 #include "symintegral/constants.h"
 #include "symintegral/solve.h"
@@ -50,6 +51,7 @@
 #include "symintegral/dynamicalsystem.h"
 #include "symintegral/geneticalgorithms.h"
 #include "symintegral/geometryandvectors.h"
+#include "symintegral/infiniteseries.h"
 #include "symintegral/linearalgebra.h"
 #include "symintegral/mathematicalfinance.h"
 #include "symintegral/numericalmethod.h"

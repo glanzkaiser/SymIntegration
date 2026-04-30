@@ -5845,7 +5845,7 @@ void solve_nhsystem(vector<vector<double>> &A, vector<vector<double>> &b, vector
 			}
 		}
 	}
-	cout << "Augmented Matrix:" << endl;	
+	cout << "\nAugmented Matrix:" << endl;	
 	printMatrix(augmentedMatrix);
 
 	// Forward Elimination

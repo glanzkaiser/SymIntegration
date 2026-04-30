@@ -55,6 +55,7 @@ It is able to compute
 23. Compute the quantile of standard normal distribution / inverse of cdf without Boost.
 24. Transcription and translation from DNA to mRNA to polypeptide (Molecular biology).
 25. Genetic algorithms.
+26. Artificial neural networks.
 
 # Learning the Code
 
@@ -170,6 +171,7 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | One- and Two-Sample Estimation Problem, e.g. Confidence Interval and Prediction Interval		| Done
 |:sunflower:   | Transcription and translation from DNA to mRNA to polypeptide (Molecular biology)			| Done
 |:sunflower:   | Genetic algorithms for unconstained optimization of a function with two variables			| Done
+|:sunflower:   | Backpropagation for feed-forward neural network			| Done
 
 We write the definitions, theorems, examples, how to run the source code and use the functions in the book. If you are curious, then read the book.
 
@@ -453,3 +455,7 @@ The computation of real and complex eigenvalues with Francis double step QR algo
 By March 23rd, 2026: We have created a function to compute the maximum value of a function of two variables (unconstrained optimization) with simple genetic algorithms:
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/52.gif" width="60%">
+
+By April 30th, 2026: We have created a function to compute the backpropagation process for feed-forward neural network with 1 hidden layer, computation all in vector<double> or vector<vector<double>>, we are not using struct to gain the best performance:
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/52.png" width="60%">
