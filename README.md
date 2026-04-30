@@ -456,6 +456,6 @@ By March 23rd, 2026: We have created a function to compute the maximum value of 
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/52.gif" width="60%">
 
-By April 30th, 2026: We have created a function to compute the backpropagation process for feed-forward neural network with 1 hidden layer, computation all in vector<double> or vector<vector<double>>, we are not using struct to gain the best performance:
+By April 30th, 2026: We have created a function to compute the backpropagation process for feed-forward neural network with 1 hidden layer, computation all in $`vector<double>`$ or $`vector<vector<double>>`$, we are not using struct to gain the best performance:
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/52.png" width="60%">
