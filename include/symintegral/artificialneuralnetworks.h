@@ -36,8 +36,34 @@
 #ifndef SYMINTEGRATION_CPLUSPLUS_ARTIFICIALNEURALNETWORKS_DECLARE
 #define SYMINTEGRATION_CPLUSPLUS_ARTIFICIALNEURALNETWORKS_DECLARE
 
-void FNN_1hiddenlayer(vector<double>&, vector<vector<double>>&, vector<vector<double>>&, vector<double>&, vector<double>& );
+double LeakyReLUActivationfunction(double, double);
+double ReLUActivationfunction(double);
+double SigmoidActivationfunction(double);
+double TanhActivationfunction(double);
+
+double LeakyReluDerivative(double, double);
+double ReLUDerivative(double);
+double SigmoidDerivative(double); 
+double TanhDerivative(double);
+
+void ReLU_activationfunction(vector<double>&, vector<vector<double>>&, vector<double>& );
+void Sigmoid_activationfunction(vector<double>&, vector<vector<double>>&, vector<double>& );
+void Tanh_activationfunction(vector<double>&, vector<vector<double>>&, vector<double>& );
+void Softmax_activationfunction(vector<double>&, vector<vector<double>>&, vector<double>& );
+void SoftMax_logitsinput_activationfunction(vector<double>&);
+
+vector<double> SoftMax_vectorresult_activationfunction(vector<double>& );
+
+void FNN_1hiddenlayer(vector<double>&, vector<vector<double>>&, vector<vector<double>>&, vector<double>&, vector<double>&, vector<double>& );
 void FNN_1hiddenlayer(vector<double>&, vector<double>&, int );
+void FNN_nohiddenlayer_irisdataset_training(vector<vector<double>>&, vector<string>&);
+void FNN_nohiddenlayer_irisdataset_training_conjugategradient(vector<vector<double>>&, vector<string>&);
+void FNN_nohiddenlayer_irisdataset_testing(vector<vector<double>>&, vector<string>&);
+
+void FNN_1hiddenlayer_irisdataset_training(vector<vector<double>>&, vector<string>&);
+void FNN_1hiddenlayer_irisdataset_training_conjugategradient(vector<vector<double>>&, vector<string>&);
+void FNN_1hiddenlayer_irisdataset_testing(vector<vector<double>>&, vector<string>&);
+
 
 #endif
 #endif

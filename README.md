@@ -171,7 +171,7 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | One- and Two-Sample Estimation Problem, e.g. Confidence Interval and Prediction Interval		| Done
 |:sunflower:   | Transcription and translation from DNA to mRNA to polypeptide (Molecular biology)			| Done
 |:sunflower:   | Genetic algorithms for unconstained optimization of a function with two variables			| Done
-|:sunflower:   | Backpropagation for feed-forward neural network			| Done
+|:sunflower:   | Feed-forward neural network for CLassification problem with Iris Dataset			| Done
 
 We write the definitions, theorems, examples, how to run the source code and use the functions in the book. If you are curious, then read the book.
 
@@ -459,3 +459,14 @@ By March 23rd, 2026: We have created a function to compute the maximum value of 
 By April 30th, 2026: We have created a function to compute the backpropagation process for feed-forward neural network with 1 hidden layer, computation all in $`vector<double>`$ or $`vector<vector<double>>`$, we are not using struct to gain the best performance:
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/52.png" width="60%">
+
+By May 17th, 2026: We have created functions to train and test feed-forward neural network for classification problem with Iris dataset, with no hidden layer, the activation function at the output layer is sigmoid:
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/FNNTrainingIrisDataset.gif" width="60%">
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/FNNTestingIrisDataset.gif" width="60%">
+
+FNN classification for Iris dataset with 1 hidden layer, first activation function at the hidden layer is sigmoid, last activation function at the output layer is softmax.
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/FNNTrainingIrisDataset1Hiddenlayer.gif" width="60%">
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/FNNTestingIrisDataset1Hiddenlayer.gif" width="60%">
+

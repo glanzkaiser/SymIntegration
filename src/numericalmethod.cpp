@@ -430,6 +430,22 @@ double richardsonextrapolation(const Symbolic &f, const Symbolic &x, double x0, 
 	return squareMatrix[level-1][level-1] ;
 }
 
+void conjugategradient(const Symbolic &f, const Symbolic &x, double x0, double alpha, int epochs)
+{
+	double x_iter = x0;           // Starting point (initial guess)
+	Symbolic der_f = df(f,x);
+	for (int i = 0; i < epochs; ++i) 
+	{
+	double gradient = der_f[x==x_iter];
+        
+	// Gradient Descent Formula
+	x_iter = x_iter - (alpha * gradient);
+
+	cout << "Iteration " << i + 1 << ": \tx = " << x_iter 
+		<< ", \tf(x) = " << f[x==x_iter] << endl;
+	}
+}
+
 Symbolic directionfield(const Symbolic &f, const Symbolic &tf, const Symbolic &yf, double x_min, double x_max,  double y_min, double y_max,  double step_size, double k)
 {
 	// Open a file to write data for Gnuplot

@@ -59,6 +59,8 @@ double simpsonsrule38(const Symbolic &, const Symbolic &, double, double);
 
 double richardsonextrapolation(const Symbolic &, const Symbolic &, double, double, int, int);
 
+void conjugategradient(const Symbolic &, const Symbolic &, double, double, int);
+
 void choleskyDecomposition(vector<vector<double>>);
 void LUDecomposition(vector<vector<double>>,vector<vector<double>>,vector<vector<double>>);
 

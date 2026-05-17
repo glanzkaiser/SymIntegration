@@ -154,6 +154,63 @@ double combinationsd(int n, int r) {
 	return factoriald(n) / (factoriald(r) * factoriald(n - r));
 }
 
+
+void save3DMatrixdouble(vector<vector<vector<double>>> matrix, const string& filename) 
+{
+	// Create an ofstream object and open the file for writing
+	ofstream outputFile(filename);
+	
+	if (!outputFile.is_open()) 
+	{
+	cerr << "Error: Could not open the file for writing." << endl;
+	}
+	int i = 1;
+	//  Iterate through the vector and write each element to the file
+	for (const auto& mat : matrix) 
+	{
+		outputFile << " i = " << i << endl;
+		
+		for (const auto& row : mat) 
+		{
+			for (const auto& s : row) 
+			{
+				outputFile << s << " ";
+			}
+			outputFile << endl;
+		}	
+		outputFile << endl;
+		outputFile << endl;
+		i= i+1;
+	}
+
+	// Close the file to release resources
+	outputFile.close();
+}
+
+void saveMatrixdouble(vector<vector<double>> matrix, const string& filename) 
+{
+	// Create an ofstream object and open the file for writing
+	ofstream outputFile(filename);
+	
+	if (!outputFile.is_open()) 
+	{
+	cerr << "Error: Could not open the file for writing." << endl;
+	}
+
+	//  Iterate through the vector and write each element to the file
+	for (const auto& row : matrix) 
+	{
+		for (const auto& s : row) 
+		{
+			outputFile << s << " ";
+		}
+		outputFile << endl;
+	}
+
+	// Close the file to release resources
+	outputFile.close();
+}
+
 void saveVectordouble(vector<double> vecx, const string& filename) 
 {
 	// Create an ofstream object and open the file for writing
@@ -166,6 +223,26 @@ void saveVectordouble(vector<double> vecx, const string& filename)
 
 	//  Iterate through the vector and write each element to the file
 	for (double num : vecx) 	
+	{
+		outputFile << num << endl; // Write the number followed by a newline
+	}
+
+	// Close the file to release resources
+	outputFile.close();
+}
+
+void saveVectorstring(vector<string> vecx, const string& filename) 
+{
+	// Create an ofstream object and open the file for writing
+	ofstream outputFile(filename);
+	
+	if (!outputFile.is_open()) 
+	{
+	cerr << "Error: Could not open the file for writing." << endl;
+	}
+
+	//  Iterate through the vector and write each element to the file
+	for (string num : vecx) 	
 	{
 		outputFile << num << endl; // Write the number followed by a newline
 	}

@@ -74,7 +74,10 @@ double divisionint(double, double);
 double factoriald(int);
 double combinationsd(int, int);
 
+void save3DMatrixdouble(vector<vector<vector<double>>>, const string&);
+void saveMatrixdouble(vector<vector<double>>, const string&);
 void saveVectordouble(vector<double>, const string&);
+void saveVectorstring(vector<string>, const string&);
 
 double binomialpmf(int, int, double);
 double binomialcdf(int, int, double);

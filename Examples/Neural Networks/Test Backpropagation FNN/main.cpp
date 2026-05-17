@@ -21,7 +21,8 @@ int main(int argc, char** argv)
 	
 	vector<vector<double>> weights = loadMatrixFromFile("weights.txt"); // [num_neurons][num_inputs]
 	vector<vector<double>> weightshidden = loadMatrixFromFile("weightshidden.txt"); // [num_hidden][num_outputs]
-	vector<double> biases = loadVectorFromFile("biases.txt");
+	vector<double> bias1 = loadVectorFromFile("bias1.txt");
+	vector<double> bias2 = loadVectorFromFile("bias2.txt");
 	vector<double> input = loadVectorFromFile("input.txt");
 	vector<double> output = loadVectorFromFile("output.txt");
 
@@ -32,12 +33,12 @@ int main(int argc, char** argv)
 	cout << "\nInitial Hidden Layer Weights :" << endl;
 	printMatrix(weightshidden);
 	cout << "\nBiases:" << endl;
-	printVector(biases);
+	printVector(bias1);
 	cout << "\nActual Output:" << endl;
 	printVector(output);
 
 	cout << "\nFeed-forward Neural Network with 1 hidden layer:" << endl;
-	FNN_1hiddenlayer(input,weights,weightshidden,biases, output);
+	FNN_1hiddenlayer(input,weights,weightshidden,bias1, bias2, output);
 
 	cout << "\nFeed-forward Neural Network with 1 hidden layer type 2:" << endl;
 	FNN_1hiddenlayer(input,output, 2);
