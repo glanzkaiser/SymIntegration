@@ -171,7 +171,7 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | One- and Two-Sample Estimation Problem, e.g. Confidence Interval and Prediction Interval		| Done
 |:sunflower:   | Transcription and translation from DNA to mRNA to polypeptide (Molecular biology)			| Done
 |:sunflower:   | Genetic algorithms for unconstained optimization of a function with two variables			| Done
-|:sunflower:   | Feed-forward neural network for CLassification problem with Iris Dataset			| Done
+|:sunflower:   | Feed-forward neural network for Classification problem with Iris Dataset			| Done
 
 We write the definitions, theorems, examples, how to run the source code and use the functions in the book. If you are curious, then read the book.
 
@@ -469,4 +469,12 @@ FNN classification for Iris dataset with 1 hidden layer, first activation functi
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/FNNTrainingIrisDataset1Hiddenlayer.gif" width="60%">
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/FNNTestingIrisDataset1Hiddenlayer.gif" width="60%">
+
+FNN classification for Iris dataset with 1 hidden layer, first activation function is sigmoid and the last activation function is softmax with steepest descent method.
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/FNNIriswithClassSigmoidSoftmaxSteepestDescent.gif" width="60%">
+
+FNN classification for Iris dataset with 1 hidden layer, first activation function is ReLU and the last activation function is softmax with conjugate gradient method.
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/FNNIriswithClassReLUSoftmaxConjugateGradient.gif" width="60%">
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/FNNIriswithClassReLUSoftmaxConjugateGradientFinal.gif" width="60%">
+
 

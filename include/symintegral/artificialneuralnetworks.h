@@ -28,6 +28,98 @@
 #ifndef SYMINTEGRATION_CPLUSPLUS_ARTIFICIALNEURALNETWORKS_FORWARD
 #define SYMINTEGRATION_CPLUSPLUS_ARTIFICIALNEURALNETWORKS_FORWARD
 
+#ifndef FNN_NOHIDDENLAYER_IRIS_H
+#define FNN_NOHIDDENLAYER_IRIS_H
+
+class FNN_NoHiddenLayer_Iris {
+private:
+	double weights[4][3];
+	double bias[3]; // Fixed-size array member
+	double learning_rate;
+
+public:
+	FNN_NoHiddenLayer_Iris(); // Constructor
+	
+	vector<double> predict(const vector<double> &inputs);
+
+	void train(vector<vector<double>> &X, vector<int> &y, int epochs);
+
+	void save_model(const string &filename) ; // Void function declaration
+	void load_model(const string& filename); 
+};
+
+#endif
+
+#ifndef FNN_NOHIDDENLAYER_IRIS_CONJUGATEGRADIENT_H
+#define FNN_NOHIDDENLAYER_IRIS_CONJUGATEGRADIENT_H
+
+class FNN_NoHiddenLayer_Iris_ConjugateGradient {
+private:
+	double weights[4][3];
+	double bias[3]; // Fixed-size array member
+	double learning_rate;
+
+public:
+	FNN_NoHiddenLayer_Iris_ConjugateGradient(); // Constructor
+	
+	vector<double> predict(const vector<double> &inputs);
+	
+	void train(vector<vector<double>> &X, vector<int> &y, int epochs);
+
+	void save_model(const string &filename) ; // Void function declaration
+	void load_model(const string& filename); 
+};
+
+#endif
+
+#ifndef FNN_1HIDDENLAYER_IRIS_H
+#define FNN_1HIDDENLAYER_IRIS_H
+
+class FNN_1HiddenLayer_Iris {
+private:
+	double weights[4][5];
+	double hiddenweights[5][3];
+	double biashidden[5]; // Fixed-size array member
+	double biasoutput[3];
+	double learning_rate;
+
+public:
+	FNN_1HiddenLayer_Iris(); // Constructor
+	
+	vector<double> predict(const vector<double> &inputs);
+
+	void train(vector<vector<double>> &X, vector<int> &y, int epochs);
+
+	void save_model(const string &filename) ; // Void function declaration
+	void load_model(const string& filename); 
+};
+
+#endif
+
+#ifndef FNN_1HIDDENLAYER_IRIS_CONJUGATEGRADIENT_H
+#define FNN_1HIDDENLAYER_IRIS_CONJUGATEGRADIENT_H
+
+class FNN_1HiddenLayer_Iris_ConjugateGradient {
+private:
+	double weights[4][5];
+	double hiddenweights[5][3];
+	double biashidden[5]; // Fixed-size array member
+	double biasoutput[3];
+	double learning_rate;
+
+public:
+	FNN_1HiddenLayer_Iris_ConjugateGradient(); // Constructor
+	
+	vector<double> predict(const vector<double> &inputs);
+	
+	void train(vector<vector<double>> &X, vector<int> &y, int epochs);
+
+	void save_model(const string &filename) ; // Void function declaration
+	void load_model(const string& filename); 
+};
+
+#endif
+
 #endif
 #endif
 
@@ -54,17 +146,28 @@ void SoftMax_logitsinput_activationfunction(vector<double>&);
 
 vector<double> SoftMax_vectorresult_activationfunction(vector<double>& );
 
+void print_centered(const std::string&, char , int);
+double get_double_input(const string&);
+void print_progress_bar(double);
+void delay() ;
+
 void FNN_1hiddenlayer(vector<double>&, vector<vector<double>>&, vector<vector<double>>&, vector<double>&, vector<double>&, vector<double>& );
 void FNN_1hiddenlayer(vector<double>&, vector<double>&, int );
-void FNN_nohiddenlayer_irisdataset_training(vector<vector<double>>&, vector<string>&);
-void FNN_nohiddenlayer_irisdataset_training_conjugategradient(vector<vector<double>>&, vector<string>&);
-void FNN_nohiddenlayer_irisdataset_testing(vector<vector<double>>&, vector<string>&);
+
+void FNN_NoHiddenLayer_Iris_irisdataset_training(vector<vector<double>>&, vector<string>&);
+void FNN_NoHiddenLayer_Iris_irisdataset_testing(vector<vector<double>>&, vector<string>&);
 
 void FNN_1hiddenlayer_irisdataset_training(vector<vector<double>>&, vector<string>&);
-void FNN_1hiddenlayer_irisdataset_training_conjugategradient(vector<vector<double>>&, vector<string>&);
 void FNN_1hiddenlayer_irisdataset_testing(vector<vector<double>>&, vector<string>&);
 
+vector<vector<double>> read_dataset_iris(const string &, vector<int> &, vector<string> &); 
 
+void print_confusion_matrix(const vector<vector<int>>& , const vector<string>& );
+void print_metrics(const vector<vector<int>>& , const vector<string>& );
+void evaluate_model(FNN_NoHiddenLayer_Iris &, vector<vector<double>> &, vector<int> &, const vector<string> &);
+void evaluate_model(FNN_NoHiddenLayer_Iris_ConjugateGradient &, vector<vector<double>> &, vector<int> &, const vector<string> &);
+void evaluate_model(FNN_1HiddenLayer_Iris &, vector<vector<double>> &, vector<int> &, const vector<string> &);
+void evaluate_model(FNN_1HiddenLayer_Iris_ConjugateGradient &, vector<vector<double>> &, vector<int> &, const vector<string> &);
 #endif
 #endif
 

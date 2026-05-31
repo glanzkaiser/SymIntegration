@@ -29,6 +29,26 @@
 #include "cloning.h"
 #include "identity.h"
 
+#include <map>
+#include <algorithm> // For std::max_element,  std::sort
+#include <numeric> // For std::accumulate
+
+#include <string>
+#include <fstream> // For file operations
+#include <sstream> // Required for std::ostringstream
+#include <string>
+
+#include <algorithm>
+#include <iomanip>
+#include <limits>
+
+#include <random> // For random number generation
+#include <chrono>
+#include <unordered_map>
+#include <iomanip>
+#include <numeric>
+#include <thread>
+
 // phased include headers
 // according to class hierarchy
 #include "symintegral/symbolic.h"  // SymbolicInterface, Symbolic ...
@@ -68,6 +88,19 @@
 
 #ifndef SYMINTEGRATION_CPLUSPLUS
 #define SYMINTEGRATION_CPLUSPLUS
+
+// ANSI color codes
+#define RESET   "\033[0m"
+#define RED     "\033[31m"
+#define GREEN   "\033[32m"
+#define YELLOW  "\033[33m"
+#define BLUE    "\033[34m"
+#define MAGENTA "\033[35m"
+#define CYAN    "\033[36m"
+#define BOLD    "\033[1m"
+
+// Debug macro
+#define DEBUG(x) std::cout << YELLOW << "DEBUG: " << x << RESET << std::endl
 
 // Include the relevant classes in 3 phases
 //  Phase 1 ensures that every class has a forward
