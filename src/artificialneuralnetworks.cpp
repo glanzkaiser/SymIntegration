@@ -298,6 +298,89 @@ void delay()
 	}
 }
 
+vector<double> CNN_1DConvolutionOperation(const vector<double>& u, const vector<double>& v) 
+{
+	int m = u.size();
+	int n = v.size();
+    
+	// The output vector size is always M + N - 1
+	vector<double> w(m + n - 1, 0.0);
+
+	// Perform the convolution operation
+	for (int i = 0; i < m; ++i) 
+	{
+		for (int j = 0; j < n; ++j) 
+		{
+			w[i + j] += u[i] * v[j];
+		}
+	}
+
+	return w;
+}
+
+void CNN_2DConvolutionOperation(vector<vector<double>>& input, vector<vector<double>>& kernel)
+{
+	int row_input = input.size();
+	int col_input = input[0].size();
+	int row_kernel = kernel.size();
+	int col_kernel = kernel[0].size();
+	if (row_kernel != col_kernel) 
+	{
+		throw std::invalid_argument("Kernel has to be square.");
+	}
+	if (row_kernel > row_input) 
+	{
+		throw std::invalid_argument("Kernel dimension has to be smaller than input matrix dimension.");
+	}
+	int n = row_input - row_kernel + 1;
+	int m = col_input - col_kernel + 1;
+	vector<vector<double>> outputmap(n, vector<double>(m,0.0));
+   	
+	vector<vector<double>> hadamardproduct(row_kernel, vector<double>(col_kernel,0.0));
+	for (int i = 0; i < n; ++i) 
+	{
+		
+		cout << "\ni: " << i << endl ;
+		for (int j = 0; j < m; ++j) 
+		{
+			int R = i + row_kernel;
+			int C = j + col_kernel;
+			
+			vector<vector<double>> subMatrix;
+			subMatrix.assign(row_kernel, vector<double>(col_kernel, 0.0));
+			
+			int i_submatrix = 0;
+			for (int i_index = i; i_index < R; ++i_index) 
+			{
+				int j_submatrix = 0;
+				for (int j_index = j; j_index < C; ++j_index) 
+				{
+					subMatrix[i_submatrix][j_submatrix] = input[i_index][j_index];
+
+					j_submatrix += 1;
+				}
+				i_submatrix += 1;
+			}
+			cout <<"\nSubmatrix at j: " << j << endl;
+			printMatrix(subMatrix);
+			for (int i1 = 0; i1 < row_kernel; ++i1) 
+			{
+				for (int j1 = 0; j1 < col_kernel; ++j1) 
+				{
+					hadamardproduct[i1][j1] = subMatrix[i1][j1] * kernel[i1][j1];
+					outputmap[i][j] += hadamardproduct[i1][j1];
+				}
+			}
+			cout <<"\nHadamard product: " << endl;
+			printMatrix(hadamardproduct);
+		}
+		
+	}
+	cout <<"\nOutput map: " << endl;
+	printMatrix(outputmap);
+	
+}
+
 void FNN_1hiddenlayer(vector<double>& input, vector<vector<double>>& weights, vector<vector<double>>& hiddenweights, vector<double>& bias1, vector<double>& bias2, vector<double>& actual_output)
 {
 // Fixed on May 6th, 2026
