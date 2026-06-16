@@ -41,6 +41,7 @@ using ComplexVector = std::vector<Complex>;
 using ComplexMatrix = std::vector<std::vector<Complex>>;
 
 vector<vector<double>> loadMatrixFromFile(const string&);
+vector<vector<int>> loadIntMatrixFromFile(const string&);
 vector<vector<complex<double>>> loadComplexMatrixFromFile(const string&);
 vector<complex<double>> loadComplexVectorFromFile(const string&); 
 vector<double> loadVectorFromFile(const string&);

@@ -211,6 +211,30 @@ void saveMatrixdouble(vector<vector<double>> matrix, const string& filename)
 	outputFile.close();
 }
 
+void saveMatrixint(vector<vector<int>> matrix, const string& filename) 
+{
+	// Create an ofstream object and open the file for writing
+	ofstream outputFile(filename);
+	
+	if (!outputFile.is_open()) 
+	{
+	cerr << "Error: Could not open the file for writing." << endl;
+	}
+
+	//  Iterate through the vector and write each element to the file
+	for (const auto& row : matrix) 
+	{
+		for (const auto& s : row) 
+		{
+			outputFile << s << " ";
+		}
+		outputFile << endl;
+	}
+
+	// Close the file to release resources
+	outputFile.close();
+}
+
 void saveVectordouble(vector<double> vecx, const string& filename) 
 {
 	// Create an ofstream object and open the file for writing

@@ -56,6 +56,9 @@ It is able to compute
 24. Transcription and translation from DNA to mRNA to polypeptide (Molecular biology).
 25. Genetic algorithms.
 26. Artificial neural networks.
+27. Feed-forward neural network with steepest descent and conjugate gradient method.
+28. Extract RGBA matrices out of an image
+29. Perform kernel / convolution matrix on an image with OpenGL
 
 # Learning the Code
 
@@ -479,4 +482,7 @@ FNN classification for Iris dataset with 1 hidden layer, first activation functi
 
 Convolution Operation on an image with OpenGL, GLFW, GLAD, and STB Image.
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/SineBamBamConvolution.gif" width="60%">
+
+Extract RGBA matrices out of an image and construct an iamge based on RGBA matrices with SymIntegration, OpenGL, GLFW, GLAD, and STB Image.
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/SineBamBamRGBA.gif" width="60%">
 
