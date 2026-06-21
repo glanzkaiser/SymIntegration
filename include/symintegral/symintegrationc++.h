@@ -79,6 +79,7 @@
 #include "symintegral/simplify.h"
 #include "symintegral/statistics.h"
 #include "symintegral/statistics-mle.h"
+#include "symintegral/stbimage.h"
 #include "symintegral/specialfunctions.h"
 #include "symintegral/vectormatrixoperations.h"
 

@@ -486,3 +486,5 @@ Convolution Operation on an image with OpenGL, GLFW, GLAD, and STB Image.
 Extract RGBA matrices out of an image and construct an iamge based on RGBA matrices with SymIntegration, OpenGL, GLFW, GLAD, and STB Image.
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/SineBamBamRGBA.gif" width="60%">
 
+Resize images and convert the resized images into grayscale and create idx3-ubyte format for the images and the idx1-ubyte for the corresponding labels with SymIntegration and STB Image.
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/ImageManipulationidx3ubyte.gif" width="60%">
