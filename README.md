@@ -483,7 +483,7 @@ FNN classification for Iris dataset with 1 hidden layer, first activation functi
 Convolution Operation on an image with OpenGL, GLFW, GLAD, and STB Image.
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/SineBamBamConvolution.gif" width="60%">
 
-Extract RGBA matrices out of an image and construct an iamge based on RGBA matrices with SymIntegration, OpenGL, GLFW, GLAD, and STB Image.
+Extract RGBA matrices out of an image and construct an image based on RGBA matrices with SymIntegration, OpenGL, GLFW, GLAD, and STB Image.
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/SineBamBamRGBA.gif" width="60%">
 
 Resize images and convert the resized images into grayscale and create idx3-ubyte format for the images and the idx1-ubyte for the corresponding labels with SymIntegration and STB Image.
