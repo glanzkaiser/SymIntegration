@@ -181,12 +181,58 @@ vector<double> loadVectorFromFile(const string& filename)
 	return vecx;
 }
 
+vector<double> flattenDoubleMatrix(vector<vector<double>> matrix) 
+{
+	vector<double> result;
+	for (const auto& row : matrix) 
+	{
+		for (double val : row) 
+		{
+			result.push_back(val);
+		}
+	}
+	return result;
+}
+
+vector<vector<double>> matricizeDoubleVector(vector<double> vec, int R, int C) 
+{
+	int n = vec.size();
+	if(R*C != n)
+	{
+		cerr << "Error: Dimension of matrix has to be the same with the length of flattened vector." << endl;
+	}
+
+	vector<vector<double>> resultmatrix(R, vector<double>(C, 0.0));
+	int k = 0;
+	for (int i = 0; i < R; ++i) 
+	{
+		for (int j = 0; j < C; ++j) 
+		{
+			resultmatrix[i][j] = vec[k];
+			k += 1;
+		}
+	}
+	return resultmatrix;
+}
+
 // Function to print a matrix
 void printMatrix(vector<vector<double>> matrix) 
 {
-	 for (const auto& row : matrix) 
+	for (const auto& row : matrix) 
 	{
 		for (double val : row) 
+		{
+			cout << std::fixed << setw(23) << setprecision(6) << val << setw(23);
+		}
+		cout << endl;
+	}
+}
+
+void printIntMatrix(vector<vector<int>> matrix) 
+{
+	for (const auto& row : matrix) 
+	{
+		for (int val : row) 
 		{
 			cout << std::fixed << setw(23) << setprecision(6) << val << setw(23);
 		}

@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <limits>
+#include <climits> // for INT_MIN
 
 #include <random> // For random number generation
 #include <chrono>
@@ -298,6 +299,32 @@ void delay()
 	}
 }
 
+vector<vector<int>> CNN_2DpadBorder(const vector<vector<int>>& matrix, int pad_size) 
+{
+	int pad_value = 0;
+	if (matrix.empty())
+	{ 
+		return {};
+	}
+
+	int old_rows = matrix.size();
+	int old_cols = matrix[0].size(); // Assumes a rectangular input matrix
+    
+	int new_rows = old_rows + 2 * pad_size;
+	int new_cols = old_cols + 2 * pad_size;
+
+	// Create a new matrix initialized entirely with the padding value
+	vector<std::vector<int>> padded(new_rows, vector<int>(new_cols, pad_value));
+
+	// Copy original data into the center region
+	for (int i = 0; i < old_rows; ++i) 
+	{
+		std::copy(matrix[i].begin(), matrix[i].end(), padded[i + pad_size].begin() + pad_size);
+	}
+
+	return padded;
+}
+
 vector<double> CNN_1DConvolutionOperation(const vector<double>& u, const vector<double>& v) 
 {
 	int m = u.size();
@@ -318,7 +345,48 @@ vector<double> CNN_1DConvolutionOperation(const vector<double>& u, const vector<
 	return w;
 }
 
-void CNN_2DConvolutionOperation(vector<vector<double>>& input, vector<vector<double>>& kernel)
+// Function to apply kernel convolution with stride
+vector<vector<double>> CNN_2DConvolutionOperation(const vector<vector<int>>& input, const vector<vector<double>>& kernel, int stride) 
+{
+	int inputH = input.size();
+	int inputW = input[0].size();
+	int kernelH = kernel.size();
+	int kernelW = kernel[0].size();
+
+	// Calculate output dimensions
+	int outputH = (inputH - kernelH) / stride + 1;
+	int outputW = (inputW - kernelW) / stride + 1;
+
+	// Initialize output matrix with zeros
+	vector<vector<double>> output(outputH, vector<double>(outputW, 0.0));
+
+	// Perform convolution
+	for (int i = 0; i < outputH; ++i) 
+	{
+		for (int j = 0; j < outputW; ++j) 
+		{
+			double sum = 0.0;
+		    
+			// Map output position back to input position using stride
+			int startRow = i * stride;
+			int startCol = j * stride;
+
+			// Multiply kernel with the matching input window
+			for (int kh = 0; kh < kernelH; ++kh) 
+			{
+				for (int kw = 0; kw < kernelW; ++kw) 
+				{
+					sum += input[startRow + kh][startCol + kw] * kernel[kh][kw];
+				}
+			}
+			output[i][j] = sum;
+		}
+	}
+
+	return output;
+}
+
+void CNN_2DConvolutionOperation(vector<vector<int>>& input, vector<vector<double>>& kernel)
 {
 	int row_input = input.size();
 	int col_input = input[0].size();
@@ -380,6 +448,90 @@ void CNN_2DConvolutionOperation(vector<vector<double>>& input, vector<vector<dou
 	printMatrix(outputmap);
 	
 }
+
+vector<vector<int>> CNN_2DmaxPooling(const vector<vector<int>>& input, int kernelSize, int stride)
+{
+	int inputHeight = input.size();
+	int inputWidth = input[0].size();
+    
+	// Calculate output dimensions
+	int outputHeight = (inputHeight - kernelSize) / stride + 1;
+	int outputWidth = (inputWidth - kernelSize) / stride + 1;
+    
+	vector<vector<int>> output(outputHeight, vector<int>(outputWidth));
+    
+	for (int y = 0; y < outputHeight; ++y) 
+	{
+		for (int x = 0; x < outputWidth; ++x) 
+		{
+			int maxVal = INT_MIN;
+            
+			// Define the boundaries of the pooling window
+			int startY = y * stride;
+			int startX = x * stride;
+			int endY = startY + kernelSize;
+			int endX = startX + kernelSize;
+            
+			// Find the maximum value within the kernel window
+			for (int j = startY; j < endY; ++j) 
+			{
+				for (int i = startX; i < endX; ++i) 
+				{
+					if (input[j][i] > maxVal) 
+					{
+						maxVal = input[j][i];
+					}
+				}
+			}
+			output[y][x] = maxVal;
+		}
+	}
+	return output;
+}
+
+vector<vector<double>> CNN_2DaveragePooling(const vector<vector<int>>& input, int poolSize, int stride) 
+{
+	if (input.empty() || input[0].empty()) return {};
+
+	int inputHeight = input.size();
+	int inputWidth = input[0].size();
+
+	// Calculate output dimensions
+	int outputHeight = (inputHeight - poolSize) / stride + 1;
+	int outputWidth = (inputWidth - poolSize) / stride + 1;
+
+	vector<vector<double>> pooledOutput(outputHeight, std::vector<double>(outputWidth, 0.0));
+
+	for (int i = 0; i < outputHeight; ++i) 
+	{
+		for (int j = 0; j < outputWidth; ++j) 
+		{
+			double sum = 0.0;
+			int count = 0;
+
+			// Define the window boundaries
+			int startRow = i * stride;
+			int startCol = j * stride;
+			int endRow = std::min(startRow + poolSize, inputHeight);
+			int endCol = std::min(startCol + poolSize, inputWidth);
+
+			// Calculate average in the current window
+			for (int r = startRow; r < endRow; ++r) 
+			{
+				for (int c = startCol; c < endCol; ++c) 
+				{
+					sum += input[r][c];
+					count++;
+				}
+			}
+
+			pooledOutput[i][j] = (count > 0) ? (sum / count) : 0.0;
+		}
+	}
+
+	return pooledOutput;
+}
+
 
 void FNN_1hiddenlayer(vector<double>& input, vector<vector<double>>& weights, vector<vector<double>>& hiddenweights, vector<double>& bias1, vector<double>& bias2, vector<double>& actual_output)
 {

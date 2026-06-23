@@ -2,6 +2,7 @@
 // Merci beaucoup Freya..
 // Compile with -DSTB_IMAGE_IMPLEMENTATION.
 
+// Makes life easier: bash createimageslist
 #include <iostream>
 #include "symintegrationc++.h"
 #include <bits/stdc++.h>

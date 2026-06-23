@@ -42,7 +42,7 @@ void SimpleNN::Initialize(const std::vector<unsigned> &layers)
 		for(unsigned j = 0; j < m_layers[i]; ++j, ++s)
 			m_neurons.m_forward_values[s] = ranges[i-1];
 
-	//Initialize weigh array
+	//Initialize weight array
 	m_weigh_count = 0;
 	for(unsigned i = m_layers[0]; i < m_neuron_count; ++i)
 		m_weigh_count += m_neurons.m_forward_values[i].second - m_neurons.m_forward_values[i].first + 1; //add one for bias

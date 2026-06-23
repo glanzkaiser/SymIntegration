@@ -93,7 +93,7 @@ uint32_t swap_endian(uint32_t val)
 		((val >> 24) & 0x000000FF);
 }
 
-void convert_to_idx(const std::vector<std::string>& image_paths, const std::vector<uint8_t>& labels, 
+void convert_to_idx(const vector<string>& image_paths, const vector<uint8_t>& labels, 
                     const std::string& images_out_path, const std::string& labels_out_path, 
                     int width, int height) 
 {
@@ -166,6 +166,104 @@ void convert_to_idx(const std::vector<std::string>& image_paths, const std::vect
 	lbl_file.close();
 
 	cout << "Conversion completed successfully!\n";
+}
+
+// Helper function to reverse big-endian integers from the IDX file
+int reverseInt(int i) 
+{
+	unsigned char c1, c2, c3, c4;
+	c1 = i & 255;
+	c2 = (i >> 8) & 255;
+	c3 = (i >> 16) & 255;
+	c4 = (i >> 24) & 255;
+	return ((int)c1 << 24) + ((int)c2 << 16) + ((int)c3 << 8) + c4;
+}
+
+vector<vector<vector<int>>> loadIDX3(const std::string& filename) 
+{
+	std::ifstream file(filename, std::ios::binary);
+	if (!file.is_open()) 
+	{
+	        throw std::runtime_error("Failed to open file: " + filename);
+	}
+
+	int magic_number = 0;
+	int number_of_images = 0;
+	int n_rows = 0;
+	int n_cols = 0;
+
+	// Read the header information
+	file.read((char*)&magic_number, sizeof(magic_number));
+	magic_number = reverseInt(magic_number);
+
+	file.read((char*)&number_of_images, sizeof(number_of_images));
+	number_of_images = reverseInt(number_of_images);
+
+	file.read((char*)&n_rows, sizeof(n_rows));
+	n_rows = reverseInt(n_rows);
+
+	file.read((char*)&n_cols, sizeof(n_cols));
+	n_cols = reverseInt(n_cols);
+
+	// Initialize the vector: [ImageIndex][Row][Column]
+	vector<vector<vector<int>>> dataset(number_of_images, vector<vector<int>>(n_rows, vector<int>(n_cols)));
+
+	// Read pixel data
+	for (int i = 0; i < number_of_images; ++i) 
+	{
+		for (int r = 0; r < n_rows; ++r) 
+		{
+			for (int c = 0; c < n_cols; ++c) 
+			{
+				unsigned char temp = 0;
+				file.read((char*)&temp, sizeof(temp));
+				dataset[i][r][c] = (int)temp; // Cast to int
+			}
+		}
+	}
+
+	file.close();
+	return dataset;
+}
+
+vector<int> loadIDX1(const std::string& filename) 
+{
+	// Open in binary mode
+	std::ifstream file(filename, std::ios::binary);
+	if (!file.is_open()) 
+	{
+		throw std::runtime_error("Unable to open file: " + filename);
+	}
+
+	int magic_number = 0;
+	int num_items = 0;
+
+	// Read magic number and number of items
+	file.read(reinterpret_cast<char*>(&magic_number), sizeof(magic_number));
+	file.read(reinterpret_cast<char*>(&num_items), sizeof(num_items));
+
+	// Convert from Big Endian to system architecture
+	magic_number = reverseInt(magic_number);
+	num_items = reverseInt(num_items);
+
+	// Verify magic number for IDX1 (2049 for labels)
+	if (magic_number != 2049) 
+	{
+		throw std::runtime_error("Invalid IDX1 file magic number.");
+	}
+
+	// Read the actual label bytes
+	vector<int> labels;
+	labels.reserve(num_items);
+
+	for (int i = 0; i < num_items; ++i) 
+	{
+		unsigned char temp = 0;
+		file.read(reinterpret_cast<char*>(&temp), sizeof(temp));
+		labels.push_back(static_cast<int>(temp));
+	}
+
+	return labels;
 }
 
 #endif

@@ -19,15 +19,18 @@ int main()
 
 	//string filename = "matrix.txt";
 	
-	vector<vector<double>> inputMatrix = loadMatrixFromFile("matrix.txt");
+	vector<vector<int>> inputMatrix = loadIntMatrixFromFile("matrix.txt");
 	vector<vector<double>> kernelMatrix = loadMatrixFromFile("kernel.txt");
 	
 	cout << "\nMatrix A : " << endl;
-	printMatrix(inputMatrix);
+	printIntMatrix(inputMatrix);
 	cout << "\nKernel : " << endl;
 	printMatrix(kernelMatrix);
 	CNN_2DConvolutionOperation(inputMatrix, kernelMatrix) ;
 
+	vector<vector<double>> OutputMap = CNN_2DConvolutionOperation(inputMatrix, kernelMatrix, 1);
+	cout << "\nOutput Map from function : " << endl;
+	printMatrix(OutputMap);
 	// Get ending timepoint
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<microseconds>(stop - start);

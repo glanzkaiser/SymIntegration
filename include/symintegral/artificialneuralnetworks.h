@@ -151,8 +151,12 @@ double get_double_input(const string&);
 void print_progress_bar(double);
 void delay() ;
 
+vector<vector<int>> CNN_2DpadBorder(const vector<vector<int>>&, int);
 vector<double> CNN_1DConvolutionOperation(const vector<double>&, const vector<double>&);
-void CNN_2DConvolutionOperation(vector<vector<double>>&, vector<vector<double>>&);
+void CNN_2DConvolutionOperation(vector<vector<int>>&, vector<vector<double>>&);
+vector<vector<double>> CNN_2DConvolutionOperation(const vector<vector<int>>& , const vector<vector<double>>& , int);
+vector<vector<int>> CNN_2DmaxPooling(const vector<vector<int>>& , int, int);
+vector<vector<double>> CNN_2DaveragePooling(const vector<vector<int>>&, int, int);
 
 void FNN_1hiddenlayer(vector<double>&, vector<vector<double>>&, vector<vector<double>>&, vector<double>&, vector<double>&, vector<double>& );
 void FNN_1hiddenlayer(vector<double>&, vector<double>&, int );

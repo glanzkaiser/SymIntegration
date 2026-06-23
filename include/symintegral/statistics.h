@@ -75,9 +75,11 @@ double factoriald(int);
 double combinationsd(int, int);
 
 void save3DMatrixdouble(vector<vector<vector<double>>>, const string&);
+void save3DMatrixint(vector<vector<vector<int>>>, const string&);
 void saveMatrixdouble(vector<vector<double>>, const string&);
 void saveMatrixint(vector<vector<int>>, const string&);
 void saveVectordouble(vector<double>, const string&);
+void saveVectorint(vector<int>, const string&);
 void saveVectorstring(vector<string>, const string&);
 
 double binomialpmf(int, int, double);
