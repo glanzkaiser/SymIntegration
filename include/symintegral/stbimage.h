@@ -32,7 +32,7 @@
 void ResizeAndGrayscale(const std::string &, const std::string &, int, int); 
 
 uint32_t swap_endian(uint32_t);
-void convert_to_idx(const vector<string> & , const vector<uint8_t> & , const std::string &, const std::string & , int , int ); 
+void convert_to_idx(const vector<string> & , const vector<int> & , const std::string &, const std::string & , int , int ); 
 
 int reverseInt(int);
 vector<vector<vector<int>>> loadIDX3(const std::string&);

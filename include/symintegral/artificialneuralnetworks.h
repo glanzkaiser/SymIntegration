@@ -120,6 +120,54 @@ public:
 
 #endif
 
+#ifndef CNN_LENET5_H
+#define CNN_LENET5_H
+
+class CNN_LeNet5 {
+private:
+	int n_c1 = 5;
+	double c1_weights_kernel1[n_c1][n_c1]; // first convolutional layer, 6 feature maps
+	double c1_weights_kernel2[n_c1][n_c1];
+	double c1_weights_kernel3[n_c1][n_c1];
+	double c1_weights_kernel4[n_c1][n_c1];
+	double c1_weights_kernel5[n_c1][n_c1];
+	double c1_weights_kernel6[n_c1][n_c1];
+
+	double c2_weights_kernel1[n_c1][n_c1]; // second convolutional layer, 16 feature maps
+	double c2_weights_kernel2[n_c1][n_c1];
+	double c2_weights_kernel3[n_c1][n_c1];
+	double c2_weights_kernel4[n_c1][n_c1];
+	double c2_weights_kernel5[n_c1][n_c1];
+	double c2_weights_kernel6[n_c1][n_c1];
+	double c2_weights_kernel7[n_c1][n_c1]; 
+	double c2_weights_kernel8[n_c1][n_c1];
+	double c2_weights_kernel9[n_c1][n_c1];
+	double c2_weights_kernel10[n_c1][n_c1];
+	double c2_weights_kernel11[n_c1][n_c1];
+	double c2_weights_kernel12[n_c1][n_c1];	
+	double c2_weights_kernel13[n_c1][n_c1]; 
+	double c2_weights_kernel14[n_c1][n_c1];
+	double c2_weights_kernel15[n_c1][n_c1];
+	double c2_weights_kernel16[n_c1][n_c1];
+	
+	
+	double biashidden[5]; // Fixed-size array member
+	double biasoutput[3];
+	double learning_rate;
+
+public:
+	CNN_LeNet5(); // Constructor
+	
+	vector<double> predict(const vector<double> &inputs);
+
+	void train(vector<vector<double>> &X, vector<int> &y, int epochs);
+
+	void save_model(const string &filename) ; // Void function declaration
+	void load_model(const string& filename); 
+};
+
+#endif
+
 #endif
 #endif
 

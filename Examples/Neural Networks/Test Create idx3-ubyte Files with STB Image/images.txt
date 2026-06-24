@@ -1,0 +1,9 @@
+gray_img_0.png
+gray_img_1.png
+gray_img_2.png
+gray_img_3.png
+gray_img_4.png
+gray_img_5.png
+gray_img_6.png
+gray_img_7.png
+gray_img_8.png

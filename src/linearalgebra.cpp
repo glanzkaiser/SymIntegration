@@ -181,6 +181,31 @@ vector<double> loadVectorFromFile(const string& filename)
 	return vecx;
 }
 
+vector<int> loadIntVectorFromFile(const string& filename) 
+{
+	vector<int> vecx;
+	ifstream inputFile(filename);
+
+	if (!inputFile.is_open()) 
+	{
+		cerr << "Error: Could not open file " << filename << endl;
+		return vecx; // Return empty matrix on error
+	}
+
+	if (inputFile.is_open()) 
+	{
+		int num;
+		while (inputFile >> num) 
+		{ // Reads numbers separated by whitespace
+			vecx.push_back(num);
+		}
+		inputFile.close();
+		
+	} 
+	inputFile.close();
+	return vecx;
+}
+
 vector<double> flattenDoubleMatrix(vector<vector<double>> matrix) 
 {
 	vector<double> result;

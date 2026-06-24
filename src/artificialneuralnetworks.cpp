@@ -3235,6 +3235,301 @@ void FNN_1HiddenLayer_Iris_ConjugateGradient::load_model(const std::string& file
 	file.close();
 }
 
+
+
+/*
+
+CNN with LeNet5 architecture
+
+*/	
+
+// Constructor initializing the array with random numbers
+CNN_LeNet5::CNN_LeNet5() 
+{
+	int n_c1 = 5;
+	for (int i = 0; i < n_c1; ++i) 
+	{
+		for (int j = 0; j < n_c1; ++j) 
+		{
+			c1_weights_kernel1[i][j] = random_double(-0.5, 0.5);
+			c1_weights_kernel2[i][j] = random_double(-0.5, 0.5);
+			c1_weights_kernel3[i][j] = random_double(-0.5, 0.5);
+			c1_weights_kernel4[i][j] = random_double(-0.5, 0.5);
+			c1_weights_kernel5[i][j] = random_double(-0.5, 0.5);
+			c1_weights_kernel6[i][j] = random_double(-0.5, 0.5);
+
+			c1_weights_kernel1[i][j] = random_double(-0.5, 0.5);
+			c2_weights_kernel2[i][j] = random_double(-0.5, 0.5);
+			c2_weights_kernel3[i][j] = random_double(-0.5, 0.5);
+			c2_weights_kernel4[i][j] = random_double(-0.5, 0.5);
+			c2_weights_kernel5[i][j] = random_double(-0.5, 0.5);
+			c2_weights_kernel6[i][j] = random_double(-0.5, 0.5);
+			c2_weights_kernel7[i][j] = random_double(-0.5, 0.5);
+			c2_weights_kernel8[i][j] = random_double(-0.5, 0.5);
+			c2_weights_kernel9[i][j] = random_double(-0.5, 0.5);
+			c2_weights_kernel10[i][j] = random_double(-0.5, 0.5);
+			c2_weights_kernel11[i][j] = random_double(-0.5, 0.5);
+			c2_weights_kernel12[i][j] = random_double(-0.5, 0.5);
+			c2_weights_kernel13[i][j] = random_double(-0.5, 0.5);
+			c2_weights_kernel14[i][j] = random_double(-0.5, 0.5);
+			c2_weights_kernel15[i][j] = random_double(-0.5, 0.5);
+			c2_weights_kernel16[i][j] = random_double(-0.5, 0.5);
+		}
+	}
+	
+
+	for (int j = 0; j < n_hiddenlayer; ++j) 
+	{
+		biashidden[j] = random_double(-0.5, 0.5);
+        }
+	for (int k = 0; k < n_classification; ++k) 
+	{
+		biasoutput[k] = random_double(-0.5, 0.5);
+        }
+	learning_rate = 1;
+}
+	
+
+vector<double> CNN_LeNet5::predict(const vector<double> &inputs) // become vector<vector<int>>
+{
+	int n_classification = 3;
+	int n_hiddenlayer = 5;
+	int n_input = 4;
+	vector<double> hiddenlayer(n_hiddenlayer, 0.0);
+	vector<double> outputs(n_classification, 0.0);
+	for (int j = 0; j < n_hiddenlayer; ++j) 
+	{
+		for (int i = 0; i < n_input; ++i) 
+		{
+			hiddenlayer[j] += inputs[i] * weights[i][j];
+		}
+		hiddenlayer[j] += biashidden[j];
+		hiddenlayer[j] = SigmoidActivationfunction(hiddenlayer[j]);
+		//hiddenlayer[j] =  TanhActivationfunction(hiddenlayer[j]);
+	}
+	for (int k = 0; k < n_classification; ++k) 
+	{
+		for (int j = 0; j < n_hiddenlayer; ++j) 
+		{
+			outputs[k] += hiddenlayer[j] * hiddenweights[j][k];
+		}
+		outputs[k] += biasoutput[k];
+	}
+	vector<double>predicted_output_softmax = SoftMax_vectorresult_activationfunction(outputs);
+	return predicted_output_softmax;
+}
+
+void CNN_LeNet5::train(vector<vector<double>> &X, vector<int> &y, int epochs) 
+{
+	cout << BLUE << BOLD << "\nTraining Progress:\n" << RESET << endl;
+
+	int bar_width = 50;
+	int n_classification = 3;
+	int n_hiddenlayer = 5;
+	int n_input = 4;
+
+	
+	for (int epoch = 0; epoch < epochs; ++epoch) 
+	{
+		double epoch_loss = 0.0;
+		for (size_t iter = 0; iter < X.size(); ++iter) 
+		{
+			vector<vector<double>> mat_jacobian(n_classification, vector<double>(n_classification, 0.0)); // Softmax derivative
+			vector<double> delta_outputlayer(n_classification,0.0);
+			vector<double> outputs = predict(X[iter]);
+			vector<double> target(n_classification, 0.0);
+			target[y[iter]] = 1.0;
+			//mat_target.push_back(outputs);	
+			//mat_target.push_back(target);		
+	 		std::vector<double> errors(n_classification, 0.0);
+			for (int k = 0; k < n_classification; ++k) 
+			{
+				//errors[k] = target[k] - outputs[k];
+				errors[k] = -target[k] * log(outputs[k]); // Categorical Cross-Entropy (CCE) Loss because we are using softmax activation function at the output layer 
+				epoch_loss += errors[k];
+			}
+			vector<double> hiddenlayer(n_hiddenlayer, 0.0);
+			for (int j = 0; j < n_hiddenlayer; ++j) 
+			{
+				for (int i = 0; i < n_input; ++i) 
+				{
+					hiddenlayer[j] += X[iter][i] * weights[i][j];
+				}
+				hiddenlayer[j] += biashidden[j];
+				hiddenlayer[j] = SigmoidActivationfunction(hiddenlayer[j]);
+				//hiddenlayer[j] = TanhActivationfunction(hiddenlayer[j]);
+			}
+			for (int k_row = 0; k_row < n_classification; ++k_row) 
+			{
+				for (int k_col = 0; k_col < n_classification; ++k_col) 
+				{
+					if (k_row == k_col)
+					{
+						mat_jacobian[k_row][k_col] = outputs[k_row]*(1 - outputs[k_col]);
+					}
+					else if (k_row != k_col)
+					{
+						mat_jacobian[k_row][k_col] = outputs[k_row]*(- outputs[k_col]);
+					}
+				}
+			}
+			for (int k_row = 0; k_row < n_classification; ++k_row) 
+			{
+				for (int k_col = 0; k_col < n_classification; ++k_col) 
+				{
+					delta_outputlayer[k_row] += mat_jacobian[k_row][k_col]*errors[k_col];
+				}
+			}
+			// this delta code makes the hiddenweights to grow big and make the epoch loss > 1
+			/*for (int k = 0; k < n_classification; ++k) 
+			{
+				delta_outputlayer[k] = outputs[k] - target[k];
+			}*/
+			for (int k = 0; k < n_classification; ++k) 
+			{
+				for (int j = 0; j < n_hiddenlayer; ++j) 
+				{
+					hiddenweights[j][k] += learning_rate * delta_outputlayer[k] * hiddenlayer[j]; 
+					//mat_whidden[j][k] = hiddenweights[j][k];
+				}
+				biasoutput[k] += learning_rate * delta_outputlayer[k];
+				//vec_biasoutput[k] = biasoutput[k];
+			}
+
+			for (int j = 0; j < n_hiddenlayer; ++j) 
+			{
+				double sum_delta = 0;			
+				for (int k = 0; k < n_classification; ++k) 
+				{
+					sum_delta += hiddenweights[j][k] *  delta_outputlayer[k] ; 
+				}
+				for (int i = 0; i < n_input; ++i) 
+				{
+					weights[i][j] += learning_rate * sum_delta * SigmoidDerivative(hiddenlayer[j]) * X[iter][i];					
+					//weights[i][j] += learning_rate * sum_delta * TanhDerivative(hiddenlayer[j]) * X[iter][i];
+					//mat_w[i][j] = weights[i][j];
+				}
+			biashidden[j] += learning_rate *  sum_delta * SigmoidDerivative(hiddenlayer[j]) ;
+			//biashidden[j] += learning_rate *  sum_delta * TanhDerivative(hiddenlayer[j]) ;
+			//vec_biashidden[j] = biashidden[j];
+			}
+		}
+
+		if ((epoch + 1) % (epochs / 100) == 0 || epoch == epochs - 1) 
+		{
+			float progress = static_cast<float>(epoch + 1) / epochs;
+			int pos = static_cast<int>(bar_width * progress);
+
+			std::cout << "[";
+			for (int i = 0; i < bar_width; ++i) 
+			{
+				if (i < pos) 
+				{
+					std::cout << "=";
+				}
+				else if (i == pos)
+				{
+					std::cout << ">";
+				}
+				else
+				{
+					std::cout << " ";
+				}
+			}
+			std::cout << "] " << int(progress * 100.0) << "% ";
+			std::cout << "Epoch " << epoch + 1 << "/" << epochs << " - Loss: " << std::fixed << std::setprecision(4) << epoch_loss / X.size() << "\r";
+			std::cout.flush();
+		}
+		//Matrix3D_weights.push_back(mat_w);
+		//Matrix3D_hiddenweights.push_back(mat_whidden);
+		//mat_biashidden.push_back(vec_biashidden);
+		//mat_biasoutput.push_back(vec_biasoutput);
+		
+	} 
+	//save3DMatrixdouble(Matrix3D_weights,"mat3d_weights.txt");
+	//save3DMatrixdouble(Matrix3D_hiddenweights,"mat3d_hiddenweights.txt");
+	//saveMatrixdouble(mat_biashidden,"matrixbiashidden.txt");
+	//saveMatrixdouble(mat_biasoutput,"matrixbiasoutput.txt");
+	//saveMatrixdouble(mat_target,"matrixoutputstarget.txt");
+	cout << endl;
+}
+
+void CNN_LeNet5::save_model(const std::string &filename) 
+{
+	std::ofstream file(filename);
+	file << std::fixed << std::setprecision(6);
+	vector<vector<double>> mat_w_dummy(4, vector<double>(5, 0));
+	vector<vector<double>> mat_whidden_dummy(5, vector<double>(3, 0));
+	vector<double> vec_biashidden(5,0.0);
+	vector<double> vec_biasoutput(3,0.0);
+	for (int i = 0; i < 4; ++i) 
+	{
+		for (int j = 0; j < 5; ++j) 
+		{
+			file << weights[i][j] << " ";
+			mat_w_dummy[i][j] = weights[i][j];
+		}
+	}
+	for (int j = 0; j < 5; ++j) 
+	{
+		file << biashidden[j] << " ";
+		vec_biashidden[j]= biashidden[j];
+	}
+	for (int j = 0; j < 5; ++j) 
+	{
+		for (int k = 0; k < 3; ++k) 
+		{
+			file << hiddenweights[j][k] << " ";
+			mat_whidden_dummy[j][k] = hiddenweights[j][k];
+		}
+	}
+	for (int k = 0; k < 3; ++k) 
+	{
+		file << biasoutput[k] << " ";
+		vec_biasoutput[k]= biasoutput[k];
+	}
+	file.close();
+	cout << "\nThe model weights:" << endl;
+	printMatrix(mat_w_dummy);
+	cout << "\nThe model hiddenweights:" << endl;
+	printMatrix(mat_whidden_dummy);
+	cout << "\nThe model bias in the hidden layer:" << endl;
+	printVector(vec_biashidden);
+	cout << "\nThe model bias in the output layer:" << endl;
+	printVector(vec_biasoutput);
+
+}
+
+void CNN_LeNet5::load_model(const std::string& filename) 
+{
+	std::ifstream file(filename);
+	for (int i = 0; i < 4; ++i) 
+	{
+		for (int j = 0; j < 5; ++j) 
+		{
+			file >> weights[i][j];
+		}
+	}
+	for (int j = 0; j < 5; ++j) 
+	{
+		file >> biashidden[j];
+	}
+	for (int j = 0; j < 5; ++j) 
+	{
+		for (int k = 0; k < 3; ++k) 
+		{
+			file >> hiddenweights[j][k];
+		}
+	}
+	for (int k = 0; k < 3; ++k) 
+	{
+		file >> biasoutput[k];
+	}
+	file.close();
+}
+
+
+
 void print_confusion_matrix(const vector<vector<int>>& confusion_matrix, const vector<string>& label_names) 
 {
 	cout << CYAN << BOLD << "\nConfusion Matrix:\n" << RESET << std::endl;

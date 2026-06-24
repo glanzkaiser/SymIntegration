@@ -45,6 +45,7 @@ vector<vector<int>> loadIntMatrixFromFile(const string&);
 vector<vector<complex<double>>> loadComplexMatrixFromFile(const string&);
 vector<complex<double>> loadComplexVectorFromFile(const string&); 
 vector<double> loadVectorFromFile(const string&);
+vector<int> loadIntVectorFromFile(const string&);
 vector<double> flattenDoubleMatrix(vector<vector<double>>);
 vector<vector<double>> matricizeDoubleVector(vector<double>, int, int);
 void printMatrix(vector<vector<double>>);

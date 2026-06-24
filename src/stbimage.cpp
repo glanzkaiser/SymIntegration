@@ -93,7 +93,7 @@ uint32_t swap_endian(uint32_t val)
 		((val >> 24) & 0x000000FF);
 }
 
-void convert_to_idx(const vector<string>& image_paths, const vector<uint8_t>& labels, 
+void convert_to_idx(const vector<string>& image_paths, const vector<int>& labels, 
                     const std::string& images_out_path, const std::string& labels_out_path, 
                     int width, int height) 
 {

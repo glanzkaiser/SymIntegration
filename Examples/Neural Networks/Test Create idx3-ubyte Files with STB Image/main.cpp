@@ -24,15 +24,16 @@ int main() {
 	int target_width = 28;
 	int target_height = 28;
 
-	std::vector<std::string> images = 
+	/*vector<string> images = 
 	{
 		"dataset/img_0.png",
 		"dataset/img_1.png"
-	};
+	};*/
+	vector<string> images = loadStringVector("images.txt"); // more efficient
     
 	// These must map 1:1 with the images vector above
-	std::vector<uint8_t> labels = { 5, 0 }; 
-
+	//vector<int> labels = { 5, 0 }; 
+	vector<int> labels = loadIntVectorFromFile("labels.txt");
 	convert_to_idx(images, labels, "train-images-idx3-ubyte", "train-labels-idx1-ubyte", target_width, target_height);
 
 
