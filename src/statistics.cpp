@@ -17,7 +17,7 @@ Thanks Freya, Berlin and Sentinel!
 #include <string>
 #include <fstream> // For file operations
 #include <typeinfo> // Required for typeid
-
+#include <unordered_set>
 #include <random> // For random number generation
 #include <chrono>
 
@@ -396,6 +396,31 @@ double randomnumbergamma(double alpha, double beta, int n)
 // This approach provides more robust and statistically sound random number generation.
 // Using std::random_device for a non-deterministic seed (if available and entropy > 0)
 // or std::chrono::system_clock::now().time_since_epoch().count() for a time-based seed.
+
+std::vector<int> vrandn_uniqueinteger(int a, int b, int n)
+{
+// Unbounded Unique Random Integers (Best for Open Ranges)
+// If your numeric range is huge and you want to insert random numbers while ensuring they never duplicate, use a std::unordered_set as a temporary filter. Set structures automatically reject duplicate values
+// std::unordered_set is a standard C++ associative container that stores unique elements in no particular order. 
+// It is implemented using a hash table, providing average constant-time O(1) complexity for insertions, deletions, and search lookup
+
+	std::unordered_set<int> unique_set;
+	vector<int> vec;
+    
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<> dis(a, b); // Large range
+
+	// Keep generating until we have n unique numbers
+	while (int(unique_set.size()) < n) 
+	{
+		unique_set.insert(dis(gen));
+	}
+
+	// Copy unique items into the vector
+	vec.assign(unique_set.begin(), unique_set.end());
+	return vec;
+}
 
 std::vector<double> vrandn_bernoulli(double p, int n)
 {

@@ -125,40 +125,42 @@ public:
 
 class CNN_LeNet5 {
 private:
-	int n_c1 = 5;
-	double c1_weights_kernel1[n_c1][n_c1]; // first convolutional layer, 6 feature maps
-	double c1_weights_kernel2[n_c1][n_c1];
-	double c1_weights_kernel3[n_c1][n_c1];
-	double c1_weights_kernel4[n_c1][n_c1];
-	double c1_weights_kernel5[n_c1][n_c1];
-	double c1_weights_kernel6[n_c1][n_c1];
+	
+	double c1_weights_kernel[6][5][5]; // first convolutional layer, 6 feature maps
+	double s2_weights_kernel[6];
+	double c3_weights_kernel_first6[6][3][5][5]; // second convolutional layer, 16 feature maps
+	double c3_weights_kernel_next6[6][4][5][5]; // second convolutional layer, 16 feature maps
+	double c3_weights_kernel_next3[3][4][5][5]; // second convolutional layer, 16 feature maps
+	double c3_weights_kernel_last1[6][5][5]; // second convolutional layer, 16 feature maps
 
-	double c2_weights_kernel1[n_c1][n_c1]; // second convolutional layer, 16 feature maps
-	double c2_weights_kernel2[n_c1][n_c1];
-	double c2_weights_kernel3[n_c1][n_c1];
-	double c2_weights_kernel4[n_c1][n_c1];
-	double c2_weights_kernel5[n_c1][n_c1];
-	double c2_weights_kernel6[n_c1][n_c1];
-	double c2_weights_kernel7[n_c1][n_c1]; 
-	double c2_weights_kernel8[n_c1][n_c1];
-	double c2_weights_kernel9[n_c1][n_c1];
-	double c2_weights_kernel10[n_c1][n_c1];
-	double c2_weights_kernel11[n_c1][n_c1];
-	double c2_weights_kernel12[n_c1][n_c1];	
-	double c2_weights_kernel13[n_c1][n_c1]; 
-	double c2_weights_kernel14[n_c1][n_c1];
-	double c2_weights_kernel15[n_c1][n_c1];
-	double c2_weights_kernel16[n_c1][n_c1];
+	double s4_weights_kernel[16];
+
+	double c5_weights_kernel[120][16][5][5]; // third convolutional layer, 120 feature maps, kernel size of 5x5
 	
-	
+	double c1_bias[6];
+	double s2_bias[6];
+	double c3_bias[16];
+	double s4_bias[16];
+	double c5_bias[120];
+
+	vector<vector<double>> myMatrix;
+
 	double biashidden[5]; // Fixed-size array member
 	double biasoutput[3];
 	double learning_rate;
 
 public:
-	CNN_LeNet5(); // Constructor
-	
-	vector<double> predict(const vector<double> &inputs);
+	CNN_LeNet5(); // Constructor	
+	// 6 kernels for the first convolution layer 
+	//vector<vector<vector<double>>> c1_weights(6, vector<vector<double>>(5,vector<double>(5,0.0)));
+	// 16 kernels for the second convolution layer
+	//vector<vector<vector<double>>> c2_weights(16, vector<vector<double>>(5,vector<double>(5,0.0)));
+
+	// Constructor to initialize the 2D vector (optional)
+	CNN_LeNet5(int rows, int cols) 
+        : myMatrix(rows, vector<double>(cols, 0.0)) {}
+
+	vector<double> predict(const vector<vector<int>> &inputs);
 
 	void train(vector<vector<double>> &X, vector<int> &y, int epochs);
 
@@ -203,6 +205,8 @@ vector<vector<int>> CNN_2DpadBorder(const vector<vector<int>>&, int);
 vector<double> CNN_1DConvolutionOperation(const vector<double>&, const vector<double>&);
 void CNN_2DConvolutionOperation(vector<vector<int>>&, vector<vector<double>>&);
 vector<vector<double>> CNN_2DConvolutionOperation(const vector<vector<int>>& , const vector<vector<double>>& , int);
+vector<vector<double>> CNN_2DConvolutionOperation(const vector<vector<double>>& , const vector<vector<double>>& , int);
+vector<vector<double>> CNN_2DmaxPooling(const vector<vector<double>>& , int, int);
 vector<vector<int>> CNN_2DmaxPooling(const vector<vector<int>>& , int, int);
 vector<vector<double>> CNN_2DaveragePooling(const vector<vector<int>>&, int, int);
 

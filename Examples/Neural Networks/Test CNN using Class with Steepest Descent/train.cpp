@@ -53,6 +53,11 @@ int main()
 	saveVectorint(y_train,"shuffledytrain.txt");
 	saveVectorint(y_test,"shuffledytest.txt");
 	
+	std::cout << BLUE << BOLD << "\nInitializing Convolutional Neural Network..." << RESET << std::endl;
+	CNN_LeNet5 cnn;
+	vector<double> prediction = cnn.predict(X_train[0]);
+
+
 	} catch (const std::exception& e) {
 	std::cerr << RED << BOLD << "An error occurred: " << e.what() << RESET << endl;
 	return 1;

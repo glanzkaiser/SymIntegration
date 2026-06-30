@@ -35,6 +35,11 @@
 #ifndef SYMINTEGRATION_CPLUSPLUS_OPERATIONSRESEARCH_DECLARE
 #define SYMINTEGRATION_CPLUSPLUS_OPERATIONSRESEARCH_DECLARE
 
+void fullCombinations(int, int);
+void allCombinations(int, int, int, vector<int> &, vector<vector<int>> &);
+vector<vector<int>> contiguousCombinations(int, int, int);
+vector<vector<int>> discontiguousCombinations(int, int, int);
+
 Symbolic simplexmethod(const SymbolicMatrix&, vector<double>, int, int, int);
 
 #endif

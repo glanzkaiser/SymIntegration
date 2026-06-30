@@ -21,8 +21,8 @@ int main() {
 	auto start = high_resolution_clock::now();
 
 	// Define your dataset specifications
-	int target_width = 28;
-	int target_height = 28;
+	int target_width = 32;
+	int target_height = 32;
 
 	/*vector<string> images = 
 	{

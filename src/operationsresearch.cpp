@@ -31,6 +31,144 @@ int combinationsint(int n, int r) {
 	return factorial(n) / (factorial(r) * factorial(n - r));
 }
 
+
+void fullCombinations(int N, int K)
+{
+	string bitmask(K, 1); // K leading 1's
+	bitmask.resize(N, 0); // N-K trailing 0's
+ 
+	// print integers and permute bitmask
+	do 
+	{
+	for (int i = 0; i < N; ++i) // [0..N-1] integers
+	{
+		if (bitmask[i]) 
+		{
+			cout << " " << i;
+		}
+	}
+	cout << endl;
+	} 
+	while (prev_permutation(bitmask.begin(), bitmask.end()));
+}
+
+void allCombinations(int n, int k, int start_idx, vector<int>& current_comb, vector<vector<int>>& all_combs) 
+{	
+	// Recursive function to generate all combinations
+	// Base Case: If the combination size reaches k, store it
+	if (int(current_comb.size()) == k) 
+	{
+		all_combs.push_back(current_comb);
+		return;
+	}
+
+	// Traverse the remaining elements to build combinations
+	for (int i = start_idx; i <= n; ++i) 
+	{
+		current_comb.push_back(i); // Add the current index
+        
+		// Recur to add the next index
+		allCombinations(n, k, i + 1, current_comb, all_combs);   // i + 1 for contiguous, or custom for discontiguous
+        
+		current_comb.pop_back(); // Backtrack to try the next element
+	}
+}
+
+vector<vector<int>> contiguousCombinations(int n, int k, int start_idx ) 
+{
+	vector<vector<int>> all_combinations;
+	vector<int> current_combination;
+	vector<vector<int>> contiguous_combinations; // works amazingly June 26th, 2026
+
+	allCombinations(n, k, start_idx, current_combination, all_combinations);
+
+	int R = all_combinations.size();
+
+	for (int i = 0; i < R; ++i) 
+	{
+		int cont_iter = 0;
+		for(int j = 1; j < k; ++j)
+		{
+			if ((all_combinations[i][j] - all_combinations[i][j - 1]) != 1) 
+			{
+				cont_iter += (all_combinations[i][j] - all_combinations[i][j - 1])  ;
+			}
+			else if ((all_combinations[i][j] - all_combinations[i][j - 1]) == 1) 
+			{
+				cont_iter += 1;
+			}
+			
+		}
+		if(cont_iter == k-1 )
+		{
+			contiguous_combinations.push_back(getRow(all_combinations,i));
+		}
+		if(cont_iter == n ) // to handle the corner case of 045 or 015 combinations of 3 out of 6
+		{
+			int cont_iter2 = 0;
+			for(int j = 1; j < k; ++j)
+			{
+				if ((all_combinations[i][j] - all_combinations[i][j - 1]) == 1) 
+				{
+					cont_iter2 += 1;
+				}
+				
+			}
+			if(cont_iter2 == k-2 ) 
+			{
+				contiguous_combinations.push_back(getRow(all_combinations,i));
+			}
+		
+		}
+	}
+
+	return contiguous_combinations;
+}
+
+vector<vector<int>> discontiguousCombinations(int n, int k, int start_idx ) 
+{
+	vector<vector<int>> all_combinations;
+	vector<int> current_combination;
+	vector<vector<int>> discontiguous_combinations_final; // works amazingly June 27th, 2026
+	allCombinations(n, k, start_idx, current_combination, all_combinations);
+
+	int R = all_combinations.size();
+	
+	vector<vector<int>> contiguous_combinations = contiguousCombinations(n,k,0);
+	int n_contiguous = contiguous_combinations.size();
+	
+	for (int i = 0; i < R; ++i) 
+	{
+		for (int j = 0; j < n_contiguous; ++j) 
+		{
+			int cont_iter = 0;
+			for(int c = 0; c < k; ++c)
+			{
+				if ((all_combinations[i][c] - contiguous_combinations[j][c]) == 0) 
+				{
+					cont_iter += 0;
+				}
+				else if ((all_combinations[i][c] - contiguous_combinations[j][c]) != 0) 
+				{
+					cont_iter += 1;
+				}
+			}
+			if (cont_iter ==0 )// this means that the combination is contiguous, skip to the next row of discontiguous matrix
+			{
+				//cout << "row : " << i << endl; 
+				j = n_contiguous;
+			}
+			else if (cont_iter != 0 && j == n_contiguous - 1)
+			{
+				discontiguous_combinations_final.push_back(all_combinations[i]);
+			}
+		}
+	}
+
+	
+	return discontiguous_combinations_final;
+}
+
 Symbolic simplexmethod(const SymbolicMatrix &A, vector<double> F, int C, int R, int n)
 {
 	//int nbv = n-R;

@@ -488,3 +488,8 @@ Extract RGBA matrices out of an image and construct an image based on RGBA matri
 
 Resize images and convert the resized images into grayscale and create idx3-ubyte format for the images and the idx1-ubyte for the corresponding labels with SymIntegration and STB Image.
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/ImageManipulationidx3ubyte.gif" width="60%">
+
+By June 29th, 2026: On Full moon day we have created a nice prediction class under CNN_LeNet5 class until layer C5. Backpropagation and training will be done as soon as possible.
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/CNNLeNet5Predict.gif" width="60%">
+
+

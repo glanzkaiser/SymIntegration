@@ -240,6 +240,32 @@ vector<vector<double>> matricizeDoubleVector(vector<double> vec, int R, int C)
 	return resultmatrix;
 }
 
+vector<double> flatten3DMatrix(vector<vector<vector<double>>> &matrix3d)
+{
+	vector<double> flat;
+
+	// 1. Optimize performance by reserving memory beforehand
+	size_t total_elements = 0;
+	for (const auto& vec2d : matrix3d) 
+	{
+		for (const auto& vec1d : vec2d) 
+		{
+			total_elements += vec1d.size();
+		}
+	}
+	flat.reserve(total_elements);
+
+	// 2. Flatten the structure
+	for (const auto& vec2d : matrix3d) 
+	{
+		for (const auto& vec1d : vec2d) 
+		{
+			flat.insert(flat.end(), vec1d.begin(), vec1d.end());
+		}
+	}
+	return flat;
+}
+
 // Function to print a matrix
 void printMatrix(vector<vector<double>> matrix) 
 {
@@ -839,6 +865,15 @@ void printVector(vector<double> vectorx)
 	}
 }
 
+void printIntVector(vector<int> vectorx) 
+{
+	int n = vectorx.size();
+	for (int i=0 ; i<n ; i++) 
+	{
+		cout << vectorx[i] << endl;		
+	}
+}
+
 vector<double> createVector(int n, double k)
 {
 	vector<double> resultVector(n, k);
@@ -1040,6 +1075,67 @@ vector<vector<double>> addColumn(vector<vector<double>> matrix, vector<double> v
 	return newMatrix;
 }
 
+void void_deleteRow(vector<vector<int>>& matrix, int rowIndex) 
+{
+	int R = matrix.size();
+	int C = matrix[0].size(); 
+	vector<vector<int>> matrix_final(R-1, vector<int>(C, 0));
+
+	if (matrix.empty()) 
+	{
+		cerr << "Error: Matrix is empty" << endl;
+	}
+	// Ensure the rowIndex is valid
+	if (rowIndex < 0 || rowIndex >= R) 
+	{
+		cerr << "Error: Invalid row index." << endl;
+	}
+
+	else
+	{
+		matrix.erase(matrix.begin() + rowIndex);
+	}
+	for (int i = 0; i < R-1; ++i) 
+	{
+		for (int j = 0; j < C; ++j) 
+		{
+			matrix_final[i][j] = matrix[i][j];
+		}
+	}
+}
+
+vector<vector<int>> deleteRow(vector<vector<int>>& matrix, int rowIndex) 
+{
+	int R = matrix.size();
+	int C = matrix[0].size(); 
+	vector<vector<int>> matrix_final(R-1, vector<int>(C, 0));
+
+	if (matrix.empty()) 
+	{
+		cerr << "Error: Matrix is empty" << endl;
+		return {};
+	}
+	// Ensure the rowIndex is valid
+	if (rowIndex < 0 || rowIndex >= R) 
+	{
+		cerr << "Error: Invalid row index." << endl;
+		return {};
+	}
+
+	else
+	{
+		matrix.erase(matrix.begin() + rowIndex);
+	}
+	for (int i = 0; i < R-1; ++i) 
+	{
+		for (int j = 0; j < C; ++j) 
+		{
+			matrix_final[i][j] = matrix[i][j];
+		}
+	}
+	return matrix_final;
+}
+
 vector<vector<double>> deleteRow(vector<vector<double>>& matrix, int rowIndex) 
 {
 	int R = matrix.size();
@@ -1154,6 +1250,26 @@ vector<double> getRow(vector<vector<double>> matrix, int rowIndex)
 	for(int i=0; i<C; i++)
 	{
 		rowVector.push_back(static_cast<double>(matrix[rowIndex][i])); 
+	}
+	
+	return rowVector;
+}
+
+// Function to extract a row vector
+vector<int> getRow(vector<vector<int>> matrix, int rowIndex) 
+{
+	vector<int> rowVector;
+
+	int C = matrix[0].size();
+	
+	// Check for an empty matrix or invalid row index
+	if (matrix.empty() || rowIndex < 0) 
+	{
+		return rowVector; // Return an empty vector
+	}
+	for(int i=0; i<C; i++)
+	{
+		rowVector.push_back(static_cast<int>(matrix[rowIndex][i])); 
 	}
 	
 	return rowVector;

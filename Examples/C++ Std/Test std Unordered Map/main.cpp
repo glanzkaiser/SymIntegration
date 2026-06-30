@@ -54,3 +54,39 @@ int main(int argc, char** argv)
 
 	return 0;
 }
+
+/*
+
+
+#include <iostream>
+#include <unordered_set> // Required header
+
+int main() {
+    // 1. Initialization
+    std::unordered_set<int> mySet = {10, 20, 30};
+
+    // 2. Insertion
+    mySet.insert(40);
+    mySet.insert(20); // Duplicate: ignored silently
+
+    // 3. Search Lookup
+    if (mySet.find(20) != mySet.end()) {
+        std::cout << "20 is in the set\n";
+    }
+
+    // C++20 approach for lookup
+    if (mySet.contains(40)) {
+        std::cout << "40 is in the set\n";
+    }
+
+    // 4. Deletion
+    mySet.erase(10);
+
+    // 5. Iterating through the set
+    for (int num : mySet) {
+        std::cout << num << " "; // Order is unpredictable
+    }
+    
+    return 0;
+}
+*/

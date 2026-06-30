@@ -187,6 +187,7 @@ double randomnumbergamma(double, double, int);
 double randomnumberbeta(double, double, int);
 
 double generateBeta(double, double, std::mt19937&);
+std::vector<int> vrandn_uniqueinteger(int, int, int);
 std::vector<double> vrandn_bernoulli(double, int);
 std::vector<double> vrandn_binomial(double, int);
 std::vector<double> vrandn_normal(double, double, int);

@@ -47,10 +47,12 @@ vector<complex<double>> loadComplexVectorFromFile(const string&);
 vector<double> loadVectorFromFile(const string&);
 vector<int> loadIntVectorFromFile(const string&);
 vector<double> flattenDoubleMatrix(vector<vector<double>>);
+vector<double> flatten3DMatrix(vector<vector<vector<double>>> &);
 vector<vector<double>> matricizeDoubleVector(vector<double>, int, int);
 void printMatrix(vector<vector<double>>);
 void printIntMatrix(vector<vector<int>>);
 void printVector(vector<double>);
+void printIntVector(vector<int>);
 vector<double> createVector(int, double); 
 vector<vector<double>> createMatrix(int, int, double);
 vector<vector<double>> createIdentityMatrix(int);
@@ -58,10 +60,13 @@ vector<vector<double>> createMatrixFromColumnVectors(const vector<vector<double>
 vector<vector<double>> VandermondeMatrix(const vector<double> &, int);
 vector<double> getColumn(vector<vector<double>>, int); 
 vector<double> getRow(vector<vector<double>>, int); 
+vector<int> getRow(vector<vector<int>>, int); 
 vector<vector<double>> addColumn(vector<vector<double>>, vector<double>, int);
 vector<vector<double>> addRow(vector<vector<double>>, vector<double>, int);
 vector<vector<double>> deleteColumn(vector<vector<double>> &, int);
 vector<vector<double>> deleteRow(vector<vector<double>> &, int);
+vector<vector<int>> deleteRow(vector<vector<int>> &, int);
+void void_deleteRow(vector<vector<int>> &, int);
 int MaxElementIndex(vector<double>);
 
 bool isQuasiUpperTriangular(const vector<vector<double>>&);

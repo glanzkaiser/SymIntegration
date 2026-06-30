@@ -21,8 +21,8 @@ int main() {
 	//vector<string> files = {"img_0.png", "img_1.png","img_2.png", "img_3.png","img_4.png", "img_5.png","img_6.png", "img_7.png","img_8.png"};
 	svec files = loadStringVector("images.txt"); // more efficient
 	//printStringVector(files);
-	int targetWidth = 28;
-	int targetHeight = 28;
+	int targetWidth = 32;
+	int targetHeight = 32;
 
 	// the for loop process to resize the image and convert it to grayscale one by one
 	for (const auto& file : files) 
