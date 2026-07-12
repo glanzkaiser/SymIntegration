@@ -40,6 +40,7 @@ using Complex = std::complex<double>;
 using ComplexVector = std::vector<Complex>;
 using ComplexMatrix = std::vector<std::vector<Complex>>;
 
+vector<vector<vector<double>>> load3DMatrixFromFile(const string&,int, int, int);
 vector<vector<double>> loadMatrixFromFile(const string&);
 vector<vector<int>> loadIntMatrixFromFile(const string&);
 vector<vector<complex<double>>> loadComplexMatrixFromFile(const string&);
@@ -48,7 +49,10 @@ vector<double> loadVectorFromFile(const string&);
 vector<int> loadIntVectorFromFile(const string&);
 vector<double> flattenDoubleMatrix(vector<vector<double>>);
 vector<double> flatten3DMatrix(vector<vector<vector<double>>> &);
+vector<vector<vector<double>>> Create3DMatrixfromVector(const vector<double>&, int, int, int);
+vector<vector<double>> rotate180(vector<vector<double>> &);
 vector<vector<double>> matricizeDoubleVector(vector<double>, int, int);
+void print3DMatrix(const vector<vector<vector<double>>>&);
 void printMatrix(vector<vector<double>>);
 void printIntMatrix(vector<vector<int>>);
 void printVector(vector<double>);

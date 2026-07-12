@@ -128,41 +128,38 @@ private:
 	
 	double c1_weights_kernel[6][5][5]; // first convolutional layer, 6 feature maps
 	double s2_weights_kernel[6];
-	double c3_weights_kernel_first6[6][3][5][5]; // second convolutional layer, 16 feature maps
-	double c3_weights_kernel_next6[6][4][5][5]; // second convolutional layer, 16 feature maps
-	double c3_weights_kernel_next3[3][4][5][5]; // second convolutional layer, 16 feature maps
-	double c3_weights_kernel_last1[6][5][5]; // second convolutional layer, 16 feature maps
-
+	double c3_weights_kernel_first6[450]; // second convolutional layer, first 6 feature maps
+	double c3_weights_kernel_next6[600]; // second convolutional layer, next 6 feature maps
+	double c3_weights_kernel_next3[300]; // second convolutional layer, next 3 feature maps
+	double c3_weights_kernel_last1[150]; // second convolutional layer, last 1 feature map
 	double s4_weights_kernel[16];
+	double c5_weights_kernel[400][120]; // third convolutional layer, 120 feature maps, kernel size of 5x5	
+	double f6_weights_kernel[120][84]; // the sixth layer F6
+	double output_weights[84][10];
 
-	double c5_weights_kernel[120][16][5][5]; // third convolutional layer, 120 feature maps, kernel size of 5x5
-	
 	double c1_bias[6];
 	double s2_bias[6];
 	double c3_bias[16];
 	double s4_bias[16];
 	double c5_bias[120];
+	double f6_bias[84];
+	double output_bias[10];
 
 	vector<vector<double>> myMatrix;
+	vector<int> vec_uniqueinteger;
 
-	double biashidden[5]; // Fixed-size array member
-	double biasoutput[3];
 	double learning_rate;
 
 public:
 	CNN_LeNet5(); // Constructor	
-	// 6 kernels for the first convolution layer 
-	//vector<vector<vector<double>>> c1_weights(6, vector<vector<double>>(5,vector<double>(5,0.0)));
-	// 16 kernels for the second convolution layer
-	//vector<vector<vector<double>>> c2_weights(16, vector<vector<double>>(5,vector<double>(5,0.0)));
-
+	
 	// Constructor to initialize the 2D vector (optional)
-	CNN_LeNet5(int rows, int cols) 
-        : myMatrix(rows, vector<double>(cols, 0.0)) {}
+	//CNN_LeNet5(int rows, int cols) 
+        //: myMatrix(rows, vector<double>(cols, 0.0)) {}
 
 	vector<double> predict(const vector<vector<int>> &inputs);
 
-	void train(vector<vector<double>> &X, vector<int> &y, int epochs);
+	void train(vector<vector<vector<int>>> &X, vector<int> &y, int epochs);
 
 	void save_model(const string &filename) ; // Void function declaration
 	void load_model(const string& filename); 
@@ -182,11 +179,13 @@ double LeakyReLUActivationfunction(double, double);
 double ReLUActivationfunction(double);
 double SigmoidActivationfunction(double);
 double TanhActivationfunction(double);
+double ScaledTanhActivationfunction(double);
 
 double LeakyReluDerivative(double, double);
 double ReLUDerivative(double);
 double SigmoidDerivative(double); 
 double TanhDerivative(double);
+double ScaledTanhDerivative(double);
 
 void ReLU_activationfunction(vector<double>&, vector<vector<double>>&, vector<double>& );
 void Sigmoid_activationfunction(vector<double>&, vector<vector<double>>&, vector<double>& );
@@ -202,6 +201,7 @@ void print_progress_bar(double);
 void delay() ;
 
 vector<vector<int>> CNN_2DpadBorder(const vector<vector<int>>&, int);
+vector<vector<double>> CNN_2DpadBorder(const vector<vector<double>>&, int);
 vector<double> CNN_1DConvolutionOperation(const vector<double>&, const vector<double>&);
 void CNN_2DConvolutionOperation(vector<vector<int>>&, vector<vector<double>>&);
 vector<vector<double>> CNN_2DConvolutionOperation(const vector<vector<int>>& , const vector<vector<double>>& , int);
@@ -209,6 +209,10 @@ vector<vector<double>> CNN_2DConvolutionOperation(const vector<vector<double>>& 
 vector<vector<double>> CNN_2DmaxPooling(const vector<vector<double>>& , int, int);
 vector<vector<int>> CNN_2DmaxPooling(const vector<vector<int>>& , int, int);
 vector<vector<double>> CNN_2DaveragePooling(const vector<vector<int>>&, int, int);
+vector<vector<double>> CNN_2DaveragePooling(const vector<vector<double>>&, int, int);
+vector<vector<double>> CNN_2DaveragePooling(const vector<vector<double>>&, int, int);
+vector<vector<vector<double>>> CNN_2DUpsample3DMatrix(const vector<vector<vector<double>>>&, int , int);
+vector<vector<vector<double>>> CNN_2DaverageUpsample3DMatrix(const vector<vector<vector<double>>>&, int , int);
 
 void FNN_1hiddenlayer(vector<double>&, vector<vector<double>>&, vector<vector<double>>&, vector<double>&, vector<double>&, vector<double>& );
 void FNN_1hiddenlayer(vector<double>&, vector<double>&, int );

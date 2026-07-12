@@ -35,6 +35,85 @@ using ComplexMatrix = std::vector<std::vector<Complex>>;
 
 // Function to load a matrix from a text file
 //template <typename T>
+
+vector<vector<vector<double>>> load3DMatrixFromFile(const string& filename,int depth, int rows, int cols) 
+{
+	std::ifstream file(filename);
+	if (!file.is_open()) 
+	{
+		throw std::runtime_error("Unable to open file: " + filename);
+	}
+
+	// Read dimensions from the header
+	file >> depth >> rows >> cols;
+
+	// Initialize the 3D matrix
+	vector<vector<vector<double>>> matrix3d(depth, vector<vector<double>>(rows, vector<double>(cols,0.0)));
+
+	// Populate the matrix
+	for (int d = 0; d < depth; ++d) 
+	{
+		for (int r = 0; r < rows; ++r) 
+		{
+			for (int c = 0; c < cols; ++c) 
+			{
+				file >> matrix3d[d][r][c];
+			}
+		}
+	}
+
+	file.close();
+	return matrix3d;
+}
+
+vector<vector<vector<double>>> Create3DMatrixfromVector(const vector<double>& flat_vector, int depth, int rows, int cols)
+{
+	int n = flat_vector.size();
+	if (n != (depth*rows*cols)) 
+	{
+		cerr << "Error: 3Dmatrix dimentions is not equal to vector size " << endl;
+		return {}; // Return empty matrix on error
+	}
+	// Initialize the 3D Vector with target dimensions
+	vector<vector<vector<double>>> matrix3D(depth, vector<vector<double>>(rows, vector<double>(cols,0.0)));
+
+	//  Populate the 3D vector using an iterator or loop math
+	auto it = flat_vector.begin();
+	for (int k = 0; k < depth; ++k) 
+	{
+		for (int i = 0; i < rows; ++i) 
+		{
+			for (int j = 0; j < cols; ++j) 
+			{
+				matrix3D[k][i][j] = *it++;
+			}
+		}
+	}
+	return matrix3D;
+}
+
+void print3DMatrix(const vector<vector<vector<double>>>& Matrix3D) 
+{
+	int depth = Matrix3D.size();
+	int rows= Matrix3D[0].size();
+	int cols = Matrix3D[0][0].size();
+	// Print the 3D matrix layout clearly to the console
+	for (int d = 0; d < depth; ++d) 
+	{
+		cout << "--- Slice (Depth) " << d << " ---\n";
+		for (int r = 0; r < rows; ++r) 
+		{
+			for (int c = 0; c < cols; ++c) 
+			{
+				cout << Matrix3D[d][r][c] << "\t";
+ 			}
+			cout << endl;
+		}
+	cout << endl;
+	}
+}
+
+
 vector<vector<double>> loadMatrixFromFile(const string& filename) 
 {
 	vector<vector<double>> matrix;
@@ -313,6 +392,38 @@ void printComplexVector(const ComplexVector &vec)
 		cout << setprecision(6) << vec[i] ;
 		cout << "\n";
 	}
+}
+
+vector<vector<double>> rotate180(vector<vector<double>>& mat) 
+{
+	if (mat.empty())
+	{ 
+		return {};
+	}
+	int R = mat.size();
+	int C = mat[0].size();
+
+	vector<vector<double>> rotatedmatrix(R, vector<double>(C, 0.0));
+
+	for (int i = 0; i < R; ++i) 
+	{
+		for (int j = 0; j < C; ++j) 
+		{
+			rotatedmatrix[i][j] = mat[i][j];
+		}
+	}
+
+	// Reverse the order of the rows
+	std::reverse(rotatedmatrix.begin(), rotatedmatrix.end());
+
+	// Reverse the elements within each row
+	for (auto& row : rotatedmatrix) 
+	{
+		std::reverse(row.begin(), row.end());
+	}
+
+	return rotatedmatrix;
+	
 }
 
 vector<vector<double>> ComplextoRealMatrix(vector<vector<complex<double>>> &A) 

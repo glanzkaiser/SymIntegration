@@ -19,26 +19,14 @@ int main()
 
 	//string filename = "matrix.txt";
 	
-	vector<vector<int>> inputMatrix = loadIntMatrixFromFile("matrix.txt");
-
-	cout << "\nMatrix A : " << endl;
-	printIntMatrix(inputMatrix);
+	vector<vector<double>> inputMatrix = loadMatrixFromFile("matrix.txt");
 	
-	int kernelSize = 2;
-	int stride = 2;
-	vector<vector<int>> maxMatrix = CNN_2DmaxPooling(inputMatrix, kernelSize, stride) ;
-	cout << "\nMax Pooling : " << endl;
-	printIntMatrix(maxMatrix);
-
-	vector<vector<double>> avgMatrix = CNN_2DaveragePooling(inputMatrix, kernelSize, stride) ;
-	cout << "\nAverage Pooling : " << endl;
-	printMatrix(avgMatrix);
-
-	vector<vector<int>> padMatrix = CNN_2DpadBorder(inputMatrix, 4);
-	cout << "\nPadding Matrix A : " << endl;
-	printIntMatrix(padMatrix);
-
-
+	cout << "\nMatrix A : " << endl;
+	printMatrix(inputMatrix);
+	cout <<"\nrot180(A) : " << endl;
+	dmat M = rotate180(inputMatrix);
+	printMatrix(M);
+	
 	// Get ending timepoint
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<microseconds>(stop - start);

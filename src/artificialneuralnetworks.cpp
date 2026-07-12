@@ -62,6 +62,11 @@ double TanhActivationfunction(double x)
 {
 	return std::tanh(x);
 }
+double ScaledTanhActivationfunction(double x)
+{
+	return 1.7159*std::tanh(x*divisiond(2,3));
+}
+
 
 double LeakyReLUDerivative(double x, double alpha) 
 {
@@ -83,6 +88,78 @@ double TanhDerivative(double x)
 	return 1 - (x*x);
 	
 }
+double ScaledTanhDerivative(double x) // pre-activation derivative
+{
+	//double t = std::tanh(x);
+	//return 1.0 - t * t;
+	return 1.7159*divisiond(2,3)*(1 - (std::tanh(divisiond(2,3)*x) * std::tanh(divisiond(2,3)*x)));
+	
+}
+
+class Matrix3DTo2D {
+private:
+	int height, width, depth; // row, col, depth
+	vector<double> data;
+public:
+	Matrix3DTo2D(int h, int w, int d) : height(h), width(w), depth(d), data(h * w * d, 0.0) {}
+
+	// Set value using 3D indices
+	void set(int i, int j, int k, double value) 
+	{
+		data[(i * width * depth) + (j * depth) + k] = value;
+	}
+
+	// Get value using 3D indices
+	double get(int i, int j, int k) const 
+	{
+		return data[(i * width * depth) + (j * depth) + k];
+	}
+
+	// Sum over the depth at [i][j] into a 2D matrix
+	vector<double> collapseTo2D() const 
+	{
+		vector<double> collapsed2D(height * width, 0.0);
+
+		for (int i = 0; i < height; ++i) 
+		{
+			for (int j = 0; j < width; ++j) 
+			{
+				double sum = 0.0;
+				for (int k = 0; k < depth; ++k) 
+				{
+					sum += get(i, j, k);
+				}
+				collapsed2D[(i * width) + j] = sum;
+			}
+	}
+	return collapsed2D;
+	}
+};
+
+// In professional C++ development, nesting vectors is often discouraged for multi-dimensional mathematical matrices. 
+// Instead, keeping the vector flat keeps your data cache-friendly and contiguous in memory. You can easily map the 3D indices (i, j, k) to a 1D index using the formula:
+// Choose Matrix3DfromVector -> The High-Performance Wrapper (Recommended) if you are working with large scientific computations, computer graphics, or performance-critical loops
+
+struct Matrix3DfromVector 
+{
+	vector<double> data;
+	int X, Y, Z;
+
+	// Custom indexing operator for matrix(i, j, k) notation
+	double& operator()(int i, int j, int k) 
+	{
+		return data[(i * Y * Z) + (j * Z) + k];
+	}
+
+	const double& operator()(int i, int j, int k) const 
+	{
+		return data[(i * Y * Z) + (j * Z) + k];
+	}
+	//Matrix3DfromVector matrix = { std::move(flat_vector), X, Y, Z };
+
+	// Access elements cleanly with no nested performance penalty
+	//matrix(1, 0, 2) = 42.0; 
+};
 
 vector<double> SoftMax_vectorresult_activationfunction(vector<double>& input)
 {
@@ -314,7 +391,7 @@ vector<vector<int>> CNN_2DpadBorder(const vector<vector<int>>& matrix, int pad_s
 	int new_cols = old_cols + 2 * pad_size;
 
 	// Create a new matrix initialized entirely with the padding value
-	vector<std::vector<int>> padded(new_rows, vector<int>(new_cols, pad_value));
+	vector<vector<int>> padded(new_rows, vector<int>(new_cols, pad_value));
 
 	// Copy original data into the center region
 	for (int i = 0; i < old_rows; ++i) 
@@ -324,6 +401,33 @@ vector<vector<int>> CNN_2DpadBorder(const vector<vector<int>>& matrix, int pad_s
 
 	return padded;
 }
+
+vector<vector<double>> CNN_2DpadBorder(const vector<vector<double>>& matrix, int pad_size) 
+{
+	int pad_value = 0;
+	if (matrix.empty())
+	{ 
+		return {};
+	}
+
+	int old_rows = matrix.size();
+	int old_cols = matrix[0].size(); // Assumes a rectangular input matrix
+    
+	int new_rows = old_rows + 2 * pad_size;
+	int new_cols = old_cols + 2 * pad_size;
+
+	// Create a new matrix initialized entirely with the padding value
+	vector<vector<double>> padded(new_rows, vector<double>(new_cols, pad_value));
+
+	// Copy original data into the center region
+	for (int i = 0; i < old_rows; ++i) 
+	{
+		std::copy(matrix[i].begin(), matrix[i].end(), padded[i + pad_size].begin() + pad_size);
+	}
+
+	return padded;
+}
+
 
 vector<double> CNN_1DConvolutionOperation(const vector<double>& u, const vector<double>& v) 
 {
@@ -489,14 +593,14 @@ void CNN_2DConvolutionOperation(vector<vector<int>>& input, vector<vector<double
 	
 }
 
-vector<vector<int>> CNN_2DmaxPooling(const vector<vector<int>>& input, int kernelSize, int stride)
+vector<vector<int>> CNN_2DmaxPooling(const vector<vector<int>>& input, int pooling_kernelSize, int stride)
 {
 	int inputHeight = input.size();
 	int inputWidth = input[0].size();
     
 	// Calculate output dimensions
-	int outputHeight = (inputHeight - kernelSize) / stride + 1;
-	int outputWidth = (inputWidth - kernelSize) / stride + 1;
+	int outputHeight = (inputHeight - pooling_kernelSize) / stride + 1;
+	int outputWidth = (inputWidth - pooling_kernelSize) / stride + 1;
     
 	vector<vector<int>> output(outputHeight, vector<int>(outputWidth));
     
@@ -509,8 +613,8 @@ vector<vector<int>> CNN_2DmaxPooling(const vector<vector<int>>& input, int kerne
 			// Define the boundaries of the pooling window
 			int startY = y * stride;
 			int startX = x * stride;
-			int endY = startY + kernelSize;
-			int endX = startX + kernelSize;
+			int endY = startY + pooling_kernelSize;
+			int endX = startX + pooling_kernelSize;
             
 			// Find the maximum value within the kernel window
 			for (int j = startY; j < endY; ++j) 
@@ -529,14 +633,14 @@ vector<vector<int>> CNN_2DmaxPooling(const vector<vector<int>>& input, int kerne
 	return output;
 }
 
-vector<vector<double>> CNN_2DmaxPooling(const vector<vector<double>>& input, int kernelSize, int stride)
+vector<vector<double>> CNN_2DmaxPooling(const vector<vector<double>>& input, int pooling_kernelSize, int stride)
 {
 	int inputHeight = input.size();
 	int inputWidth = input[0].size();
     
 	// Calculate output dimensions
-	int outputHeight = (inputHeight - kernelSize) / stride + 1;
-	int outputWidth = (inputWidth - kernelSize) / stride + 1;
+	int outputHeight = (inputHeight - pooling_kernelSize) / stride + 1;
+	int outputWidth = (inputWidth - pooling_kernelSize) / stride + 1;
     
 	vector<vector<double>> output(outputHeight, vector<double>(outputWidth));
     
@@ -549,8 +653,8 @@ vector<vector<double>> CNN_2DmaxPooling(const vector<vector<double>>& input, int
 			// Define the boundaries of the pooling window
 			int startY = y * stride;
 			int startX = x * stride;
-			int endY = startY + kernelSize;
-			int endX = startX + kernelSize;
+			int endY = startY + pooling_kernelSize;
+			int endX = startX + pooling_kernelSize;
             
 			// Find the maximum value within the kernel window
 			for (int j = startY; j < endY; ++j) 
@@ -610,6 +714,115 @@ vector<vector<double>> CNN_2DaveragePooling(const vector<vector<int>>& input, in
 	}
 
 	return pooledOutput;
+}
+
+vector<vector<double>> CNN_2DaveragePooling(const vector<vector<double>>& input, int poolSize, int stride) 
+{
+	if (input.empty() || input[0].empty()) return {};
+
+	int inputHeight = input.size();
+	int inputWidth = input[0].size();
+
+	// Calculate output dimensions
+	int outputHeight = (inputHeight - poolSize) / stride + 1;
+	int outputWidth = (inputWidth - poolSize) / stride + 1;
+
+	vector<vector<double>> pooledOutput(outputHeight, std::vector<double>(outputWidth, 0.0));
+
+	for (int i = 0; i < outputHeight; ++i) 
+	{
+		for (int j = 0; j < outputWidth; ++j) 
+		{
+			double sum = 0.0;
+			int count = 0;
+
+			// Define the window boundaries
+			int startRow = i * stride;
+			int startCol = j * stride;
+			int endRow = std::min(startRow + poolSize, inputHeight);
+			int endCol = std::min(startCol + poolSize, inputWidth);
+
+			// Calculate average in the current window
+			for (int r = startRow; r < endRow; ++r) 
+			{
+				for (int c = startCol; c < endCol; ++c) 
+				{
+					sum += input[r][c];
+					count++;
+				}
+			}
+
+			pooledOutput[i][j] = (count > 0) ? (sum / count) : 0.0;
+		}
+	}
+
+	return pooledOutput;
+}
+
+vector<vector<vector<double>>> CNN_2DUpsample3DMatrix(const vector<vector<vector<double>>>& input, int m_factor, int n_factor)
+{
+	int D = input.size();
+	int R = input[0].size();
+	int C = input[0][0].size();
+
+	int new_R = R * m_factor;
+	int new_C = C * n_factor;
+
+	vector<vector<vector<double>>> upsampled_3DMatrix(D, vector<vector<double>>(new_R, vector<double>(new_C, 0.0)));
+
+
+	// Initialize the upsampled 3D vector with the new dimensions
+	for (int d = 0; d < D; ++d) 
+	{
+		for (int i = 0; i < new_R; ++i) 
+		{
+			int orig_i = i / m_factor;
+			for (int j = 0; j < new_C; ++j) 
+			{
+				int orig_j = j / n_factor;
+				upsampled_3DMatrix[d][i][j] = input[d][orig_i][orig_j];
+			}
+		}
+	}
+	return upsampled_3DMatrix;
+}
+
+vector<vector<vector<double>>> CNN_2DaverageUpsample3DMatrix(const vector<vector<vector<double>>>& input, int M, int N)
+{
+	int D = input.size();
+	int R = input[0].size();
+	int C = input[0][0].size();
+
+	int new_R = R * M;
+	int new_C = C * N;
+
+	vector<vector<vector<double>>> upsampled_3DMatrix(D, vector<vector<double>>(new_R, vector<double>(new_C, 0.0)));
+
+
+	// Initialize the upsampled 3D vector with the new dimensions
+	for (int d = 0; d < D; ++d) 
+	{
+		for (int i = 0; i < new_R; ++i) 
+		{
+			int orig_i = i / M;
+			for (int j = 0; j < new_C; ++j) 
+			{
+				int orig_j = j / N;
+				upsampled_3DMatrix[d][i][j] = input[d][orig_i][orig_j];
+			}
+		}
+	}
+	for (int d = 0; d < D; ++d) // divide each entry by M * N
+	{
+		for (int i = 0; i < new_R; ++i) 
+		{
+			for (int j = 0; j < new_C; ++j) 
+			{
+				upsampled_3DMatrix[d][i][j] = divisiond(upsampled_3DMatrix[d][i][j],M*N);
+			}
+		}
+	}
+	return upsampled_3DMatrix;
 }
 
 
@@ -3326,7 +3539,7 @@ CNN with LeNet5 architecture
 // Constructor initializing the array with random numbers
 CNN_LeNet5::CNN_LeNet5() 
 {
-	int n_c1 = 5;
+	int n_kernelSize = 5;
 	
 	for (int k = 0; k < 6; ++k)
 	{
@@ -3334,63 +3547,30 @@ CNN_LeNet5::CNN_LeNet5()
 		s2_bias[k] = random_double(-0.5,0.5);
 		s2_weights_kernel[k] = random_double(-0.5, 0.5);
 		
-		for (int i = 0; i < n_c1; ++i) 
+		for (int i = 0; i < n_kernelSize; ++i) 
 		{
-			for (int j = 0; j < n_c1; ++j) 
+			for (int j = 0; j < n_kernelSize; ++j) 
 			{
 				c1_weights_kernel[k][i][j] = random_double(-0.5, 0.5);
 			}
 		}
 	}
-	for (int k = 0; k < 6; ++k)
+	for (int k = 0; k < 450; ++k)
 	{
-		for (int k3 = 0; k3 < 3; ++k3)
-		{
-			for (int i = 0; i < n_c1; ++i) 
-			{
-				for (int j = 0; j < n_c1; ++j) 
-				{
-					c3_weights_kernel_first6[k][k3][i][j] = random_double(-0.5, 0.5);
-				}
-			}
-		}
+		c3_weights_kernel_first6[k]= random_double(-0.5, 0.5);
 	}
 	
-	for (int k = 0; k < 6; ++k)
+	for (int k = 0; k < 600; ++k)
 	{
-		for (int k3 = 0; k3 < 4; ++k3)
-		{
-			for (int i = 0; i < n_c1; ++i) 
-			{
-				for (int j = 0; j < n_c1; ++j) 
-				{
-					c3_weights_kernel_next6[k][k3][i][j] = random_double(-0.5, 0.5);
-				}
-			}
-		}
+		c3_weights_kernel_next6[k] = random_double(-0.5, 0.5);
 	}
-	for (int k = 0; k < 3; ++k)
+	for (int k = 0; k < 300; ++k)
 	{
-		for (int k3 = 0; k3 < 4; ++k3)
-		{
-			for (int i = 0; i < n_c1; ++i) 
-			{
-				for (int j = 0; j < n_c1; ++j) 
-				{
-					c3_weights_kernel_next3[k][k3][i][j] = random_double(-0.5, 0.5);
-				}
-			}
-		}
+		c3_weights_kernel_next3[k]= random_double(-0.5, 0.5);
 	}
-	for (int k = 0; k < 6; ++k)
+	for (int k = 0; k < 150; ++k)
 	{
-		for (int i = 0; i < n_c1; ++i) 
-		{
-			for (int j = 0; j < n_c1; ++j) 
-			{
-				c3_weights_kernel_last1[k][i][j] = random_double(-0.5, 0.5);
-			}
-		}
+		c3_weights_kernel_last1[k] = random_double(-0.5, 0.5);
 	}	
 
 	for (int k = 0; k < 16; ++k)
@@ -3400,17 +3580,11 @@ CNN_LeNet5::CNN_LeNet5()
 		s4_bias[k] = random_double(-0.5,0.5);
 	}
 
-	for (int k5 = 0; k5 < 120; ++k5) 
+	for (int i = 0; i < 400; ++i) 
 	{
-		for (int k = 0; k < 16; ++k) 
+		for (int j = 0; j < 120; ++j) 
 		{
-			for (int i = 0; i < 5; ++i) 
-			{
-				for (int j = 0; j < 5; ++j) 
-				{
-				 	c5_weights_kernel[k5][k][i][j] = random_double(-0.5, 0.5);
-				}
-			}
+			c5_weights_kernel[i][j] = random_double(-0.5, 0.5);
 		}
 	}
 	
@@ -3418,45 +3592,71 @@ CNN_LeNet5::CNN_LeNet5()
 	{
 		c5_bias[k] = random_double(-0.5,0.5);
 	}
-	learning_rate = 1;
+	for (int i = 0; i < 120; ++i) 
+	{
+		for (int j = 0; j < 84; ++j) 
+		{
+			f6_weights_kernel[i][j] = random_double(-0.5, 0.5);
+		}
+	}
+	for (int i = 0; i < 84; ++i) 
+	{
+		f6_bias[i] = random_double(-0.5, 0.5);
+		
+	}
+	for (int i = 0; i < 84; ++i) 
+	{
+		for (int j = 0; j < 10; ++j) 
+		{
+			output_weights[i][j] = random_double(-0.5, 0.5);
+		}
+	}
+	for (int i = 0; i < 10; ++i) 
+	{
+		output_bias[i] = random_double(-0.5, 0.5);
+		
+	}
+	learning_rate = 0.5;
+	vec_uniqueinteger = vrandn_uniqueinteger(0,8,3);
 }
 	
 
 vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become vector<vector<int>>
 {
 	// June 30th, 2026 Good and done till C5 layer
-	int n_c1 = 5;
-	int n_classification = 3;
-	int kernelSize = 2;
-	int c1_stride = 1, c3_stride = 1, c5_stride = 1;
-	int s2_stride = 2, s4_stride = 2;
+	int n_kernelSize = 5;
+	int n_classification = 10;
+	int pooling_kernelSize = 2;
+	int C1_stride = 1, C3_stride = 1, C5_stride = 1;
+	int S2_stride = 2, S4_stride = 2;
 	int padding = 0;
 	vector<vector<vector<double>>> C1_Matrices, S2_Matrices, C3_Matrices, S4_Matrices; 
 
 	int n_input = inputs.size();
-	int r_c1 = (n_input - n_c1 + 2*padding)/(c1_stride) + 1 ;
-	int c_c1 = r_c1;
-	int r_s2 = (r_c1 - kernelSize)/(s2_stride) + 1;
-	int c_s2 = r_s2;
+	int r_C1 = (n_input - n_kernelSize + 2*padding)/(C1_stride) + 1 ;
+	int c_C1 = r_C1;
+	int r_S2 = (r_C1 - pooling_kernelSize)/(S2_stride) + 1;
+	int c_S2 = r_S2;
+
 	// First convolutional layer
 	for (int k = 0 ; k < 6; ++k)
 	{
-		vector<vector<double>> c1_weights(n_c1,vector<double>(n_c1,0.0));
-		for (int i = 0; i < n_c1; ++i) 
+		vector<vector<double>> c1_weights(n_kernelSize,vector<double>(n_kernelSize,0.0));
+		for (int i = 0; i < n_kernelSize; ++i) 
 		{
-			for (int j = 0; j < n_c1; ++j) 
+			for (int j = 0; j < n_kernelSize; ++j) 
 			{
 				c1_weights[i][j] = c1_weights_kernel[k][i][j] ;
 			}
 		}
 		
-		vector<vector<double>> C1_result = CNN_2DConvolutionOperation(inputs,c1_weights, c1_stride);
+		vector<vector<double>> C1_result = CNN_2DConvolutionOperation(inputs,c1_weights, C1_stride);
 		
-		cout <<"\nc1 k: "<< k << endl;
+		//cout <<"\nc1 k: "<< k << endl;
 
-		for (int i = 0; i < r_c1; ++i) 
+		for (int i = 0; i < r_C1; ++i) 
 		{
-			for (int j = 0; j < c_c1; ++j) 
+			for (int j = 0; j < c_C1; ++j) 
 			{
 				C1_result[i][j] += c1_bias[k] ; // add a bias
 				C1_result[i][j] = TanhActivationfunction(C1_result[i][j]); // apply the activation function
@@ -3464,73 +3664,72 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 		}
 
 		// The pooling layer S2
-		vector<vector<double>> S2_result = CNN_2DmaxPooling(C1_result, kernelSize, s2_stride) ; // max pooling
+		vector<vector<double>> S2_result = CNN_2DaveragePooling(C1_result,pooling_kernelSize, S2_stride) ; // average pooling
 
-		for (int i = 0; i < r_s2; ++i) 
+		for (int i = 0; i < r_S2; ++i) 
 		{
-			for (int j = 0; j < c_s2; ++j) 
+			for (int j = 0; j < c_S2; ++j) 
 			{
 				S2_result[i][j] *= s2_weights_kernel[k] ; // multiply with a weight
 				S2_result[i][j] += s2_bias[k] ; // add a bias
-				S2_result[i][j] = SigmoidActivationfunction(S2_result[i][j]); // apply the activation function
+				S2_result[i][j] = TanhActivationfunction(S2_result[i][j]); // apply the activation function
 			}
 		}
 
 		C1_Matrices.push_back(C1_result);
 		S2_Matrices.push_back(S2_result);
 	}
-	save3DMatrixdouble(C1_Matrices,"C1_matrix.txt");
-	save3DMatrixdouble(S2_Matrices,"S2_matrix.txt");
+	//save3DMatrixdouble(C1_Matrices,"C1_matrix.txt");
+	//save3DMatrixdouble(S2_Matrices,"S2_matrix.txt");
 
 	// Continuing on the second convolutional layer C3 then S4
 	vector<vector<int>> contiguous_combinations35 = contiguousCombinations(5,3,0);
 	vector<vector<int>> contiguous_combinations45 = contiguousCombinations(5,4,0);
 	vector<vector<int>> discontiguous_combinations45 = discontiguousCombinations(5,4,0);
 
-	vector<int> vec_uniqueinteger = vrandn_uniqueinteger(0,8,3);
-	int r_c3 = (r_s2 - n_c1 + 2*padding)/(c3_stride) + 1 ;
-	int c_c3 = r_c3;
-	int r_s4 = (r_c3 - kernelSize)/(s4_stride) + 1;
-	int c_s4 = r_s4;
+	int r_C3 = (r_S2 - n_kernelSize + 2*padding)/(C3_stride) + 1 ;
+	int c_C3 = r_C3;
+	int r_S4 = (r_C3 - pooling_kernelSize)/(S4_stride) + 1;
+	int c_S4 = r_S4;
 	// The first 6: connect to any 3 contiguous feature maps of S2
 	for (int k = 0 ; k < 6; ++k)
 	{
-		vector<vector<double>> C3_result(r_c3, vector<double>(c_c3,0.0));
+		vector<vector<double>> C3_result(r_C3, vector<double>(c_C3,0.0));
+		//cout <<"\nc3 k: "<< k << endl;
 		for (int k3 = 0 ; k3 < 3 ; ++k3)
 		{
-			vector<vector<double>> c3_weights(n_c1,vector<double>(n_c1,0.0));
-			for (int i = 0; i < n_c1; ++i) 
+			vector<vector<double>> c3_weights(n_kernelSize,vector<double>(n_kernelSize,0.0));
+			for (int i = 0; i < n_kernelSize; ++i) 
 			{
-				for (int j = 0; j < n_c1; ++j) 
+				for (int j = 0; j < n_kernelSize; ++j) 
 				{
-					c3_weights[i][j] = c3_weights_kernel_first6[k][k3][i][j] ;
+					c3_weights[i][j] = c3_weights_kernel_first6[75*k + 25*k3 + 5*i + j] ; // The first three contiguous feature maps will cover 75 neurons, each feature map from S2 will cover 25 neurons
 				}
 			}
-			cout <<"\nc3 k: "<< k << endl;
 			
 			int n_comb1 = contiguous_combinations35[k][k3];
 	
-			vector<vector<double>> S2(r_s2, vector<double>(c_s2, 0.0));
-			for (int i = 0; i < r_s2; ++i) 
+			vector<vector<double>> S2(r_S2, vector<double>(c_S2, 0.0));
+			for (int i = 0; i < r_S2; ++i) 
 			{
-				for (int j = 0; j < c_s2; ++j) 
+				for (int j = 0; j < c_S2; ++j) 
 				{
 					S2[i][j] = S2_Matrices[n_comb1][i][j];
 				}
 			}
-			vector<vector<double>> C3_result_temp = CNN_2DConvolutionOperation(S2,c3_weights, c3_stride);
+			vector<vector<double>> C3_result_temp = CNN_2DConvolutionOperation(S2,c3_weights, C3_stride);
 		
-			for (int i = 0; i < r_c3; ++i) 
+			for (int i = 0; i < r_C3; ++i) 
 			{
-				for (int j = 0; j < c_c3; ++j) 
+				for (int j = 0; j < c_C3; ++j) 
 				{
 					C3_result[i][j] += C3_result_temp[i][j]; // sum of the indices combination
 				}
 			}			
 		}
-		for (int i = 0; i < r_c3; ++i) 
+		for (int i = 0; i < r_C3; ++i) 
 		{
-			for (int j = 0; j < c_c3; ++j) 
+			for (int j = 0; j < c_C3; ++j) 
 			{
 				C3_result[i][j] += c3_bias[k] ; // add a bias
 				C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
@@ -3538,15 +3737,15 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 		}	
 		C3_Matrices.push_back(C3_result);
 
-		vector<vector<double>> S4_result = CNN_2DmaxPooling(C3_result, kernelSize, s4_stride) ; // max pooling
+		vector<vector<double>> S4_result = CNN_2DaveragePooling(C3_result, pooling_kernelSize, S4_stride) ; // average pooling
 		
-		for (int i = 0; i < r_s4; ++i) 
+		for (int i = 0; i < r_S4; ++i) 
 		{
-			for (int j = 0; j < c_s4; ++j) 
+			for (int j = 0; j < c_S4; ++j) 
 			{
 				S4_result[i][j] *= s4_weights_kernel[k] ; // multiply with a weight
 				S4_result[i][j] += s4_bias[k] ; // add a bias
-				S4_result[i][j] = SigmoidActivationfunction(S4_result[i][j]); // apply the activation function
+				S4_result[i][j] = TanhActivationfunction(S4_result[i][j]); // apply the activation function
 			}
 		}
 
@@ -3556,42 +3755,43 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 	int k1 = 0;
 	for (int k = 6 ; k < 12; ++k)
 	{
-		vector<vector<double>> C3_result(r_c3, vector<double>(c_c3,0.0));
+		vector<vector<double>> C3_result(r_C3, vector<double>(c_C3,0.0));
+		//cout <<"\nc3 k: "<< k << endl;
 		for (int k3 = 0 ; k3 < 4 ; ++k3)
 		{
-			vector<vector<double>> c3_weights(n_c1,vector<double>(n_c1,0.0));
-			for (int i = 0; i < n_c1; ++i) 
+			vector<vector<double>> c3_weights(n_kernelSize,vector<double>(n_kernelSize,0.0));
+			for (int i = 0; i < n_kernelSize; ++i) 
 			{
-				for (int j = 0; j < n_c1; ++j) 
+				for (int j = 0; j < n_kernelSize; ++j) 
 				{
-					c3_weights[i][j] = c3_weights_kernel_next6[k1][k3][i][j] ;
+					c3_weights[i][j] = c3_weights_kernel_next6[100*k1 + 25*k3 + 5*i + j]  ; // The first four contiguous feature maps will cover 100 neurons, each feature map from S2 will cover 25 neurons
 				}
 			}
-			cout <<"\nc3 k: "<< k << endl;
+			
 			
 			int n_comb1 = contiguous_combinations45[k1][k3];
 	
-			vector<vector<double>> S2(r_s2, vector<double>(c_s2, 0.0));
-			for (int i = 0; i < r_s2; ++i) 
+			vector<vector<double>> S2(r_S2, vector<double>(c_S2, 0.0));
+			for (int i = 0; i < r_S2; ++i) 
 			{
-				for (int j = 0; j < c_s2; ++j) 
+				for (int j = 0; j < c_S2; ++j) 
 				{
 					S2[i][j] = S2_Matrices[n_comb1][i][j];
 				}
 			}
-			vector<vector<double>> C3_result_temp = CNN_2DConvolutionOperation(S2,c3_weights, c3_stride);
+			vector<vector<double>> C3_result_temp = CNN_2DConvolutionOperation(S2,c3_weights, C3_stride);
 		
-			for (int i = 0; i < r_c3; ++i) 
+			for (int i = 0; i < r_C3; ++i) 
 			{
-				for (int j = 0; j < c_c3; ++j) 
+				for (int j = 0; j < c_C3; ++j) 
 				{
 					C3_result[i][j] += C3_result_temp[i][j]; // sum of the indices combination
 				}
 			}			
 		}
-		for (int i = 0; i < r_c3; ++i) 
+		for (int i = 0; i < r_C3; ++i) 
 		{
-			for (int j = 0; j < c_c3; ++j) 
+			for (int j = 0; j < c_C3; ++j) 
 			{
 				C3_result[i][j] += c3_bias[k] ; // add a bias
 				C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
@@ -3599,15 +3799,15 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 		}	
 		C3_Matrices.push_back(C3_result);
 
-		vector<vector<double>> S4_result = CNN_2DmaxPooling(C3_result, kernelSize, s4_stride) ; // max pooling
+		vector<vector<double>> S4_result = CNN_2DaveragePooling(C3_result, pooling_kernelSize, S4_stride) ; // average pooling
 
-		for (int i = 0; i < r_s4; ++i) 
+		for (int i = 0; i < r_S4; ++i) 
 		{
-			for (int j = 0; j < c_s4; ++j) 
+			for (int j = 0; j < c_S4; ++j) 
 			{
 				S4_result[i][j] *= s4_weights_kernel[k] ; // multiply with a weight
 				S4_result[i][j] += s4_bias[k] ; // add a bias
-				S4_result[i][j] = SigmoidActivationfunction(S4_result[i][j]); // apply the activation function
+				S4_result[i][j] = TanhActivationfunction(S4_result[i][j]); // apply the activation function
 			}
 		}
 
@@ -3619,42 +3819,41 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 	k1 = 0;
 	for (int k = 12 ; k < 15; ++k)
 	{
-		vector<vector<double>> C3_result(r_c3, vector<double>(c_c3,0.0));
+		vector<vector<double>> C3_result(r_C3, vector<double>(c_C3,0.0));
+		//cout <<"\nc3 k: "<< k << endl;
 		for (int k3 = 0 ; k3 < 4 ; ++k3)
 		{
 			int n1 = vec_uniqueinteger[k1];
-			vector<vector<double>> c3_weights(n_c1,vector<double>(n_c1,0.0));
-			for (int i = 0; i < n_c1; ++i) 
+			vector<vector<double>> c3_weights(n_kernelSize,vector<double>(n_kernelSize,0.0));
+			for (int i = 0; i < n_kernelSize; ++i) 
 			{
-				for (int j = 0; j < n_c1; ++j) 
+				for (int j = 0; j < n_kernelSize; ++j) 
 				{
-					c3_weights[i][j] = c3_weights_kernel_next3[k1][k3][i][j] ;
+					c3_weights[i][j] = c3_weights_kernel_next3[100*k1 + 25*k3 + 5*i + j] ; // The first four contiguous feature maps will cover 100 neurons, each feature map from S2 will cover 25 neurons
 				}
 			}
 			
-			cout <<"\nc3 k: "<< k << endl;
-			
 			int n_comb1 = discontiguous_combinations45[n1][k3];
-			vector<vector<double>> S2(r_s2, vector<double>(c_s2, 0.0));
-			for (int i = 0; i < r_s2; ++i) 
+			vector<vector<double>> S2(r_S2, vector<double>(c_S2, 0.0));
+			for (int i = 0; i < r_S2; ++i) 
 			{
-				for (int j = 0; j < c_s2; ++j) 
+				for (int j = 0; j < c_S2; ++j) 
 				{
 					S2[i][j] = S2_Matrices[n_comb1][i][j];
 				}
 			}
-			vector<vector<double>> C3_result_temp = CNN_2DConvolutionOperation(S2,c3_weights, c3_stride);
-			for (int i = 0; i < r_c3; ++i) 
+			vector<vector<double>> C3_result_temp = CNN_2DConvolutionOperation(S2,c3_weights, C3_stride);
+			for (int i = 0; i < r_C3; ++i) 
 			{
-				for (int j = 0; j < c_c3; ++j) 
+				for (int j = 0; j < c_C3; ++j) 
 				{
 					C3_result[i][j] += C3_result_temp[i][j]; // sum of the indices combination
 				}
 			}			
 		}
-		for (int i = 0; i < r_c3; ++i) 
+		for (int i = 0; i < r_C3; ++i) 
 		{
-			for (int j = 0; j < c_c3; ++j) 
+			for (int j = 0; j < c_C3; ++j) 
 			{
 				C3_result[i][j] += c3_bias[k] ; // add a bias
 				C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
@@ -3662,15 +3861,15 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 		}	
 		C3_Matrices.push_back(C3_result);
 	
-		vector<vector<double>> S4_result = CNN_2DmaxPooling(C3_result, kernelSize, s4_stride) ; // max pooling
+		vector<vector<double>> S4_result = CNN_2DaveragePooling(C3_result, pooling_kernelSize, S4_stride) ; // average pooling
 
-		for (int i = 0; i < r_s4; ++i) 
+		for (int i = 0; i < r_S4; ++i) 
 		{
-			for (int j = 0; j < c_s4; ++j) 
+			for (int j = 0; j < c_S4; ++j) 
 			{
 				S4_result[i][j] *= s4_weights_kernel[k] ; // multiply with a weight
 				S4_result[i][j] += s4_bias[k] ; // add a bias
-				S4_result[i][j] = SigmoidActivationfunction(S4_result[i][j]); // apply the activation function
+				S4_result[i][j] = TanhActivationfunction(S4_result[i][j]); // apply the activation function
 			}
 		}
 		k1 +=1;
@@ -3681,41 +3880,42 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 	k1 = 0;
 	for (int k = 15 ; k < 16; ++k)
 	{
-		vector<vector<double>> C3_result(r_c3, vector<double>(c_c3,0.0));
+		vector<vector<double>> C3_result(r_C3, vector<double>(c_C3,0.0));
+		//cout <<"\nc3 k: "<< k << endl;
 		for (int k3 = 0 ; k3 < 6 ; ++k3)
 		{
-			vector<vector<double>> c3_weights(n_c1,vector<double>(n_c1,0.0));
-			for (int i = 0; i < n_c1; ++i) 
+			vector<vector<double>> c3_weights(n_kernelSize,vector<double>(n_kernelSize,0.0));
+			for (int i = 0; i < n_kernelSize; ++i) 
 			{
-				for (int j = 0; j < n_c1; ++j) 
+				for (int j = 0; j < n_kernelSize; ++j) 
 				{
-					c3_weights[i][j] = c3_weights_kernel_last1[k3][i][j] ;
+					c3_weights[i][j] = c3_weights_kernel_last1[25*k3 + 5*i + j]  ;
 				}
 			}
 			
-			cout <<"\nc3 k: "<< k << endl;
 			
-			vector<vector<double>> S2(r_s2, vector<double>(c_s2, 0.0));
-			for (int i = 0; i < r_s2; ++i) 
+			
+			vector<vector<double>> S2(r_S2, vector<double>(c_S2, 0.0));
+			for (int i = 0; i < r_S2; ++i) 
 			{
-				for (int j = 0; j < c_s2; ++j) 
+				for (int j = 0; j < c_S2; ++j) 
 				{
 					S2[i][j] = S2_Matrices[k3][i][j];
 				}
 			}
-			vector<vector<double>> C3_result_temp = CNN_2DConvolutionOperation(S2,c3_weights, c3_stride);
-			for (int i = 0; i < r_c3; ++i) 
+			vector<vector<double>> C3_result_temp = CNN_2DConvolutionOperation(S2,c3_weights, C3_stride);
+			for (int i = 0; i < r_C3; ++i) 
 			{
-				for (int j = 0; j < c_c3; ++j) 
+				for (int j = 0; j < c_C3; ++j) 
 				{
 					C3_result[i][j] += C3_result_temp[i][j]; // sum of the indices combination
 				}
 			}	
 		}
 		
-		for (int i = 0; i < r_c3; ++i) 
+		for (int i = 0; i < r_C3; ++i) 
 		{
-			for (int j = 0; j < c_c3; ++j) 
+			for (int j = 0; j < c_C3; ++j) 
 			{
 				C3_result[i][j] += c3_bias[k] ; // add a bias
 				C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
@@ -3723,52 +3923,54 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 		}	
 		C3_Matrices.push_back(C3_result);
 
-		vector<vector<double>> S4_result = CNN_2DmaxPooling(C3_result, kernelSize, s4_stride) ; // max pooling
+		vector<vector<double>> S4_result = CNN_2DaveragePooling(C3_result, pooling_kernelSize, S4_stride) ; // average pooling
 
-		for (int i = 0; i < r_s4; ++i) 
+		for (int i = 0; i < r_S4; ++i) 
 		{
-			for (int j = 0; j < c_s4; ++j) 
+			for (int j = 0; j < c_S4; ++j) 
 			{
 				S4_result[i][j] *= s4_weights_kernel[k] ; // multiply with a weight
 				S4_result[i][j] += s4_bias[k] ; // add a bias
-				S4_result[i][j] = SigmoidActivationfunction(S4_result[i][j]); // apply the activation function
+				S4_result[i][j] =TanhActivationfunction(S4_result[i][j]); // apply the activation function
 			}
 		}
 		k1 +=1;
 		S4_Matrices.push_back(S4_result);
 	}
 	
-	save3DMatrixdouble(C3_Matrices,"C3_matrix.txt");
-	save3DMatrixdouble(S4_Matrices,"S4_matrix.txt");
+	//save3DMatrixdouble(C3_Matrices,"C3_matrix.txt");
+	//save3DMatrixdouble(S4_Matrices,"S4_matrix.txt");
 	
-	//vector<double> S4_flattened = flatten3DMatrix(S4_Matrices);
+	vector<double> S4_flattened = flatten3DMatrix(S4_Matrices);
+	//saveVectordouble(S4_flattened,"flatteneds4.txt");
 	// C5 convolutional layer computation code
 	vector<double> c5_output;		
 	for (int k5 = 0; k5 < 120; ++k5)
 	{
 		double c5_sum = 0;
-		for (int k = 0; k <16; ++k)
+		for (int k = 0; k <16; ++k) // 16 x 5 x 5
 		{	
+			int iter25 = 0;
 			vector<vector<double>> c5_weights(5,vector<double>(5,0.0));
-			for (int i = 0; i < n_c1; ++i) 
+			for (int i = 0; i < n_kernelSize; ++i) 
 			{
-				for (int j = 0; j < n_c1; ++j) 
+				for (int j = 0; j < n_kernelSize; ++j) 
 				{
-					c5_weights[i][j] = c5_weights_kernel[k5][k][i][j] ;
+					c5_weights[i][j] = c5_weights_kernel[25*k + iter25][k5] ;
+					iter25 += 1;
 				}
 			}
 			
-			//vector<double> c5_vector = multiplymatrixvector(c5_weights,S4_flattened);
-			vector<vector<double>> S4(r_s4, vector<double>(c_s4, 0.0));
-			for (int i = 0; i < r_s4; ++i) 
+			vector<vector<double>> S4(r_S4, vector<double>(c_S4, 0.0));
+			for (int i = 0; i < r_S4; ++i) 
 			{
-				for (int j = 0; j < c_s4; ++j) 
+				for (int j = 0; j < c_S4; ++j) 
 				{
-					S4[i][j] = S4_Matrices[k][i][j];
+					S4[i][j] = S4_Matrices[k][i][j]; 
 				}
 			}
 
-			vector<vector<double>> C5_result = CNN_2DConvolutionOperation(S4,c5_weights, c5_stride);
+			vector<vector<double>> C5_result = CNN_2DConvolutionOperation(S4,c5_weights, C5_stride);
 				
 			c5_sum += C5_result[0][0];
 		}
@@ -3777,48 +3979,83 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 		c5_output[k5] = TanhActivationfunction(c5_output[k5]); // apply the activation function
 	}
 
-	saveVectordouble(c5_output,"C5_final_vector.txt"); // very good, June 29th, 2026
+	//saveVectordouble(c5_output,"C5_final_vector.txt"); // very good, June 29th, 2026
+	vector<double> f6_output;
+	for (int i = 0; i < 84; ++i)
+	{
+		double f6_sum = 0;
 
-	
-	/*for (int j = 0; j < n_hiddenlayer; ++j) 
-	{
-		for (int i = 0; i < n_input; ++i) 
+		for (int j = 0; j < 120; ++j) 
 		{
-			hiddenlayer[j] += inputs[i] * weights[i][j];
+			f6_sum += f6_weights_kernel[j][i]*c5_output[j] ;
 		}
-		hiddenlayer[j] += biashidden[j];
-		hiddenlayer[j] = SigmoidActivationfunction(hiddenlayer[j]);
-		//hiddenlayer[j] =  TanhActivationfunction(hiddenlayer[j]);
+
+		f6_output.push_back(f6_sum);
+		f6_output[i] += f6_bias[i];
+		f6_output[i] = ScaledTanhActivationfunction(f6_output[i]); // apply the activation function
 	}
-	for (int k = 0; k < n_classification; ++k) 
+
+	//saveVectordouble(f6_output,"F6_final_vector.txt"); // very good, June 29th, 2026
+	
+	// The output layer in LeNet-5, we try to use softmax instead of RBF
+	vector<double> outputs; // to compute the raw logit z_{i}
+	for (int i = 0; i < n_classification; ++i)
 	{
-		for (int j = 0; j < n_hiddenlayer; ++j) 
+		double output_sum = 0;
+
+		for (int j = 0; j < 84; ++j) 
 		{
-			outputs[k] += hiddenlayer[j] * hiddenweights[j][k];
+			output_sum += output_weights[j][i]*f6_output[j] ;
 		}
-		outputs[k] += biasoutput[k];
-	}*/
-	vector<double> outputs(n_classification, 0.0);
+
+		outputs.push_back(output_sum);
+		outputs[i] += output_bias[i];
+	}
+	// apply the activation function
 	vector<double>predicted_output_softmax = SoftMax_vectorresult_activationfunction(outputs);
+	//saveVectordouble(predicted_output_softmax,"output_vector.txt"); // very good, July 1st, 2026
+	
 	return outputs;
 }
 
-void CNN_LeNet5::train(vector<vector<double>> &X, vector<int> &y, int epochs) 
+void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epochs) 
 {
-	{
-	/*cout << BLUE << BOLD << "\nTraining Progress:\n" << RESET << endl;
+	
+	cout << BLUE << BOLD << "\nTraining Progress:\n" << RESET << endl;
 
 	int bar_width = 50;
-	int n_classification = 3;
-	int n_hiddenlayer = 5;
-	int n_input = 4;
-
+	int n_classification = 10;
+	int n_F6 = 84;
+	int n_C5 = 120;	
+	//int n_C2 = 6;
+	int n_kernelSize = 5;
+	int pooling_kernelSize = 2;
+	int C1_stride = 1, C3_stride = 1, C5_stride = 1;
+	int S2_stride = 2, S4_stride = 2;
+	int padding = 0;
 	
+	int n_input = X[0].size();
+	int r_C1 = (n_input - n_kernelSize + 2*padding)/(C1_stride) + 1 ;
+	int c_C1 = r_C1;
+	int r_S2 = (r_C1 - pooling_kernelSize)/(S2_stride) + 1;
+	int c_S2 = r_S2;
+	int r_C3 = (r_S2 - n_kernelSize + 2*padding)/(C3_stride) + 1 ;
+	int c_C3 = r_C3;
+	int r_S4 = (r_C3 - pooling_kernelSize)/(S4_stride) + 1;
+	int c_S4 = r_S4;
+	/*cout << "n input = " <<n_input << endl;
+	cout << "r C1 =" << r_C1 << endl;
+ 	cout << "r S2 =" << r_S2 << endl;
+ 	cout << "r C3 =" << r_C3 << endl;
+ 	cout << "r S4 =" << r_S4 << endl;*/
+ 
 	for (int epoch = 0; epoch < epochs; ++epoch) 
 	{
 		double epoch_loss = 0.0;
 		for (size_t iter = 0; iter < X.size(); ++iter) 
 		{
+			vector<vector<vector<double>>> C1_Matrices, S2_Matrices, S2_Matrices_xi, C3_Matrices, S4_Matrices, S4_Matrices_xi; 
+			vector<vector<vector<double>>> C3_Distinct_Kernels;
 			vector<vector<double>> mat_jacobian(n_classification, vector<double>(n_classification, 0.0)); // Softmax derivative
 			vector<double> delta_outputlayer(n_classification,0.0);
 			vector<double> outputs = predict(X[iter]);
@@ -3833,17 +4070,354 @@ void CNN_LeNet5::train(vector<vector<double>> &X, vector<int> &y, int epochs)
 				errors[k] = -target[k] * log(outputs[k]); // Categorical Cross-Entropy (CCE) Loss because we are using softmax activation function at the output layer 
 				epoch_loss += errors[k];
 			}
-			vector<double> hiddenlayer(n_hiddenlayer, 0.0);
-			for (int j = 0; j < n_hiddenlayer; ++j) 
+			// We will do forward pass once again here to help computing delta from F6 back to C1
+			// First convolutional layer
+			for (int k = 0 ; k < 6; ++k)
 			{
-				for (int i = 0; i < n_input; ++i) 
+				vector<vector<double>> C1_weights(n_kernelSize,vector<double>(n_kernelSize,0.0));
+				for (int i = 0; i < n_kernelSize; ++i) 
 				{
-					hiddenlayer[j] += X[iter][i] * weights[i][j];
+					for (int j = 0; j < n_kernelSize; ++j) 
+					{
+						C1_weights[i][j] = c1_weights_kernel[k][i][j] ;
+					}
 				}
-				hiddenlayer[j] += biashidden[j];
-				hiddenlayer[j] = SigmoidActivationfunction(hiddenlayer[j]);
-				//hiddenlayer[j] = TanhActivationfunction(hiddenlayer[j]);
+				
+				vector<vector<double>> C1_result = CNN_2DConvolutionOperation(X[iter],C1_weights, C1_stride);
+
+				for (int i = 0; i < r_C1; ++i) 
+				{
+					for (int j = 0; j < c_C1; ++j) 
+					{
+						C1_result[i][j] += c1_bias[k] ; // add a bias
+						C1_result[i][j] = TanhActivationfunction(C1_result[i][j]); // apply the activation function
+					}
+				}
+
+				// The pooling layer S2
+				vector<vector<double>> S2_result = CNN_2DaveragePooling(C1_result, pooling_kernelSize, S2_stride) ; // average pooling
+				vector<vector<double>> S2_xi(r_S2, vector<double>(c_S2,0.0));
+				for (int i = 0; i < r_S2; ++i) 
+				{
+					for (int j = 0; j < c_S2; ++j) 
+					{
+						S2_xi[i][j] = S2_result[i][j];
+						S2_result[i][j] *= s2_weights_kernel[k] ; // multiply with a weight
+						S2_result[i][j] += s2_bias[k] ; // add a bias
+						S2_result[i][j] = TanhActivationfunction(S2_result[i][j]); // apply the activation function
+					}
+				}
+
+				C1_Matrices.push_back(C1_result);
+				S2_Matrices.push_back(S2_result);
+				S2_Matrices_xi.push_back(S2_xi);
 			}
+			// Continuing on the second convolutional layer C3 then S4
+			vector<vector<int>> contiguous_combinations35 = contiguousCombinations(5,3,0);
+			vector<vector<int>> contiguous_combinations45 = contiguousCombinations(5,4,0);
+			vector<vector<int>> discontiguous_combinations45 = discontiguousCombinations(5,4,0);
+
+			// The first 6: connect to any 3 contiguous feature maps of S2
+			for (int k = 0 ; k < 6; ++k)
+			{
+				vector<vector<double>> C3_result(r_C3, vector<double>(c_C3,0.0));
+				
+				for (int k3 = 0 ; k3 < 3 ; ++k3)
+				{
+					vector<vector<double>> c3_weights(n_kernelSize,vector<double>(n_kernelSize,0.0));
+					for (int i = 0; i < n_kernelSize; ++i) 
+					{
+						for (int j = 0; j < n_kernelSize; ++j) 
+						{
+							c3_weights[i][j] = c3_weights_kernel_first6[75*k + 25*k3 + 5*i + j]  ; // The first three contiguous feature maps will cover 75 neurons, each feature map from S2 will cover 25 neurons
+						}
+					}
+					
+					int n_comb1 = contiguous_combinations35[k][k3];
+			
+					vector<vector<double>> S2(r_S2, vector<double>(c_S2, 0.0));
+					for (int i = 0; i < r_S2; ++i) 
+					{
+						for (int j = 0; j < c_S2; ++j) 
+						{
+							S2[i][j] = S2_Matrices[n_comb1][i][j];
+						}
+					}
+					//vector<vector<double>> C3_result_temp = CNN_2DConvolutionOperation(S2,c3_weights, C3_stride);
+				
+					for (int i = 0; i < r_C3; ++i) 
+					{
+						for (int j = 0; j < c_C3; ++j) 
+						{
+						//	C3_result[i][j] += C3_result_temp[i][j]; // sum of the indices combination
+						}
+					}			
+				}
+				for (int i = 0; i < r_C3; ++i) 
+				{
+					for (int j = 0; j < c_C3; ++j) 
+					{
+						C3_result[i][j] += c3_bias[k] ; // add a bias
+						C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
+					}
+				}	
+				C3_Matrices.push_back(C3_result);
+
+				vector<vector<double>> S4_result = CNN_2DaveragePooling(C3_result, pooling_kernelSize, S4_stride) ; // average pooling
+				vector<vector<double>> S4_xi(r_S4, vector<double>(c_S4,0.0));
+				for (int i = 0; i < r_S4; ++i) 
+				{
+					for (int j = 0; j < c_S4; ++j) 
+					{
+						S4_xi[i][j] = S4_result[i][j];
+						S4_result[i][j] *= s4_weights_kernel[k] ; // multiply with a weight
+						S4_result[i][j] += s4_bias[k] ; // add a bias
+						S4_result[i][j] = TanhActivationfunction(S4_result[i][j]); // apply the activation function
+					}
+				}
+				S4_Matrices_xi.push_back(S4_xi);
+				S4_Matrices.push_back(S4_result);
+			}
+			// The next 6: connect to any 4 contiguous feature maps of S2
+			int k1 = 0;
+			for (int k = 6 ; k < 12; ++k)
+			{
+				vector<vector<double>> C3_result(r_C3, vector<double>(c_C3,0.0));
+				
+				for (int k3 = 0 ; k3 < 4 ; ++k3)
+				{
+					vector<vector<double>> c3_weights(n_kernelSize,vector<double>(n_kernelSize,0.0));
+					for (int i = 0; i < n_kernelSize; ++i) 
+					{
+						for (int j = 0; j < n_kernelSize; ++j) 
+						{
+							c3_weights[i][j] = c3_weights_kernel_next6[100*k1 + 25*k3 + 5*i + j] ; // The first four contiguous feature maps will cover 100 neurons, each feature map from S2 will cover 25 neurons
+						}
+					}
+					
+					
+					int n_comb1 = contiguous_combinations45[k1][k3];
+			
+					vector<vector<double>> S2(r_S2, vector<double>(c_S2, 0.0));
+					for (int i = 0; i < r_S2; ++i) 
+					{
+						for (int j = 0; j < c_S2; ++j) 
+						{
+							S2[i][j] = S2_Matrices[n_comb1][i][j];
+						}
+					}
+					vector<vector<double>> C3_result_temp = CNN_2DConvolutionOperation(S2,c3_weights, C3_stride);
+					vector<vector<double>> S4_xi(r_S4, vector<double>(c_S4,0.0));
+					for (int i = 0; i < r_C3; ++i) 
+					{
+						for (int j = 0; j < c_C3; ++j) 
+						{
+							C3_result[i][j] += C3_result_temp[i][j]; // sum of the indices combination
+						}
+					}			
+				}
+				for (int i = 0; i < r_C3; ++i) 
+				{
+					for (int j = 0; j < c_C3; ++j) 
+					{
+						C3_result[i][j] += c3_bias[k] ; // add a bias
+						C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
+					}
+				}	
+				C3_Matrices.push_back(C3_result);
+
+				vector<vector<double>> S4_result = CNN_2DaveragePooling(C3_result, pooling_kernelSize, S4_stride) ; // average pooling
+				vector<vector<double>> S4_xi(r_S4, vector<double>(c_S4,0.0));
+				for (int i = 0; i < r_S4; ++i) 
+				{
+					for (int j = 0; j < c_S4; ++j) 
+					{
+						S4_xi[i][j] = S4_result[i][j];
+						S4_result[i][j] *= s4_weights_kernel[k] ; // multiply with a weight
+						S4_result[i][j] += s4_bias[k] ; // add a bias
+						S4_result[i][j] = TanhActivationfunction(S4_result[i][j]); // apply the activation function
+					}
+				}
+
+				k1 +=1;
+				S4_Matrices_xi.push_back(S4_xi);
+				S4_Matrices.push_back(S4_result);
+			}
+
+			// The next 3: connect to any 4 discontiguous feature maps of S2
+			k1 = 0;
+			for (int k = 12 ; k < 15; ++k)
+			{
+				vector<vector<double>> C3_result(r_C3, vector<double>(c_C3,0.0));
+				
+				for (int k3 = 0 ; k3 < 4 ; ++k3)
+				{
+					int n1 = vec_uniqueinteger[k1];
+					vector<vector<double>> c3_weights(n_kernelSize,vector<double>(n_kernelSize,0.0));
+					for (int i = 0; i < n_kernelSize; ++i) 
+					{
+						for (int j = 0; j < n_kernelSize; ++j) 
+						{
+							c3_weights[i][j] = c3_weights_kernel_next3[100*k1 + 25*k3 + 5*i + j] ; // The first four contiguous feature maps will cover 100 neurons, each feature map from S2 will cover 25 neurons
+						}
+					}
+					
+					int n_comb1 = discontiguous_combinations45[n1][k3];
+					vector<vector<double>> S2(r_S2, vector<double>(c_S2, 0.0));
+					for (int i = 0; i < r_S2; ++i) 
+					{
+						for (int j = 0; j < c_S2; ++j) 
+						{
+							S2[i][j] = S2_Matrices[n_comb1][i][j];
+						}
+					}
+					vector<vector<double>> C3_result_temp = CNN_2DConvolutionOperation(S2,c3_weights, C3_stride);
+					for (int i = 0; i < r_C3; ++i) 
+					{
+						for (int j = 0; j < c_C3; ++j) 
+						{
+							C3_result[i][j] += C3_result_temp[i][j]; // sum of the indices combination
+						}
+					}			
+				}
+				for (int i = 0; i < r_C3; ++i) 
+				{
+					for (int j = 0; j < c_C3; ++j) 
+					{
+						C3_result[i][j] += c3_bias[k] ; // add a bias
+						C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
+					}
+				}	
+				C3_Matrices.push_back(C3_result);
+			
+				vector<vector<double>> S4_result = CNN_2DaveragePooling(C3_result, pooling_kernelSize, S4_stride) ; // average pooling
+				vector<vector<double>> S4_xi(r_S4, vector<double>(c_S4,0.0));
+				for (int i = 0; i < r_S4; ++i) 
+				{
+					for (int j = 0; j < c_S4; ++j) 
+					{
+						S4_xi[i][j] = S4_result[i][j];
+						S4_result[i][j] *= s4_weights_kernel[k] ; // multiply with a weight
+						S4_result[i][j] += s4_bias[k] ; // add a bias
+						S4_result[i][j] = TanhActivationfunction(S4_result[i][j]); // apply the activation function
+					}
+				}
+				k1 +=1;
+				S4_Matrices_xi.push_back(S4_xi);
+				S4_Matrices.push_back(S4_result);
+			}
+
+			// The last 1: connect to all 6 feature maps of S2
+			k1 = 0;
+			for (int k = 15 ; k < 16; ++k)
+			{
+				vector<vector<double>> C3_result(r_C3, vector<double>(c_C3,0.0));
+
+				for (int k3 = 0 ; k3 < 6 ; ++k3)
+				{
+					vector<vector<double>> c3_weights(n_kernelSize,vector<double>(n_kernelSize,0.0));
+					for (int i = 0; i < n_kernelSize; ++i) 
+					{
+						for (int j = 0; j < n_kernelSize; ++j) 
+						{
+							c3_weights[i][j] = c3_weights_kernel_last1[25*k3 + 5*i + j]  ;
+						}
+					}
+					vector<vector<double>> S2(r_S2, vector<double>(c_S2, 0.0));
+					for (int i = 0; i < r_S2; ++i) 
+					{
+						for (int j = 0; j < c_S2; ++j) 
+						{
+							S2[i][j] = S2_Matrices[k3][i][j];
+						}
+					}
+					vector<vector<double>> C3_result_temp = CNN_2DConvolutionOperation(S2,c3_weights, C3_stride);
+					for (int i = 0; i < r_C3; ++i) 
+					{
+						for (int j = 0; j < c_C3; ++j) 
+						{
+							C3_result[i][j] += C3_result_temp[i][j]; // sum of the indices combination
+						}
+					}	
+				}
+				
+				for (int i = 0; i < r_C3; ++i) 
+				{
+					for (int j = 0; j < c_C3; ++j) 
+					{
+						C3_result[i][j] += c3_bias[k] ; // add a bias
+						C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
+					}
+				}	
+				C3_Matrices.push_back(C3_result);
+
+				vector<vector<double>> S4_result = CNN_2DaveragePooling(C3_result, pooling_kernelSize, S4_stride) ; // average pooling
+				vector<vector<double>> S4_xi(r_S4, vector<double>(c_S4,0.0));
+				for (int i = 0; i < r_S4; ++i) 
+				{
+					for (int j = 0; j < c_S4; ++j) 
+					{
+						S4_xi[i][j] = S4_result[i][j];
+						S4_result[i][j] *= s4_weights_kernel[k] ; // multiply with a weight
+						S4_result[i][j] += s4_bias[k] ; // add a bias
+						S4_result[i][j] = TanhActivationfunction(S4_result[i][j]); // apply the activation function
+					}
+				}
+				k1 +=1;
+				S4_Matrices_xi.push_back(S4_xi);
+				S4_Matrices.push_back(S4_result);
+			}
+			// C5 convolutional layer computation code
+			vector<double> c5_output;
+			for (int k5 = 0; k5 < 120; ++k5)
+			{
+				double c5_sum = 0;
+				for (int k = 0; k <16; ++k) // 16 x 5 x 5
+				{	
+					int iter25 = 0;
+					vector<vector<double>> c5_weights(5,vector<double>(5,0.0));
+					for (int i = 0; i < n_kernelSize; ++i) 
+					{
+						for (int j = 0; j < n_kernelSize; ++j) 
+						{
+							c5_weights[i][j] = c5_weights_kernel[25*k + iter25][k5] ;
+							iter25 += 1;
+						}
+					}
+					vector<vector<double>> S4(r_S4, vector<double>(c_S4, 0.0));
+					for (int i = 0; i < r_S4; ++i) 
+					{
+						for (int j = 0; j < c_S4; ++j) 
+						{
+							S4[i][j] = S4_Matrices[k][i][j]; 
+						}
+					}
+
+					vector<vector<double>> C5_result = CNN_2DConvolutionOperation(S4,c5_weights, C5_stride);
+						
+					c5_sum += C5_result[0][0];
+				}
+				c5_output.push_back(c5_sum);
+				c5_output[k5] += c5_bias[k5];
+				c5_output[k5] = TanhActivationfunction(c5_output[k5]); // apply the activation function
+			}
+
+			vector<double> f6_output;
+			for (int i = 0; i < n_F6; ++i)
+			{
+				double f6_sum = 0;
+
+				for (int j = 0; j < n_C5; ++j) 
+				{
+					f6_sum += f6_weights_kernel[j][i]*c5_output[j] ;
+				}
+
+				f6_output.push_back(f6_sum);
+				f6_output[i] += f6_bias[i];
+				//f6_output[i] = ScaledTanhActivationfunction(f6_output[i]); // apply the activation function
+			}
+
+			
 			for (int k_row = 0; k_row < n_classification; ++k_row) 
 			{
 				for (int k_col = 0; k_col < n_classification; ++k_col) 
@@ -3858,6 +4432,7 @@ void CNN_LeNet5::train(vector<vector<double>> &X, vector<int> &y, int epochs)
 					}
 				}
 			}
+			// Delta for the output layer
 			for (int k_row = 0; k_row < n_classification; ++k_row) 
 			{
 				for (int k_col = 0; k_col < n_classification; ++k_col) 
@@ -3865,35 +4440,772 @@ void CNN_LeNet5::train(vector<vector<double>> &X, vector<int> &y, int epochs)
 					delta_outputlayer[k_row] += mat_jacobian[k_row][k_col]*errors[k_col];
 				}
 			}
-			
-			for (int k = 0; k < n_classification; ++k) 
+			// Delta for F6 layer, output_weights connects the F6 to output layer
+			vector<double> delta_F6(n_F6, 0.0);
+			for (int j = 0; j < n_F6; ++j) 
 			{
-				for (int j = 0; j < n_hiddenlayer; ++j) 
+				for (int i = 0; i < n_classification; ++i) 
 				{
-					hiddenweights[j][k] += learning_rate * delta_outputlayer[k] * hiddenlayer[j]; 
-					//mat_whidden[j][k] = hiddenweights[j][k];
+					delta_F6[j] += delta_outputlayer[i] * output_weights[j][i];
 				}
-				biasoutput[k] += learning_rate * delta_outputlayer[k];
-				//vec_biasoutput[k] = biasoutput[k];
+				delta_F6[j] *= ScaledTanhDerivative(f6_output[j]);
+			}
+			// Delta for C5 layer, f6_weights_kernel connects the C5 to F6 layer
+			vector<double> delta_C5(n_C5, 0.0);
+			for (int j = 0; j < n_C5; ++j) 
+			{
+				for (int i = 0; i < n_F6; ++i) 
+				{
+					delta_C5[j] += delta_F6[i] * f6_weights_kernel[j][i];
+				}
+				delta_C5[j] *= TanhDerivative(c5_output[j]);
+			}
+			vector<vector<vector<double>>> S4_deltamap;
+
+			// Compute delta for S4, 1920 distinct kernels, 16*120 = 1920 to represent the trainable weights
+			// 1920 * 25 = 48,000			
+			for (int k = 0; k <16; ++k) // 16 x 5 x 5
+			{
+				vector<vector<double>> S4_deltamap_k(5,vector<double>(5,0.0));
+				for (int k5 = 0; k5 < 120; ++k5)
+				{	
+					int iter25 = 0;
+					vector<vector<double>> c5_weights(5,vector<double>(5,0.0));
+					for (int i = 0; i < n_kernelSize; ++i) 
+					{
+						for (int j = 0; j < n_kernelSize; ++j) 
+						{
+							c5_weights[i][j] = c5_weights_kernel[25*k + iter25][k5] ;
+							iter25 += 1;
+						}
+					}
+					vector<vector<double>> C5_M(1, vector<double>(1, delta_C5[k5]));
+					vector<vector<double>> kernel_C5_rotated = rotate180(c5_weights); // rotate 180 = transpose weight matrix from C5 to F6 or F6 to output to compute delta
+					vector<vector<double>> delta_C5_padded = CNN_2DpadBorder(C5_M,4);
+	
+					vector<vector<double>> fullconv_S4_result = CNN_2DConvolutionOperation(delta_C5_padded,kernel_C5_rotated, C5_stride);
+					for (int i = 0; i < n_kernelSize; ++i) 
+					{
+						for (int j = 0; j < n_kernelSize; ++j) 
+						{
+							S4_deltamap_k[i][j] += fullconv_S4_result[i][j];
+						}
+					}
+				}
+				for (int i = 0; i < n_kernelSize; ++i) 
+				{
+					for (int j = 0; j < n_kernelSize; ++j) 
+					{
+						S4_deltamap_k[i][j] *= TanhDerivative(S4_Matrices[k][i][j]);
+					}
+				}
+				S4_deltamap.push_back(S4_deltamap_k);
 			}
 
-			for (int j = 0; j < n_hiddenlayer; ++j) 
+
+			// to compute the delta for each feature map in S4 layer
+			vector<double> delta_S4_final(16, 0.0);
+			vector<double> delta_S4_final_bias(16, 0.0);
+			for (int k = 0; k < 16; ++k) 
 			{
-				double sum_delta = 0;			
-				for (int k = 0; k < n_classification; ++k) 
+				for (int i = 0; i < n_kernelSize; ++i) 
 				{
-					sum_delta += hiddenweights[j][k] *  delta_outputlayer[k] ; 
+					for (int j = 0; j < n_kernelSize; ++j) 
+					{
+						delta_S4_final[k] += S4_deltamap[k][i][j] * S4_Matrices_xi[k][i][j];
+						delta_S4_final_bias[j] += S4_deltamap[k][i][j];
+					}
 				}
-				for (int i = 0; i < n_input; ++i) 
-				{
-					weights[i][j] += learning_rate * sum_delta * SigmoidDerivative(hiddenlayer[j]) * X[iter][i];					
-					//weights[i][j] += learning_rate * sum_delta * TanhDerivative(hiddenlayer[j]) * X[iter][i];
-					//mat_w[i][j] = weights[i][j];
-				}
-			biashidden[j] += learning_rate *  sum_delta * SigmoidDerivative(hiddenlayer[j]) ;
-			//biashidden[j] += learning_rate *  sum_delta * TanhDerivative(hiddenlayer[j]) ;
-			//vec_biashidden[j] = biashidden[j];
 			}
+			// STARTS HERE C3 Deltas Computation
+			vector<vector<vector<double>>> upsampled_delta_S4 = CNN_2DaverageUpsample3DMatrix(S4_deltamap,2,2);
+
+			vector<vector<vector<double>>> delta_C3(16,vector<vector<double>>(10,vector<double>(10,0.0)));
+			for (int k = 0 ; k < 16; ++k)
+			{
+				for (int i = 0; i < 10 ; ++i) 
+				{
+					for (int j = 0; j < 10; ++j) 
+					{
+						delta_C3[k][i][j] = upsampled_delta_S4[k][i][j] * s4_weights_kernel[k] * TanhDerivative(C3_Matrices[k][i][j]);
+					}
+				}
+			}
+
+			// Now we have obtained 1600 deltas in each neuron in 16x10x10 feature map for C3 layer.
+			// Next, we will compute the weight update for the 1500 trainable weights parameter 
+			// Computation for weight update for C3 layer: 
+			// The first 18 distinct kernels that connect to any 3 contiguous feature maps of S2
+			for (int k = 0 ; k < 6; ++k)
+			{
+				for (int k3 = 0 ; k3 < 3 ; ++k3)
+				{
+					int n_comb1 = contiguous_combinations35[k][k3];
+			
+					vector<vector<double>> S2(r_S2, vector<double>(c_S2, 0.0));
+					for (int i = 0; i < r_S2; ++i) 
+					{
+						for (int j = 0; j < c_S2; ++j) 
+						{
+							S2[i][j] = S2_Matrices[n_comb1][i][j];
+						}
+					}
+					vector<vector<double>> delta_C3_matrix(10, vector<double>(10, 0.0));
+					for (int i = 0; i < 10; ++i) 
+					{
+						for (int j = 0; j < 10; ++j) 
+						{
+							delta_C3_matrix[i][j] = delta_C3[k][i][j];
+						}
+					}
+					vector<vector<double>> distinct_kernels = CNN_2DConvolutionOperation(S2,delta_C3_matrix, C3_stride);
+				
+					C3_Distinct_Kernels.push_back(distinct_kernels);
+				}
+
+			}
+			k1 = 0;
+			for (int k = 6 ; k < 12; ++k)// The next 24 distinct kernels that connect to any 4 contiguous feature maps of S2
+			{
+				for (int k3 = 0 ; k3 < 4 ; ++k3)
+				{
+					int n_comb1 = contiguous_combinations45[k1][k3];
+			
+					vector<vector<double>> S2(r_S2, vector<double>(c_S2, 0.0));
+					for (int i = 0; i < r_S2; ++i) 
+					{
+						for (int j = 0; j < c_S2; ++j) 
+						{
+							S2[i][j] = S2_Matrices[n_comb1][i][j];
+						}
+					}
+					vector<vector<double>> delta_C3_matrix(10, vector<double>(10, 0.0));
+					for (int i = 0; i < 10; ++i) 
+					{
+						for (int j = 0; j < 10; ++j) 
+						{
+							delta_C3_matrix[i][j] = delta_C3[k][i][j];
+						}
+					}
+					vector<vector<double>> distinct_kernels = CNN_2DConvolutionOperation(S2,delta_C3_matrix, C3_stride);
+				
+					C3_Distinct_Kernels.push_back(distinct_kernels);
+				}
+				k1 += 1;
+			}
+			
+			k1 = 0;
+			for (int k = 12 ; k < 15; ++k) // The next 12 distinct kernels that connect to any 4 discontiguous feature maps of S2
+			{
+				for (int k3 = 0 ; k3 < 4 ; ++k3)
+				{
+					int n1 = vec_uniqueinteger[k1];
+					
+					int n_comb1 = discontiguous_combinations45[n1][k3];
+					vector<vector<double>> S2(r_S2, vector<double>(c_S2, 0.0));
+					for (int i = 0; i < r_S2; ++i) 
+					{
+						for (int j = 0; j < c_S2; ++j) 
+						{
+							S2[i][j] = S2_Matrices[n_comb1][i][j];
+						}
+					}
+					vector<vector<double>> delta_C3_matrix(10, vector<double>(10, 0.0));
+					for (int i = 0; i < 10; ++i) 
+					{
+						for (int j = 0; j < 10; ++j) 
+						{
+							delta_C3_matrix[i][j] = delta_C3[k][i][j];
+						}
+					}
+					vector<vector<double>> distinct_kernels = CNN_2DConvolutionOperation(S2,delta_C3_matrix, C3_stride);
+				
+					C3_Distinct_Kernels.push_back(distinct_kernels);		
+				}
+				k1 +=1;
+			}
+
+			for (int k = 15 ; k < 16; ++k) // The last 6 distinct kernels that connect to all 6 feature maps in S2
+			{
+				for (int k3 = 0 ; k3 < 6 ; ++k3)
+				{
+					vector<vector<double>> S2(r_S2, vector<double>(c_S2, 0.0));
+					for (int i = 0; i < r_S2; ++i) 
+					{
+						for (int j = 0; j < c_S2; ++j) 
+						{
+							S2[i][j] = S2_Matrices[k3][i][j];
+						}
+					}
+					vector<vector<double>> delta_C3_matrix(10, vector<double>(10, 0.0));
+					for (int i = 0; i < 10; ++i) 
+					{
+						for (int j = 0; j < 10; ++j) 
+						{
+							delta_C3_matrix[i][j] = delta_C3[k][i][j];
+						}
+					}
+					vector<vector<double>> distinct_kernels = CNN_2DConvolutionOperation(S2,delta_C3_matrix, C3_stride);
+				
+					C3_Distinct_Kernels.push_back(distinct_kernels);	
+				}
+			}
+
+			vector<vector<vector<double>>> S2_deltamap_1, S2_deltamap_2, S2_deltamap_3, S2_deltamap_4, S2_deltamap_5, S2_deltamap_6; // Store delta map for S2 with sparse connectivity
+			// Computation for delta map for S2 layer:
+			// The first 6 feature maps in S3 that connect to any 3 contiguous feature maps of S2
+			for (int k = 0 ; k < 6; ++k)
+			{
+				for (int k3 = 0 ; k3 < 3 ; ++k3)
+				{
+					vector<vector<double>> delta_C3_matrix(10, vector<double>(10, 0.0));
+					vector<vector<double>> S2_C3_kernelmatrix(5, vector<double>(5, 0.0));
+					for (int i = 0; i < 10; ++i) 
+					{
+						for (int j = 0; j < 10; ++j) 
+						{
+							delta_C3_matrix[i][j] = delta_C3[k][i][j];
+						}
+					}
+					vector<vector<double>> padded_delta = CNN_2DpadBorder(delta_C3_matrix,4);
+					for (int i = 0; i < 5; ++i) 
+					{
+						for (int j = 0; j < 5; ++j) 
+						{
+							S2_C3_kernelmatrix[i][j] = c3_weights_kernel_first6[75*k + 25*k3 + 5*i + j] ;
+						}
+					}
+					vector<vector<double>> rotated_W = rotate180(S2_C3_kernelmatrix); // rotate 180 = transpose weight matrix from C5 to F6 or F6 to output to compute delta
+					int n_comb1 = contiguous_combinations35[k][k3];
+			
+					vector<vector<double>> deltamap_kernel = CNN_2DConvolutionOperation(padded_delta, rotated_W,C3_stride);
+
+					if(n_comb1 == 0)
+					{
+						S2_deltamap_1.push_back(deltamap_kernel);
+					}
+					else if(n_comb1 == 1)
+					{
+						S2_deltamap_2.push_back(deltamap_kernel);
+					}
+					else if(n_comb1 == 2)
+					{
+						S2_deltamap_3.push_back(deltamap_kernel);
+					}
+					else if(n_comb1 == 3)
+					{
+						S2_deltamap_4.push_back(deltamap_kernel);
+					}
+					else if(n_comb1 == 4)
+					{
+						S2_deltamap_5.push_back(deltamap_kernel);
+					}
+					else if(n_comb1 == 5)
+					{
+						S2_deltamap_6.push_back(deltamap_kernel);
+					}
+				}
+
+			}
+
+			// The next 6 feature maps in S3 that connect to any 4 contiguous feature maps of S2
+			k1 = 0;
+			for (int k = 6 ; k < 12; ++k)
+			{
+				for (int k3 = 0 ; k3 < 4 ; ++k3)
+				{
+					vector<vector<double>> delta_C3_matrix(10, vector<double>(10, 0.0));
+					vector<vector<double>> S2_C3_kernelmatrix(5, vector<double>(5, 0.0));
+					for (int i = 0; i < 10; ++i) 
+					{
+						for (int j = 0; j < 10; ++j) 
+						{
+							delta_C3_matrix[i][j] = delta_C3[k][i][j];
+						}
+					}
+					vector<vector<double>> padded_delta = CNN_2DpadBorder(delta_C3_matrix,4);
+					for (int i = 0; i < 5; ++i) 
+					{
+						for (int j = 0; j < 5; ++j) 
+						{
+							S2_C3_kernelmatrix[i][j] = c3_weights_kernel_next6[100*k1 +25*k3 + 5*i + j] ;
+						}
+					}
+					vector<vector<double>> rotated_W = rotate180(S2_C3_kernelmatrix); // rotate 180 = transpose weight matrix from C5 to F6 or F6 to output to compute delta
+					int n_comb1 = contiguous_combinations45[k1][k3];
+			
+					vector<vector<double>> deltamap_kernel = CNN_2DConvolutionOperation(padded_delta, rotated_W,C3_stride);
+
+					if(n_comb1 == 0)
+					{
+						S2_deltamap_1.push_back(deltamap_kernel);
+					}
+					else if(n_comb1 == 1)
+					{
+						S2_deltamap_2.push_back(deltamap_kernel);
+					}
+					else if(n_comb1 == 2)
+					{
+						S2_deltamap_3.push_back(deltamap_kernel);
+					}
+					else if(n_comb1 == 3)
+					{
+						S2_deltamap_4.push_back(deltamap_kernel);
+					}
+					else if(n_comb1 == 4)
+					{
+						S2_deltamap_5.push_back(deltamap_kernel);
+					}
+					else if(n_comb1 == 5)
+					{
+						S2_deltamap_6.push_back(deltamap_kernel);
+					}
+				}
+				k1 += 1;
+			}
+
+			// The next 3 feature maps in S3 that connect to any 4 discontiguous feature maps of S2
+			k1 = 0;
+			for (int k = 12 ; k < 15; ++k)
+			{
+				for (int k3 = 0 ; k3 < 4 ; ++k3)
+				{
+					vector<vector<double>> delta_C3_matrix(10, vector<double>(10, 0.0));
+					vector<vector<double>> S2_C3_kernelmatrix(5, vector<double>(5, 0.0));
+					for (int i = 0; i < 10; ++i) 
+					{
+						for (int j = 0; j < 10; ++j) 
+						{
+							delta_C3_matrix[i][j] = delta_C3[k][i][j];
+						}
+					}
+					vector<vector<double>> padded_delta = CNN_2DpadBorder(delta_C3_matrix,4);
+					for (int i = 0; i < 5; ++i) 
+					{
+						for (int j = 0; j < 5; ++j) 
+						{
+							S2_C3_kernelmatrix[i][j] = c3_weights_kernel_next3[100*k1 + 25*k3+ 5*i + j] ;
+						}
+					}
+					vector<vector<double>> rotated_W = rotate180(S2_C3_kernelmatrix); // rotate 180 = transpose weight matrix from C5 to F6 or F6 to output to compute delta
+					int n1 = vec_uniqueinteger[k1];
+					
+					int n_comb1 = discontiguous_combinations45[n1][k3];
+
+					vector<vector<double>> deltamap_kernel = CNN_2DConvolutionOperation(padded_delta, rotated_W,C3_stride);
+
+					if(n_comb1 == 0)
+					{
+						S2_deltamap_1.push_back(deltamap_kernel);
+					}
+					else if(n_comb1 == 1)
+					{
+						S2_deltamap_2.push_back(deltamap_kernel);
+					}
+					else if(n_comb1 == 2)
+					{
+						S2_deltamap_3.push_back(deltamap_kernel);
+					}
+					else if(n_comb1 == 3)
+					{
+						S2_deltamap_4.push_back(deltamap_kernel);
+					}
+					else if(n_comb1 == 4)
+					{
+						S2_deltamap_5.push_back(deltamap_kernel);
+					}
+					else if(n_comb1 == 5)
+					{
+						S2_deltamap_6.push_back(deltamap_kernel);
+					}
+				}
+				k1 += 1;
+			}
+
+			// The last feature map in S3 that connect to all 6 discontiguous feature maps of S2
+			for (int k = 15 ; k < 16; ++k)
+			{
+				for (int k3 = 0 ; k3 < 6 ; ++k3)
+				{
+					vector<vector<double>> delta_C3_matrix(10, vector<double>(10, 0.0));
+					vector<vector<double>> S2_C3_kernelmatrix(5, vector<double>(5, 0.0));
+					for (int i = 0; i < 10; ++i) 
+					{
+						for (int j = 0; j < 10; ++j) 
+						{
+							delta_C3_matrix[i][j] = delta_C3[k][i][j];
+						}
+					}
+					vector<vector<double>> padded_delta = CNN_2DpadBorder(delta_C3_matrix,4);
+					for (int i = 0; i < 5; ++i) 
+					{
+						for (int j = 0; j < 5; ++j) 
+						{
+							S2_C3_kernelmatrix[i][j] = c3_weights_kernel_last1[25*k3+ 5*i + j] ;
+						}
+					}
+					vector<vector<double>> rotated_W = rotate180(S2_C3_kernelmatrix); // rotate 180 = transpose weight matrix from C5 to F6 or F6 to output to compute delta
+
+					vector<vector<double>> deltamap_kernel = CNN_2DConvolutionOperation(padded_delta, rotated_W,C3_stride);
+
+					if(k3 == 0)
+					{
+						S2_deltamap_1.push_back(deltamap_kernel);
+					}
+					else if(k3 == 1)
+					{
+						S2_deltamap_2.push_back(deltamap_kernel);
+					}
+					else if(k3 == 2)
+					{
+						S2_deltamap_3.push_back(deltamap_kernel);
+					}
+					else if(k3 == 3)
+					{
+						S2_deltamap_4.push_back(deltamap_kernel);
+					}
+					else if(k3 == 4)
+					{
+						S2_deltamap_5.push_back(deltamap_kernel);
+					}
+					else if(k3 == 5)
+					{
+						S2_deltamap_6.push_back(deltamap_kernel);
+					}
+				}
+			}
+
+			int n_S2_map1 = S2_deltamap_1.size();
+			int n_S2_map2 = S2_deltamap_2.size();
+			int n_S2_map3 = S2_deltamap_3.size();
+			int n_S2_map4 = S2_deltamap_4.size();
+			int n_S2_map5 = S2_deltamap_5.size();
+			int n_S2_map6 = S2_deltamap_6.size();
+			/*cout <<S2_deltamap_1.size() << " \t " << S2_deltamap_1[0].size() << " \t " << S2_deltamap_1[0][0].size()<< endl;
+			cout <<S2_deltamap_2.size() << " \t " << S2_deltamap_2[0].size() << " \t " << S2_deltamap_2[0][0].size()<< endl;
+			cout <<S2_deltamap_3.size() << " \t " << S2_deltamap_3[0].size() << " \t " << S2_deltamap_3[0][0].size()<< endl;
+			cout <<S2_deltamap_4.size() << " \t " << S2_deltamap_4[0].size() << " \t " << S2_deltamap_4[0][0].size()<< endl;
+			cout <<S2_deltamap_5.size() << " \t " << S2_deltamap_5[0].size() << " \t " << S2_deltamap_5[0][0].size()<< endl;
+			cout <<S2_deltamap_6.size() << " \t " << S2_deltamap_6[0].size() << " \t " << S2_deltamap_6[0][0].size()<< endl;
+
+			save3DMatrixdouble(S2_deltamap_1,"S2_deltamap_1.txt");
+			save3DMatrixdouble(S2_deltamap_2,"S2_deltamap_2.txt");
+			save3DMatrixdouble(S2_deltamap_3,"S2_deltamap_3.txt");
+			save3DMatrixdouble(S2_deltamap_4,"S2_deltamap_4.txt");
+			save3DMatrixdouble(S2_deltamap_5,"S2_deltamap_5.txt");
+			save3DMatrixdouble(S2_deltamap_6,"S2_deltamap_6.txt");*/
+			
+			// 14 rows, 14 columns, n_S2_map_k depth layers
+			Matrix3DTo2D S2_deltamap_1_final(14, 14, n_S2_map1);
+			Matrix3DTo2D S2_deltamap_2_final(14, 14, n_S2_map2);
+			Matrix3DTo2D S2_deltamap_3_final(14, 14, n_S2_map3);
+			Matrix3DTo2D S2_deltamap_4_final(14, 14, n_S2_map4);
+			Matrix3DTo2D S2_deltamap_5_final(14, 14, n_S2_map5);
+			Matrix3DTo2D S2_deltamap_6_final(14, 14, n_S2_map6);
+
+			// To compute the 1,176 deltas for S2 layer (6 x 14 x 14)
+			for (int k = 0; k < n_S2_map1; ++k) 
+			{
+				for (int i = 0; i < 14; ++i) 
+				{
+					for (int j = 0; j < 14; ++j) 
+					{
+						double index = S2_deltamap_1[k][i][j];
+						S2_deltamap_1_final.set(i, j, k, index);
+					}
+				}
+			}
+			for (int k = 0; k < n_S2_map2; ++k) 
+			{
+				for (int i = 0; i < 14; ++i) 
+				{
+					for (int j = 0; j < 14; ++j) 
+					{
+						double index = S2_deltamap_2[k][i][j];
+						S2_deltamap_2_final.set(i, j, k, index);
+					}
+				}
+			}
+			for (int k = 0; k < n_S2_map3; ++k) 
+			{
+				for (int i = 0; i < 14; ++i) 
+				{
+					for (int j = 0; j < 14; ++j) 
+					{
+						double index = S2_deltamap_3[k][i][j];
+						S2_deltamap_3_final.set(i, j, k, index);
+					}
+				}
+			}
+			for (int k = 0; k < n_S2_map4; ++k) 
+			{
+				for (int i = 0; i < 14; ++i) 
+				{
+					for (int j = 0; j < 14; ++j) 
+					{
+						double index = S2_deltamap_4[k][i][j];
+						S2_deltamap_4_final.set(i, j, k, index);
+					}
+				}
+			}
+			for (int k = 0; k < n_S2_map5; ++k) 
+			{
+				for (int i = 0; i < 14; ++i) 
+				{
+					for (int j = 0; j < 14; ++j) 
+					{
+						double index = S2_deltamap_5[k][i][j];
+						S2_deltamap_5_final.set(i, j, k, index);
+					}
+				}
+			}
+			for (int k = 0; k < n_S2_map6; ++k) 
+			{
+				for (int i = 0; i < 14; ++i) 
+				{
+					for (int j = 0; j < 14; ++j) 
+					{
+						double index = S2_deltamap_6[k][i][j];
+						S2_deltamap_6_final.set(i, j, k, index);
+					}
+				}
+			}
+			vector<double> S2_Delta_Final1 = S2_deltamap_1_final.collapseTo2D();
+			vector<double> S2_Delta_Final2 = S2_deltamap_2_final.collapseTo2D();
+			vector<double> S2_Delta_Final3 = S2_deltamap_3_final.collapseTo2D();
+			vector<double> S2_Delta_Final4 = S2_deltamap_4_final.collapseTo2D();
+			vector<double> S2_Delta_Final5 = S2_deltamap_5_final.collapseTo2D();
+			vector<double> S2_Delta_Final6 = S2_deltamap_6_final.collapseTo2D();
+			vector<vector<vector<double>>> S2_deltamap(6,vector<vector<double>>(14,vector<double>(14,0.0)));
+			for (int i = 0; i < 14; ++i) 
+			{
+				for (int j = 0; j < 14; ++j) 
+				{
+					S2_deltamap[0][i][j] = S2_Delta_Final1[i*14 + j];
+					S2_deltamap[1][i][j] = S2_Delta_Final2[i*14 + j];
+					S2_deltamap[2][i][j] = S2_Delta_Final3[i*14 + j];
+					S2_deltamap[3][i][j] = S2_Delta_Final4[i*14 + j];
+					S2_deltamap[4][i][j] = S2_Delta_Final5[i*14 + j];
+					S2_deltamap[5][i][j] = S2_Delta_Final6[i*14 + j];
+				}
+			}
+			//save3DMatrixdouble(S2_deltamap,"S2_deltamap_final.txt");
+			// Display the resulting 2D values
+			/*cout << "Collapsed 2D Matrix:\n";
+			for (size_t i = 0; i < 14; ++i) 
+			{
+				for (size_t j = 0; j < 14; ++j) 
+				{
+					cout << sumMatrix[(i * 14) + j] << " ";
+				}
+				cout << "\n";
+			}*/
+
+			// to compute the delta for each feature map in S2 layer
+			vector<double> delta_S2_final(6, 0.0);
+			vector<double> delta_S2_final_bias(6, 0.0);
+			for (int k = 0; k < 6; ++k) 
+			{
+				double delta_sum = 0;
+				for (int i = 0; i < 14; ++i) 
+				{
+					for (int j = 0; j < 14; ++j) 
+					{
+						delta_S2_final[k] += S2_deltamap[k][i][j] * S2_Matrices_xi[k][i][j];
+						delta_sum += S2_deltamap[k][i][j];
+					}
+				}
+				delta_S2_final_bias[k] = delta_sum;
+			}
+
+			// To Compute the delta for each feature map in C1 layer
+			vector<vector<vector<double>>> upsampled_delta_S2 = CNN_2DaverageUpsample3DMatrix(S2_deltamap,2,2);
+
+			vector<vector<vector<double>>> delta_C1(6,vector<vector<double>>(28,vector<double>(28,0.0)));
+			for (int k = 0 ; k < 6; ++k)
+			{
+				for (int i = 0; i < 28 ; ++i) 
+				{
+					for (int j = 0; j < 28; ++j) 
+					{
+						delta_C1[k][i][j] = upsampled_delta_S2[k][i][j] * s2_weights_kernel[k] * TanhDerivative(C1_Matrices[k][i][j]);
+					}
+				}
+			}
+
+			// Now we have obtained 4704 deltas in each neuron in 6x28x28 feature map for C1 layer.
+			vector<vector<vector<double>>> C1_weights_update;
+			for (int k = 0 ; k < 6; ++k)
+			{
+				vector<vector<double>> weights_update = CNN_2DConvolutionOperation(X[iter],delta_C1[k], C1_stride);
+				C1_weights_update.push_back(weights_update);
+			}
+
+			/*
+
+			// Weight Update from Output Layer to C1 Layer Starts Here
+
+			*/
+
+			// Weight update formula for output layer
+			for (int i = 0; i < n_classification; ++i) 
+			{
+				output_bias[i] -= learning_rate*delta_outputlayer[i];
+			}
+			//  output_weights[84][10]
+			for (int j = 0; j < n_F6; ++j) 
+			{
+				f6_bias[j] -= learning_rate*delta_F6[j];
+				for (int i = 0; i < n_classification; ++i) 
+				{
+					output_weights[j][i] -= learning_rate*delta_outputlayer[i]*ScaledTanhActivationfunction(f6_output[j]);
+				}
+			}
+			// Weight update formula for F6 
+			// f6_weights_kernel[120][84]
+			for (int j = 0; j < n_C5; ++j) 
+			{
+				c5_bias[j] -= learning_rate*delta_C5[j];
+				for (int i = 0; i < n_F6; ++i) 
+				{
+					f6_weights_kernel[j][i] -= learning_rate*delta_F6[i]*c5_output[j];
+				}
+			}
+			// Weight update formua for C5
+			// c5_weights_kernel[400][120]; the weight connecting flattened S4 layer to C5
+			// with Valid convolution
+			for (int k5 = 0; k5 < 120; ++k5)
+			{
+				for (int k = 0; k <16; ++k) // 16 x 5 x 5
+				{	
+					vector<vector<double>> S4(r_S4, vector<double>(c_S4, 0.0));
+					for (int i = 0; i < r_S4; ++i) 
+					{
+						for (int j = 0; j < c_S4; ++j) 
+						{
+							S4[i][j] = S4_Matrices[k][i][j]; 
+						}
+					}
+					vector<vector<double>> C5_W(1, vector<double>(1, delta_C5[k5]));
+					vector<vector<double>> C5_weight_gradient = CNN_2DConvolutionOperation(S4,C5_W, C5_stride);
+					for (int i = 0; i < n_kernelSize; ++i) 
+					{
+						for (int j = 0; j < n_kernelSize; ++j) 
+						{
+							// weight update for C5 trainable weight parameters
+							c5_weights_kernel[25*k + 5*i + j][k5] -= learning_rate*C5_weight_gradient[i][j];
+						}
+					}	
+				}
+			}
+
+			// Weight update formua for S4
+			// s4_weights_kernel[16]; the weight for each feature map in S4 pooling layer
+			for (int j = 0; j < 16; ++j) 
+			{
+				s4_weights_kernel[j] -= learning_rate*delta_S4_final[j];
+				s4_bias[j] -= learning_rate*delta_S4_final_bias[j];
+			}
+
+			// Weight update formula for C3
+			int k_c3_kernel = 0;
+			for (int k = 0 ; k < 18; ++k) // The first 18 distinct kernels that connect 3 contiguous feature maps in S2
+			{
+				for (int i = 0; i < 5; ++i) 
+				{
+					for (int j = 0; j < 5; ++j) 
+					{
+						c3_weights_kernel_first6[25*k + 5*i + j] -= learning_rate*C3_Distinct_Kernels[k_c3_kernel][i][j];
+					}
+				}
+				k_c3_kernel += 1;
+			}
+
+			for (int k = 0 ; k < 24; ++k) // The next 24 distinct kernels that connect 4 contiguous feature maps in S2
+			{
+				for (int i = 0; i < 5; ++i) 
+				{
+					for (int j = 0; j < 5; ++j) 
+					{
+						c3_weights_kernel_next6[25*k + 5*i + j] -= learning_rate*C3_Distinct_Kernels[k_c3_kernel][i][j];
+					}
+				}
+				k_c3_kernel += 1;
+			}
+
+
+			for (int k = 0 ; k < 12; ++k) // The next 12 distinct kernels that connect 4 discontiguous feature maps in S2
+			{
+				for (int i = 0; i < 5; ++i) 
+				{
+					for (int j = 0; j < 5; ++j) 
+					{
+						c3_weights_kernel_next3[25*k + 5*i + j] -= learning_rate*C3_Distinct_Kernels[k_c3_kernel][i][j];
+					}
+				}
+				k_c3_kernel += 1;
+			}
+
+			for (int k = 0 ; k < 6; ++k) // The last 6 distinct kernels that connect to all 6 feature maps in S2
+			{
+				for (int i = 0; i < 5; ++i) 
+				{
+					for (int j = 0; j < 5; ++j) 
+					{
+						c3_weights_kernel_last1[25*k + 5*i + j] -= learning_rate*C3_Distinct_Kernels[k_c3_kernel][i][j];
+					}
+				}
+				k_c3_kernel += 1;
+			}
+			
+			for (int k = 0 ; k < 16; ++k)
+			{
+				double sum = 0;
+				for (int i = 0; i < 10 ; ++i) 
+				{
+					for (int j = 0; j < 10; ++j) 
+					{
+						sum += delta_C3[k][i][j] ;
+					}
+				}
+				c3_bias[k] -= learning_rate*sum;
+			}
+
+			// Weight update formua for S2
+			// s2_weights_kernel[6];
+			for (int k = 0; k < 6; ++k) 
+			{
+				s2_weights_kernel[k] -= learning_rate*delta_S2_final[k];
+				s2_bias[k] -= learning_rate*delta_S2_final_bias[k];
+			}
+			// Weight update formua for C1
+			// c1_weights_kernel[6][5][5]
+			// Weight update formula for C3
+			for (int k = 0 ; k < 6; ++k) // The first 18 distinct kernels that connect 3 contiguous feature maps in S2
+			{
+				for (int i = 0; i < 5; ++i) 
+				{
+					for (int j = 0; j < 5; ++j) 
+					{
+						c1_weights_kernel[k][i][j] -= learning_rate*C1_weights_update[k][i][j];
+					}
+				}
+				
+			}
+
+			for (int k = 0 ; k < 6; ++k)
+			{
+				double sum = 0;
+				for (int i = 0; i < 28 ; ++i) 
+				{
+					for (int j = 0; j < 28; ++j) 
+					{
+						sum += delta_C1[k][i][j] ;
+					}
+				}
+				c1_bias[k] -= learning_rate*sum;
+			}
+
 		}
 
 		if ((epoch + 1) % (epochs / 100) == 0 || epoch == epochs - 1) 
@@ -3921,11 +5233,8 @@ void CNN_LeNet5::train(vector<vector<double>> &X, vector<int> &y, int epochs)
 			std::cout << "Epoch " << epoch + 1 << "/" << epochs << " - Loss: " << std::fixed << std::setprecision(4) << epoch_loss / X.size() << "\r";
 			std::cout.flush();
 		}
-		//Matrix3D_weights.push_back(mat_w);
-		//Matrix3D_hiddenweights.push_back(mat_whidden);
-		//mat_biashidden.push_back(vec_biashidden);
-		//mat_biasoutput.push_back(vec_biasoutput);
-		*/
+
+		
 	} 
 	
 	cout << endl;
@@ -4012,9 +5321,9 @@ void print_confusion_matrix(const vector<vector<int>>& confusion_matrix, const v
 	cout << CYAN << BOLD << "\nConfusion Matrix:\n" << RESET << std::endl;
     
 	// Calculate max width for labels
-	size_t max_width = std::max_element(label_names.begin(), label_names.end(),
+	int max_width = std::max_element(label_names.begin(), label_names.end(),
 		[](const std::string& a, const std::string& b) { return a.length() < b.length(); })->length();
-	max_width = std::max(max_width, size_t(15));  // Minimum width of 15
+	max_width = std::max(max_width, int(15));  // Minimum width of 15
 
 	// Print header
 	cout << std::setw(max_width + 2) << "Predicted >";
@@ -4025,10 +5334,12 @@ void print_confusion_matrix(const vector<vector<int>>& confusion_matrix, const v
 	cout << endl;
 
 	// Print rows
-	for (size_t i = 0; i < confusion_matrix.size(); ++i) 
+	int n_c = confusion_matrix.size();
+	for (int i = 0; i < n_c; ++i) 
 	{
 		cout << std::setw(max_width + 2) << label_names[i];
-		for (size_t j = 0; j < confusion_matrix[i].size(); ++j) 
+		int n_ci = confusion_matrix[i].size();
+		for (int j = 0; j < n_ci; ++j) 
 		{
 			cout << std::setw(max_width + 2) << confusion_matrix[i][j];
 		}
@@ -4040,14 +5351,14 @@ void print_confusion_matrix(const vector<vector<int>>& confusion_matrix, const v
 void print_metrics(const vector<vector<int>>& confusion_matrix, const vector<string>& label_names) 
 {
 	std::cout << MAGENTA << BOLD << "\nPrecision, Recall, and F1-score:\n" << RESET << std::endl;
-    
-	for (size_t i = 0; i < label_names.size(); ++i) 
+	int n_label = label_names.size();
+	for (int i = 0; i < n_label; ++i) 
 	{
 		int true_positive = confusion_matrix[i][i];
 		int false_positive = 0;
 		int false_negative = 0;
-
-		for (size_t j = 0; j < confusion_matrix.size(); ++j) 
+		int n_c = confusion_matrix.size();
+		for (int j = 0; j < n_c ; ++j) 
 		{
 			if (i != j) 
 			{
@@ -4077,7 +5388,8 @@ void evaluate_model(FNN_NoHiddenLayer_Iris &nn, vector<vector<double>> &X, vecto
 
 	int progress = 0;
 	int bar_width = 50;
-	for (size_t i = 0; i < X.size(); ++i) 
+	int n_X = X.size();
+	for (int i = 0; i < n_X; ++i) 
 	{
 		vector<double> prediction = nn.predict(X[i]);
 		int predicted_class = std::distance(prediction.begin(), std::max_element(prediction.begin(), prediction.end()));
@@ -4124,7 +5436,8 @@ void evaluate_model(FNN_NoHiddenLayer_Iris_ConjugateGradient &nn, vector<vector<
 
 	int progress = 0;
 	int bar_width = 50;
-	for (size_t i = 0; i < X.size(); ++i) 
+	int n_X = X.size();
+	for (int i = 0; i < n_X; ++i) 
 	{
 		vector<double> prediction = nn.predict(X[i]);
 		int predicted_class = std::distance(prediction.begin(), std::max_element(prediction.begin(), prediction.end()));
@@ -4171,7 +5484,8 @@ void evaluate_model(FNN_1HiddenLayer_Iris &nn, vector<vector<double>> &X, vector
 
 	int progress = 0;
 	int bar_width = 50;
-	for (size_t i = 0; i < X.size(); ++i) 
+	int n_X = X.size();
+	for (int i = 0; i < n_X; ++i) 
 	{
 		vector<double> prediction = nn.predict(X[i]);
 		int predicted_class = std::distance(prediction.begin(), std::max_element(prediction.begin(), prediction.end()));
@@ -4218,7 +5532,8 @@ void evaluate_model(FNN_1HiddenLayer_Iris_ConjugateGradient &nn, vector<vector<d
 
 	int progress = 0;
 	int bar_width = 50;
-	for (size_t i = 0; i < X.size(); ++i) 
+	int n_X = X.size();
+	for (int i = 0; i < n_X; ++i) 
 	{
 		vector<double> prediction = nn.predict(X[i]);
 		int predicted_class = std::distance(prediction.begin(), std::max_element(prediction.begin(), prediction.end()));

@@ -52,10 +52,19 @@ int main()
 	save3DMatrixint(X_test,"shuffledXtest.txt");
 	saveVectorint(y_train,"shuffledytrain.txt");
 	saveVectorint(y_test,"shuffledytest.txt");
+
 	
 	std::cout << BLUE << BOLD << "\nInitializing Convolutional Neural Network..." << RESET << std::endl;
 	CNN_LeNet5 cnn;
 	vector<double> prediction = cnn.predict(X_train[0]);
+
+	std::cout << BLUE << BOLD << "\nStarting Training Process" << RESET << std::endl;
+	auto start = std::chrono::high_resolution_clock::now();
+	cnn.train(X_train, y_train, 100);
+	auto end = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> elapsed = end - start;
+
+	std::cout << GREEN << BOLD << "\nTraining completed in " << elapsed.count() << " seconds." << RESET << std::endl;
 
 
 	} catch (const std::exception& e) {

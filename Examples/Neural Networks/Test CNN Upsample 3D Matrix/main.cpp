@@ -19,26 +19,20 @@ int main()
 
 	//string filename = "matrix.txt";
 	
-	vector<vector<int>> inputMatrix = loadIntMatrixFromFile("matrix.txt");
+	vector<double> inputVector = loadVectorFromFile("matrix.txt");
 
-	cout << "\nMatrix A : " << endl;
-	printIntMatrix(inputMatrix);
 	
-	int kernelSize = 2;
-	int stride = 2;
-	vector<vector<int>> maxMatrix = CNN_2DmaxPooling(inputMatrix, kernelSize, stride) ;
-	cout << "\nMax Pooling : " << endl;
-	printIntMatrix(maxMatrix);
-
-	vector<vector<double>> avgMatrix = CNN_2DaveragePooling(inputMatrix, kernelSize, stride) ;
-	cout << "\nAverage Pooling : " << endl;
-	printMatrix(avgMatrix);
-
-	vector<vector<int>> padMatrix = CNN_2DpadBorder(inputMatrix, 4);
-	cout << "\nPadding Matrix A : " << endl;
-	printIntMatrix(padMatrix);
-
-
+	vector<vector<vector<double>>> Matrix3D = Create3DMatrixfromVector(inputVector, 2, 3, 3);
+	cout << "\nMatrix A : " << endl;
+	print3DMatrix(Matrix3D);
+	
+	vector<vector<vector<double>>> upsampleMatrix = CNN_2DUpsample3DMatrix(Matrix3D,2,2);
+	cout << "\nUpsample Matrix A : " << endl;
+	print3DMatrix(upsampleMatrix);
+	
+	vector<vector<vector<double>>> avgupsampleMatrix = CNN_2DaverageUpsample3DMatrix(Matrix3D,2,2);
+	cout << "\nAverage Upsample Matrix A : " << endl;
+	print3DMatrix(avgupsampleMatrix);
 	// Get ending timepoint
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<microseconds>(stop - start);

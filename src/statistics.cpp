@@ -154,7 +154,6 @@ double combinationsd(int n, int r) {
 	return factoriald(n) / (factoriald(r) * factoriald(n - r));
 }
 
-
 void save3DMatrixdouble(vector<vector<vector<double>>> matrix, const string& filename) 
 {
 	// Create an ofstream object and open the file for writing
