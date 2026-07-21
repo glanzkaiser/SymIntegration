@@ -22,4 +22,4 @@ predict: $(MAIN)
 	$(CC) -o $@ $(CFLAGS) $(MAIN) $(LIBS)
 
 clean: 
-	rm -f $(MAIN) predict $(MAIN2) train
+	rm -f $(MAIN) predict $(MAIN2) train 

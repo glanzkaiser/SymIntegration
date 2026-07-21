@@ -47,7 +47,7 @@ using namespace std;
 
 double LeakyReLUActivationfunction(double x, double alpha)
 {
-	return std::max(alpha, x);
+	return std::max(alpha*x, x);	
 }
 double ReLUActivationfunction(double x)
 {
@@ -88,11 +88,9 @@ double TanhDerivative(double x)
 	return 1 - (x*x);
 	
 }
-double ScaledTanhDerivative(double x) // pre-activation derivative
+double ScaledTanhDerivative(double x) // post-activation derivative
 {
-	//double t = std::tanh(x);
-	//return 1.0 - t * t;
-	return 1.7159*divisiond(2,3)*(1 - (std::tanh(divisiond(2,3)*x) * std::tanh(divisiond(2,3)*x)));
+	return 1.7159*divisiond(2,3) - (divisiond(2,3)*x * (divisiond(x,1.7159)) ) ;
 	
 }
 
@@ -1022,6 +1020,10 @@ double He_initialization(double n_in)
 	static std::random_device rd;
 	static std::mt19937 gen(rd());
 	std::normal_distribution<double> distribution(mu, sigma);
+
+	// If want to use uniform distribution
+	//double limit = sqrt(divisiond(6,n_in));
+	//std::uniform_real_distribution<> uniformdistribution(-limit,limit);
 	return distribution(gen);
 }
 
@@ -1996,7 +1998,55 @@ vector<vector<double>> read_dataset_iris(const string &filename, vector<int> &la
 	return dataset;
 }
 
+vector<vector<double>> read_dataset_images(const string &filename, vector<string> &label_names) 
+{
+	std::ifstream file(filename);
+	if (!file.is_open()) 
+	{
+		throw std::runtime_error("Unable to open file: " + filename);
+	}
 
+	vector<vector<double>> dataset;
+	string line;
+	unordered_map<string, int> label_map;
+	int label_counter = 0;
+
+	std::getline(file, line); // Skip header
+
+	while (getline(file, line)) 
+	{
+		stringstream ss(line);
+		vector<double> data_point;
+		string value;
+		// Read the 1 feature values
+		for (int i = 0; i < 1; ++i) 
+		{
+			if (!std::getline(ss, value, ',')) 
+			{
+				throw std::runtime_error("Error reading CSV: unexpected end of line");
+			}
+			try 
+			{
+				data_point.push_back(std::stod(value));
+			} catch (const std::exception& e) 
+			{
+				throw std::runtime_error("Error converting to double: " + value);
+			}
+		}
+
+		// this will give integer labeling 
+		// 0 corresponding to "0", 1 corresponding to "1", ... , 9 corresponding to "9".
+		if (label_map.find(value) == label_map.end()) 
+		{
+			label_map[value] = label_counter++;
+			label_names.push_back(value);
+		}
+		dataset.push_back(data_point);
+	} // end while
+
+	file.close();
+	return dataset;
+}
 	
 // Constructor initializing the array with random numbers
 FNN_NoHiddenLayer_Iris::FNN_NoHiddenLayer_Iris() 
@@ -3529,6 +3579,56 @@ void FNN_1HiddenLayer_Iris_ConjugateGradient::load_model(const std::string& file
 }
 
 
+/*
+
+Adam Optimizer
+
+*/
+AdamOptimizer::AdamOptimizer() 
+{
+
+}
+
+vector<double> AdamOptimizer::output(vector<double>& m, vector<double>& v, double beta1, double beta2, const vector<double>& gradients, int timestep) 
+{
+	if (m.size() != gradients.size() ||  gradients.size() != v.size() || m.size() != v.size()) 
+	{
+		throw std::invalid_argument("Vector size mismatch.");
+	}
+	int n = gradients.size();
+	vector<double> adamresult(n,0.0);
+	double epsilon = 1e-8f;
+
+	// Prefetch bias corrections to avoid calculating them inside the loop
+	double bias_correction1 = 1.0f - std::pow(beta1, timestep);
+	double bias_correction2 = 1.0f - std::pow(beta2, timestep);
+	for (int i = 0; i < n; ++i) 
+	{
+		// Update moment estimates
+		m[i] = beta1 * m[i] + (1.0f - beta1) * gradients[i];
+		v[i] = beta2 * v[i] + (1.0f - beta2) * (gradients[i] * gradients[i]);
+
+		// Compute corrected estimates
+		double m_hat = m[i] / bias_correction1;
+		double v_hat = v[i] / bias_correction2;
+
+		// Update step
+		adamresult[i] = ( m_hat) / (std::sqrt(v_hat + epsilon));
+	}
+	return adamresult;
+}
+
+void AdamOptimizer::update(vector<double>& m, vector<double>& v, double beta1, double beta2, const vector<double>& gradients) 
+{
+	int n = gradients.size();
+
+	for (int i = 0; i < n; ++i) 
+	{
+		// Update moment estimates
+		m[i] = beta1 * m[i] + (1.0f - beta1) * gradients[i];
+		v[i] = beta2 * v[i] + (1.0f - beta2) * (gradients[i] * gradients[i]);
+	}
+}
 
 /*
 
@@ -3543,85 +3643,101 @@ CNN_LeNet5::CNN_LeNet5()
 	
 	for (int k = 0; k < 6; ++k)
 	{
-		c1_bias[k] = random_double(-0.5,0.5);
-		s2_bias[k] = random_double(-0.5,0.5);
-		s2_weights_kernel[k] = random_double(-0.5, 0.5);
+		//c1_bias[k] = random_double(-0.5,0.5);
+		//s2_bias[k] = random_double(-0.5,0.5);
+		//s2_weights_kernel[k] = random_double(-0.5, 0.5);
+		c1_bias[k] = He_initialization(25);
+		s2_bias[k] = He_initialization(1176);
+		s2_weights_kernel[k] = He_initialization(25);
 		
 		for (int i = 0; i < n_kernelSize; ++i) 
 		{
 			for (int j = 0; j < n_kernelSize; ++j) 
 			{
-				c1_weights_kernel[k][i][j] = random_double(-0.5, 0.5);
+				//c1_weights_kernel[k][i][j] = random_double(-0.5, 0.5);
+				c1_weights_kernel[k][i][j] = He_initialization(25);
 			}
 		}
 	}
 	for (int k = 0; k < 450; ++k)
 	{
-		c3_weights_kernel_first6[k]= random_double(-0.5, 0.5);
+		//c3_weights_kernel_first6[k]= random_double(-0.5, 0.5);
+		c3_weights_kernel_first6[k]= He_initialization(75);
 	}
 	
 	for (int k = 0; k < 600; ++k)
 	{
-		c3_weights_kernel_next6[k] = random_double(-0.5, 0.5);
+		//c3_weights_kernel_next6[k] = random_double(-0.5, 0.5);
+		c3_weights_kernel_next6[k] = He_initialization(100);
 	}
 	for (int k = 0; k < 300; ++k)
 	{
-		c3_weights_kernel_next3[k]= random_double(-0.5, 0.5);
+		//c3_weights_kernel_next3[k]= random_double(-0.5, 0.5);
+		c3_weights_kernel_next3[k]= He_initialization(100);
 	}
 	for (int k = 0; k < 150; ++k)
 	{
-		c3_weights_kernel_last1[k] = random_double(-0.5, 0.5);
+		//c3_weights_kernel_last1[k] = random_double(-0.5, 0.5);
+		c3_weights_kernel_last1[k] = He_initialization(150);
 	}	
 
 	for (int k = 0; k < 16; ++k)
 	{
-		c3_bias[k] = random_double(-0.5,0.5);
-		s4_weights_kernel[k] = random_double(-0.5,0.5);
-		s4_bias[k] = random_double(-0.5,0.5);
+		//c3_bias[k] = random_double(-0.5,0.5);
+		//s4_weights_kernel[k] = random_double(-0.5,0.5);
+		//s4_bias[k] = random_double(-0.5,0.5);
+		c3_bias[k] = He_initialization(150);
+		s4_weights_kernel[k] = He_initialization(400);
+		s4_bias[k] = He_initialization(400);
 	}
 
 	for (int i = 0; i < 400; ++i) 
 	{
 		for (int j = 0; j < 120; ++j) 
 		{
-			c5_weights_kernel[i][j] = random_double(-0.5, 0.5);
+			//c5_weights_kernel[i][j] = random_double(-0.5, 0.5);
+			c5_weights_kernel[i][j] = He_initialization(400);
 		}
 	}
 	
 	for (int k = 0; k < 120; ++k)
 	{
-		c5_bias[k] = random_double(-0.5,0.5);
+		//c5_bias[k] = random_double(-0.5,0.5);
+		c5_bias[k] = He_initialization(400);
 	}
 	for (int i = 0; i < 120; ++i) 
 	{
 		for (int j = 0; j < 84; ++j) 
 		{
-			f6_weights_kernel[i][j] = random_double(-0.5, 0.5);
+			//f6_weights_kernel[i][j] = random_double(-0.5, 0.5);
+			f6_weights_kernel[i][j] = He_initialization(120);
 		}
 	}
 	for (int i = 0; i < 84; ++i) 
 	{
-		f6_bias[i] = random_double(-0.5, 0.5);
-		
+		//f6_bias[i] = random_double(-0.5, 0.5);
+		f6_bias[i] = He_initialization(120);
 	}
 	for (int i = 0; i < 84; ++i) 
 	{
 		for (int j = 0; j < 10; ++j) 
 		{
-			output_weights[i][j] = random_double(-0.5, 0.5);
+			//output_weights[i][j] = random_double(-0.5, 0.5);
+			output_weights[i][j] = He_initialization(84);
 		}
 	}
 	for (int i = 0; i < 10; ++i) 
 	{
 		output_bias[i] = random_double(-0.5, 0.5);
+		output_bias[i] = He_initialization(84);
 		
 	}
-	learning_rate = 0.5;
+	learning_rate = 0.1;
 	vec_uniqueinteger = vrandn_uniqueinteger(0,8,3);
 }
 	
 
-vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become vector<vector<int>>
+vector<double> CNN_LeNet5::predict(const vector<vector<double>> &inputs) // become vector<vector<double>>
 {
 	// June 30th, 2026 Good and done till C5 layer
 	int n_kernelSize = 5;
@@ -3630,13 +3746,14 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 	int C1_stride = 1, C3_stride = 1, C5_stride = 1;
 	int S2_stride = 2, S4_stride = 2;
 	int padding = 0;
-	vector<vector<vector<double>>> C1_Matrices, S2_Matrices, C3_Matrices, S4_Matrices; 
+	vector<vector<vector<double>>> C1_conv, C1_Matrices, S2_Matrices, C3_Matrices, S4_Matrices; 
 
 	int n_input = inputs.size();
 	int r_C1 = (n_input - n_kernelSize + 2*padding)/(C1_stride) + 1 ;
 	int c_C1 = r_C1;
 	int r_S2 = (r_C1 - pooling_kernelSize)/(S2_stride) + 1;
 	int c_S2 = r_S2;
+	double alpha = 0.8;
 
 	// First convolutional layer
 	for (int k = 0 ; k < 6; ++k)
@@ -3651,15 +3768,19 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 		}
 		
 		vector<vector<double>> C1_result = CNN_2DConvolutionOperation(inputs,c1_weights, C1_stride);
-		
+		C1_conv.push_back(C1_result);
 		//cout <<"\nc1 k: "<< k << endl;
 
 		for (int i = 0; i < r_C1; ++i) 
 		{
 			for (int j = 0; j < c_C1; ++j) 
 			{
-				C1_result[i][j] += c1_bias[k] ; // add a bias
-				C1_result[i][j] = TanhActivationfunction(C1_result[i][j]); // apply the activation function
+				if(C1_result[i][i] != 0)
+				{						
+					C1_result[i][j] += c1_bias[k] ; // add a bias
+				}
+				//C1_result[i][j] = TanhActivationfunction(C1_result[i][j]); // apply the activation function
+				C1_result[i][j] = LeakyReLUActivationfunction(C1_result[i][j], alpha); // apply the activation function
 			}
 		}
 
@@ -3671,16 +3792,18 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 			for (int j = 0; j < c_S2; ++j) 
 			{
 				S2_result[i][j] *= s2_weights_kernel[k] ; // multiply with a weight
-				S2_result[i][j] += s2_bias[k] ; // add a bias
-				S2_result[i][j] = TanhActivationfunction(S2_result[i][j]); // apply the activation function
+				if(S2_result[i][j] != 0)
+				{						
+					S2_result[i][j] += s2_bias[k] ; // add a bias
+				}
+				//S2_result[i][j] = TanhActivationfunction(S2_result[i][j]); // apply the activation function
+				S2_result[i][j] = LeakyReLUActivationfunction(S2_result[i][j], alpha); // apply the activation function
 			}
 		}
 
 		C1_Matrices.push_back(C1_result);
 		S2_Matrices.push_back(S2_result);
 	}
-	//save3DMatrixdouble(C1_Matrices,"C1_matrix.txt");
-	//save3DMatrixdouble(S2_Matrices,"S2_matrix.txt");
 
 	// Continuing on the second convolutional layer C3 then S4
 	vector<vector<int>> contiguous_combinations35 = contiguousCombinations(5,3,0);
@@ -3731,10 +3854,15 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 		{
 			for (int j = 0; j < c_C3; ++j) 
 			{
-				C3_result[i][j] += c3_bias[k] ; // add a bias
-				C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
+				if(C3_result[i][j] != 0)
+				{
+					C3_result[i][j] += c3_bias[k] ; // add a bias
+				}
+				//C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
+				C3_result[i][j] = LeakyReLUActivationfunction(C3_result[i][j],alpha); // apply the activation function
 			}
 		}	
+
 		C3_Matrices.push_back(C3_result);
 
 		vector<vector<double>> S4_result = CNN_2DaveragePooling(C3_result, pooling_kernelSize, S4_stride) ; // average pooling
@@ -3744,8 +3872,12 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 			for (int j = 0; j < c_S4; ++j) 
 			{
 				S4_result[i][j] *= s4_weights_kernel[k] ; // multiply with a weight
-				S4_result[i][j] += s4_bias[k] ; // add a bias
-				S4_result[i][j] = TanhActivationfunction(S4_result[i][j]); // apply the activation function
+				if(C3_result[i][j] != 0)
+				{
+					C3_result[i][j] += c3_bias[k] ; // add a bias
+				}S4_result[i][j] += s4_bias[k] ; // add a bias
+				//S4_result[i][j] = TanhActivationfunction(S4_result[i][j]); // apply the activation function
+				S4_result[i][j] = LeakyReLUActivationfunction(S4_result[i][j], alpha); // apply the activation function
 			}
 		}
 
@@ -3793,10 +3925,15 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 		{
 			for (int j = 0; j < c_C3; ++j) 
 			{
-				C3_result[i][j] += c3_bias[k] ; // add a bias
-				C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
+				if(C3_result[i][j] != 0)
+				{
+					C3_result[i][j] += c3_bias[k] ; // add a bias
+				}
+				//C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
+				C3_result[i][j] = LeakyReLUActivationfunction(C3_result[i][j], alpha); // apply the activation function
 			}
 		}	
+
 		C3_Matrices.push_back(C3_result);
 
 		vector<vector<double>> S4_result = CNN_2DaveragePooling(C3_result, pooling_kernelSize, S4_stride) ; // average pooling
@@ -3806,8 +3943,12 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 			for (int j = 0; j < c_S4; ++j) 
 			{
 				S4_result[i][j] *= s4_weights_kernel[k] ; // multiply with a weight
-				S4_result[i][j] += s4_bias[k] ; // add a bias
-				S4_result[i][j] = TanhActivationfunction(S4_result[i][j]); // apply the activation function
+				if(S4_result[i][j] != 0)
+				{
+					S4_result[i][j] += s4_bias[k] ; // add a bias
+				}
+				//S4_result[i][j] = TanhActivationfunction(S4_result[i][j]); // apply the activation function
+				S4_result[i][j] = LeakyReLUActivationfunction(S4_result[i][j], alpha); // apply the activation function
 			}
 		}
 
@@ -3855,10 +3996,15 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 		{
 			for (int j = 0; j < c_C3; ++j) 
 			{
-				C3_result[i][j] += c3_bias[k] ; // add a bias
-				C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
+				if(C3_result[i][j] != 0)
+				{
+					C3_result[i][j] += c3_bias[k] ; // add a bias
+				}
+				//C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
+				C3_result[i][j] = LeakyReLUActivationfunction(C3_result[i][j], alpha); // apply the activation function
 			}
 		}	
+
 		C3_Matrices.push_back(C3_result);
 	
 		vector<vector<double>> S4_result = CNN_2DaveragePooling(C3_result, pooling_kernelSize, S4_stride) ; // average pooling
@@ -3868,8 +4014,12 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 			for (int j = 0; j < c_S4; ++j) 
 			{
 				S4_result[i][j] *= s4_weights_kernel[k] ; // multiply with a weight
-				S4_result[i][j] += s4_bias[k] ; // add a bias
-				S4_result[i][j] = TanhActivationfunction(S4_result[i][j]); // apply the activation function
+				if(S4_result[i][j] != 0)
+				{
+					S4_result[i][j] += s4_bias[k] ; // add a bias
+				}
+				//S4_result[i][j] = TanhActivationfunction(S4_result[i][j]); // apply the activation function
+				S4_result[i][j] = LeakyReLUActivationfunction(S4_result[i][j], alpha); // apply the activation function
 			}
 		}
 		k1 +=1;
@@ -3917,8 +4067,12 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 		{
 			for (int j = 0; j < c_C3; ++j) 
 			{
-				C3_result[i][j] += c3_bias[k] ; // add a bias
-				C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
+				if(C3_result[i][j] != 0)
+				{
+					C3_result[i][j] += c3_bias[k] ; // add a bias
+				}
+				//C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
+				C3_result[i][j] = LeakyReLUActivationfunction(C3_result[i][j], alpha); // apply the activation function
 			}
 		}	
 		C3_Matrices.push_back(C3_result);
@@ -3930,19 +4084,20 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 			for (int j = 0; j < c_S4; ++j) 
 			{
 				S4_result[i][j] *= s4_weights_kernel[k] ; // multiply with a weight
-				S4_result[i][j] += s4_bias[k] ; // add a bias
-				S4_result[i][j] =TanhActivationfunction(S4_result[i][j]); // apply the activation function
+				if(S4_result[i][j] != 0)
+				{
+					S4_result[i][j] += s4_bias[k] ; // add a bias
+				}
+				//S4_result[i][j] =TanhActivationfunction(S4_result[i][j]); // apply the activation function
+				S4_result[i][j] =LeakyReLUActivationfunction(S4_result[i][j], alpha); // apply the activation function
 			}
 		}
 		k1 +=1;
 		S4_Matrices.push_back(S4_result);
 	}
 	
-	//save3DMatrixdouble(C3_Matrices,"C3_matrix.txt");
-	//save3DMatrixdouble(S4_Matrices,"S4_matrix.txt");
-	
 	vector<double> S4_flattened = flatten3DMatrix(S4_Matrices);
-	//saveVectordouble(S4_flattened,"flatteneds4.txt");
+	
 	// C5 convolutional layer computation code
 	vector<double> c5_output;		
 	for (int k5 = 0; k5 < 120; ++k5)
@@ -3975,11 +4130,16 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 			c5_sum += C5_result[0][0];
 		}
 		c5_output.push_back(c5_sum);
-		c5_output[k5] += c5_bias[k5];
-		c5_output[k5] = TanhActivationfunction(c5_output[k5]); // apply the activation function
+		if(c5_output[k5] != 0)
+		{
+			c5_output[k5] += c5_bias[k5];
+		}
+		//c5_output[k5] = TanhActivationfunction(c5_output[k5]); // apply the activation function
+		c5_output[k5] = LeakyReLUActivationfunction(c5_output[k5],alpha); // apply the activation function
+
 	}
 
-	//saveVectordouble(c5_output,"C5_final_vector.txt"); // very good, June 29th, 2026
+	
 	vector<double> f6_output;
 	for (int i = 0; i < 84; ++i)
 	{
@@ -3991,13 +4151,16 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 		}
 
 		f6_output.push_back(f6_sum);
-		f6_output[i] += f6_bias[i];
-		f6_output[i] = ScaledTanhActivationfunction(f6_output[i]); // apply the activation function
+		if(f6_output[i] != 0)
+		{
+			f6_output[i] += f6_bias[i]; // add a bias
+		}
+		//f6_output[i] = TanhActivationfunction(f6_output[i]); // apply the activation function
+		f6_output[i] = LeakyReLUActivationfunction(f6_output[i], alpha); // apply the activation function
 	}
-
-	//saveVectordouble(f6_output,"F6_final_vector.txt"); // very good, June 29th, 2026
 	
-	// The output layer in LeNet-5, we try to use softmax instead of RBF
+	
+	// The output layer in LeNet-5, we use softmax instead of RBF
 	vector<double> outputs; // to compute the raw logit z_{i}
 	for (int i = 0; i < n_classification; ++i)
 	{
@@ -4013,12 +4176,24 @@ vector<double> CNN_LeNet5::predict(const vector<vector<int>> &inputs) // become 
 	}
 	// apply the activation function
 	vector<double>predicted_output_softmax = SoftMax_vectorresult_activationfunction(outputs);
-	//saveVectordouble(predicted_output_softmax,"output_vector.txt"); // very good, July 1st, 2026
+
 	
-	return outputs;
+	save3DMatrixdouble(C1_Matrices,"C1_matrix.txt");
+	save3DMatrixdouble(C1_conv,"C1_conv.txt");
+	save3DMatrixdouble(S2_Matrices,"S2_matrix.txt");
+	save3DMatrixdouble(C3_Matrices,"C3_matrix.txt");
+	save3DMatrixdouble(S4_Matrices,"S4_matrix.txt");
+	saveVectordouble(S4_flattened,"flatteneds4.txt");
+	saveVectordouble(c5_output,"C5_final_vector.txt"); // very good, June 29th, 2026
+	saveVectordouble(f6_output,"F6_final_vector.txt"); // very good, June 29th, 2026
+	saveVectordouble(outputs,"output_logits.txt"); // very good, July 1st, 2026
+	saveVectordouble(predicted_output_softmax,"output_vector.txt"); // very good, July 1st, 2026
+	/**/
+
+	return predicted_output_softmax;
 }
 
-void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epochs) 
+void CNN_LeNet5::train(vector<vector<vector<int>>> &X_input, vector<int> &y, int epochs) 
 {
 	
 	cout << BLUE << BOLD << "\nTraining Progress:\n" << RESET << endl;
@@ -4033,8 +4208,9 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 	int C1_stride = 1, C3_stride = 1, C5_stride = 1;
 	int S2_stride = 2, S4_stride = 2;
 	int padding = 0;
-	
-	int n_input = X[0].size();
+
+	int n_images = X_input.size();
+	int n_input = X_input[0].size();
 	int r_C1 = (n_input - n_kernelSize + 2*padding)/(C1_stride) + 1 ;
 	int c_C1 = r_C1;
 	int r_S2 = (r_C1 - pooling_kernelSize)/(S2_stride) + 1;
@@ -4043,6 +4219,60 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 	int c_C3 = r_C3;
 	int r_S4 = (r_C3 - pooling_kernelSize)/(S4_stride) + 1;
 	int c_S4 = r_S4;
+	double alpha = 0.8;
+	vector<double> loss_vector, lr_vector;
+	vector<vector<double>> target_vector;	
+	vector<vector<vector<double>>> X(n_images, vector<vector<double>>(n_input, vector<double>(n_input, 0.0)));;
+	// Adam parameters
+	double adam_beta1 = 0.9, adam_beta2 = 0.999;
+	// Can we move this to private in artificalneuralnetworks.h ? yes, of course
+	
+	vector<double> adam_m_bias_output(10,0.0);
+	vector<double> adam_v_bias_output(10,0.0);
+	vector<double> adam_m_weights_output(840,0.0);
+	vector<double> adam_v_weights_output(840,0.0);
+
+	vector<double> adam_m_bias_F6(84,0.0);
+	vector<double> adam_v_bias_F6(84,0.0);
+	vector<double> adam_m_weights_F6(10080,0.0);
+	vector<double> adam_v_weights_F6(10080,0.0);
+
+	vector<double> adam_m_bias_C5(120,0.0);
+	vector<double> adam_v_bias_C5(120,0.0);
+	vector<double> adam_m_weights_C5(48000,0.0);
+	vector<double> adam_v_weights_C5(48000,0.0);
+
+	vector<double> adam_m_bias_C3(16,0.0);
+	vector<double> adam_v_bias_C3(16,0.0);
+	vector<double> adam_m_weights_C3_first6(450,0.0);
+	vector<double> adam_m_weights_C3_next6(600,0.0);
+	vector<double> adam_m_weights_C3_next3(300,0.0);
+	vector<double> adam_m_weights_C3_last1(150,0.0);
+	vector<double> adam_v_weights_C3_first6(450,0.0);
+	vector<double> adam_v_weights_C3_next6(600,0.0);
+	vector<double> adam_v_weights_C3_next3(300,0.0);
+	vector<double> adam_v_weights_C3_last1(150,0.0);
+
+	vector<double> adam_m_bias_C1(6,0.0);
+	vector<double> adam_v_bias_C1(6,0.0);
+	vector<double> adam_m_weights_C1(150,0.0);
+	vector<double> adam_v_weights_C1(150,0.0);
+
+	// Instantiate optimizer for output bias and output weights
+	AdamOptimizer optimizer_output_bias;
+	AdamOptimizer optimizer_output_weights;
+	AdamOptimizer optimizer_F6_bias;
+	AdamOptimizer optimizer_F6_weights;
+	AdamOptimizer optimizer_C5_bias;
+	AdamOptimizer optimizer_C5_weights;
+	AdamOptimizer optimizer_C3_bias;
+	AdamOptimizer optimizer_C3_weights_first6;
+	AdamOptimizer optimizer_C3_weights_next6;
+	AdamOptimizer optimizer_C3_weights_next3;			
+	AdamOptimizer optimizer_C3_weights_last1;
+	AdamOptimizer optimizer_C1_bias;
+	AdamOptimizer optimizer_C1_weights;
+
 	/*cout << "n input = " <<n_input << endl;
 	cout << "r C1 =" << r_C1 << endl;
  	cout << "r S2 =" << r_S2 << endl;
@@ -4052,15 +4282,30 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 	for (int epoch = 0; epoch < epochs; ++epoch) 
 	{
 		double epoch_loss = 0.0;
-		for (size_t iter = 0; iter < X.size(); ++iter) 
+		for (size_t iter = 0; iter < X_input.size(); ++iter) 
 		{
+
+			// Normalize the input image
+			for(int i = 0; i < n_input; ++i)
+			{
+				for(int j = 0; j < n_input; ++j)
+				{
+					X[iter][i][j] = divisiond(X_input[iter][i][j]-127.5,127.5);
+					if (X[iter][i][j] > 0)
+					{
+						X[iter][i][j] = 0;
+					}
+				}
+			}
+
 			vector<vector<vector<double>>> C1_Matrices, S2_Matrices, S2_Matrices_xi, C3_Matrices, S4_Matrices, S4_Matrices_xi; 
 			vector<vector<vector<double>>> C3_Distinct_Kernels;
-			vector<vector<double>> mat_jacobian(n_classification, vector<double>(n_classification, 0.0)); // Softmax derivative
+			//vector<vector<double>> mat_jacobian(n_classification, vector<double>(n_classification, 0.0)); // Softmax derivative
 			vector<double> delta_outputlayer(n_classification,0.0);
 			vector<double> outputs = predict(X[iter]);
 			vector<double> target(n_classification, 0.0);
 			target[y[iter]] = 1.0;
+			target_vector.push_back(target);
 			//mat_target.push_back(outputs);	
 			//mat_target.push_back(target);		
 	 		std::vector<double> errors(n_classification, 0.0);
@@ -4089,8 +4334,12 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 				{
 					for (int j = 0; j < c_C1; ++j) 
 					{
-						C1_result[i][j] += c1_bias[k] ; // add a bias
-						C1_result[i][j] = TanhActivationfunction(C1_result[i][j]); // apply the activation function
+						if(C1_result[i][i] != 0)
+						{						
+							C1_result[i][j] += c1_bias[k] ; // add a bias
+						}
+						//C1_result[i][j] = TanhActivationfunction(C1_result[i][j]); // apply the activation function
+						C1_result[i][j] = LeakyReLUActivationfunction(C1_result[i][j], alpha); // apply the activation function
 					}
 				}
 
@@ -4103,8 +4352,12 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 					{
 						S2_xi[i][j] = S2_result[i][j];
 						S2_result[i][j] *= s2_weights_kernel[k] ; // multiply with a weight
-						S2_result[i][j] += s2_bias[k] ; // add a bias
-						S2_result[i][j] = TanhActivationfunction(S2_result[i][j]); // apply the activation function
+						if(S2_result[i][j] != 0)
+						{
+							S2_result[i][j] += s2_bias[k] ; // add a bias
+						}
+						//S2_result[i][j] = TanhActivationfunction(S2_result[i][j]); // apply the activation function
+						S2_result[i][j] = LeakyReLUActivationfunction(S2_result[i][j], alpha); // apply the activation function
 					}
 				}
 
@@ -4143,22 +4396,27 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 							S2[i][j] = S2_Matrices[n_comb1][i][j];
 						}
 					}
-					//vector<vector<double>> C3_result_temp = CNN_2DConvolutionOperation(S2,c3_weights, C3_stride);
+					vector<vector<double>> C3_result_temp = CNN_2DConvolutionOperation(S2,c3_weights, C3_stride);
 				
 					for (int i = 0; i < r_C3; ++i) 
 					{
 						for (int j = 0; j < c_C3; ++j) 
 						{
-						//	C3_result[i][j] += C3_result_temp[i][j]; // sum of the indices combination
+							C3_result[i][j] += C3_result_temp[i][j]; // sum of the indices combination
 						}
 					}			
 				}
+
 				for (int i = 0; i < r_C3; ++i) 
 				{
 					for (int j = 0; j < c_C3; ++j) 
 					{
-						C3_result[i][j] += c3_bias[k] ; // add a bias
+						if(C3_result[i][j] != 0)
+						{
+							C3_result[i][j] += c3_bias[k] ; // add a bias
+						}
 						C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
+						//C3_result[i][j] = LeakyReLUActivationfunction(C3_result[i][j], alpha); // apply the activation function
 					}
 				}	
 				C3_Matrices.push_back(C3_result);
@@ -4171,8 +4429,12 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 					{
 						S4_xi[i][j] = S4_result[i][j];
 						S4_result[i][j] *= s4_weights_kernel[k] ; // multiply with a weight
-						S4_result[i][j] += s4_bias[k] ; // add a bias
-						S4_result[i][j] = TanhActivationfunction(S4_result[i][j]); // apply the activation function
+						if(S4_result[i][j] != 0)
+						{
+							S4_result[i][j] += s4_bias[k] ; // add a bias
+						}
+						//S4_result[i][j] = TanhActivationfunction(S4_result[i][j]); // apply the activation function
+						S4_result[i][j] = LeakyReLUActivationfunction(S4_result[i][j], alpha); // apply the activation function
 					}
 				}
 				S4_Matrices_xi.push_back(S4_xi);
@@ -4216,12 +4478,17 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 						}
 					}			
 				}
+
 				for (int i = 0; i < r_C3; ++i) 
 				{
 					for (int j = 0; j < c_C3; ++j) 
 					{
-						C3_result[i][j] += c3_bias[k] ; // add a bias
-						C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
+						if(C3_result[i][j] != 0)
+						{
+							C3_result[i][j] += c3_bias[k] ; // add a bias
+						}
+						//C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
+						C3_result[i][j] = LeakyReLUActivationfunction(C3_result[i][j], alpha); // apply the activation function
 					}
 				}	
 				C3_Matrices.push_back(C3_result);
@@ -4234,8 +4501,12 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 					{
 						S4_xi[i][j] = S4_result[i][j];
 						S4_result[i][j] *= s4_weights_kernel[k] ; // multiply with a weight
-						S4_result[i][j] += s4_bias[k] ; // add a bias
-						S4_result[i][j] = TanhActivationfunction(S4_result[i][j]); // apply the activation function
+						if(S4_result[i][j] != 0)
+						{
+							S4_result[i][j] += s4_bias[k] ; // add a bias
+						}
+						//S4_result[i][j] = TanhActivationfunction(S4_result[i][j]); // apply the activation function
+						S4_result[i][j] = LeakyReLUActivationfunction(S4_result[i][j], alpha); // apply the activation function
 					}
 				}
 
@@ -4280,12 +4551,17 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 						}
 					}			
 				}
+
 				for (int i = 0; i < r_C3; ++i) 
 				{
 					for (int j = 0; j < c_C3; ++j) 
 					{
-						C3_result[i][j] += c3_bias[k] ; // add a bias
-						C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
+						if(C3_result[i][j] != 0)
+						{
+							C3_result[i][j] += c3_bias[k] ; // add a bias
+						}
+						//C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
+						C3_result[i][j] = LeakyReLUActivationfunction(C3_result[i][j], alpha); // apply the activation function
 					}
 				}	
 				C3_Matrices.push_back(C3_result);
@@ -4298,8 +4574,12 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 					{
 						S4_xi[i][j] = S4_result[i][j];
 						S4_result[i][j] *= s4_weights_kernel[k] ; // multiply with a weight
-						S4_result[i][j] += s4_bias[k] ; // add a bias
-						S4_result[i][j] = TanhActivationfunction(S4_result[i][j]); // apply the activation function
+						if(S4_result[i][j] != 0)
+						{
+							S4_result[i][j] += s4_bias[k] ; // add a bias
+						} 
+						//S4_result[i][j] = TanhActivationfunction(S4_result[i][j]); // apply the activation function
+						S4_result[i][j] = LeakyReLUActivationfunction(S4_result[i][j], alpha); // apply the activation function
 					}
 				}
 				k1 +=1;
@@ -4340,13 +4620,17 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 						}
 					}	
 				}
-				
+
 				for (int i = 0; i < r_C3; ++i) 
 				{
 					for (int j = 0; j < c_C3; ++j) 
 					{
-						C3_result[i][j] += c3_bias[k] ; // add a bias
-						C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
+						if(C3_result[i][j] != 0)
+						{
+							C3_result[i][j] += c3_bias[k] ; // add a bias
+						}
+						//C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
+						C3_result[i][j] = LeakyReLUActivationfunction(C3_result[i][j], alpha); // apply the activation function
 					}
 				}	
 				C3_Matrices.push_back(C3_result);
@@ -4359,8 +4643,12 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 					{
 						S4_xi[i][j] = S4_result[i][j];
 						S4_result[i][j] *= s4_weights_kernel[k] ; // multiply with a weight
-						S4_result[i][j] += s4_bias[k] ; // add a bias
-						S4_result[i][j] = TanhActivationfunction(S4_result[i][j]); // apply the activation function
+						if(S4_result[i][j] != 0)
+						{
+							S4_result[i][j] += s4_bias[k]  ; // add a bias
+						}
+						//S4_result[i][j] = TanhActivationfunction(S4_result[i][j]); // apply the activation function
+						S4_result[i][j] = LeakyReLUActivationfunction(S4_result[i][j],alpha); // apply the activation function
 					}
 				}
 				k1 +=1;
@@ -4398,8 +4686,13 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 					c5_sum += C5_result[0][0];
 				}
 				c5_output.push_back(c5_sum);
-				c5_output[k5] += c5_bias[k5];
-				c5_output[k5] = TanhActivationfunction(c5_output[k5]); // apply the activation function
+				if (c5_output[k5] != 0 )
+				{
+					c5_output[k5] += c5_bias[k5];
+				}
+				//c5_output[k5] = TanhActivationfunction(c5_output[k5]); // apply the activation function
+				c5_output[k5] = LeakyReLUActivationfunction(c5_output[k5], alpha); // apply the activation function
+
 			}
 
 			vector<double> f6_output;
@@ -4413,33 +4706,21 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 				}
 
 				f6_output.push_back(f6_sum);
-				f6_output[i] += f6_bias[i];
-				//f6_output[i] = ScaledTanhActivationfunction(f6_output[i]); // apply the activation function
+				if (f6_output[i] != 0)
+				{
+					f6_output[i] += f6_bias[i];
+				}	
+				//f6_output[i] = TanhActivationfunction(f6_output[i]); // apply the activation function
+				f6_output[i] = LeakyReLUActivationfunction(f6_output[i], alpha); // apply the activation function
 			}
 
 			
+			// Delta for the output layer, this is the working one.
 			for (int k_row = 0; k_row < n_classification; ++k_row) 
 			{
-				for (int k_col = 0; k_col < n_classification; ++k_col) 
-				{
-					if (k_row == k_col)
-					{
-						mat_jacobian[k_row][k_col] = outputs[k_row]*(1 - outputs[k_col]);
-					}
-					else if (k_row != k_col)
-					{
-						mat_jacobian[k_row][k_col] = outputs[k_row]*(- outputs[k_col]);
-					}
-				}
+				delta_outputlayer[k_row] = outputs[k_row] - target[k_row];
 			}
-			// Delta for the output layer
-			for (int k_row = 0; k_row < n_classification; ++k_row) 
-			{
-				for (int k_col = 0; k_col < n_classification; ++k_col) 
-				{
-					delta_outputlayer[k_row] += mat_jacobian[k_row][k_col]*errors[k_col];
-				}
-			}
+			
 			// Delta for F6 layer, output_weights connects the F6 to output layer
 			vector<double> delta_F6(n_F6, 0.0);
 			for (int j = 0; j < n_F6; ++j) 
@@ -4448,7 +4729,8 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 				{
 					delta_F6[j] += delta_outputlayer[i] * output_weights[j][i];
 				}
-				delta_F6[j] *= ScaledTanhDerivative(f6_output[j]);
+				//delta_F6[j] *= TanhDerivative(f6_output[j]);
+				delta_F6[j] *= LeakyReLUDerivative(f6_output[j], alpha);
 			}
 			// Delta for C5 layer, f6_weights_kernel connects the C5 to F6 layer
 			vector<double> delta_C5(n_C5, 0.0);
@@ -4458,7 +4740,8 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 				{
 					delta_C5[j] += delta_F6[i] * f6_weights_kernel[j][i];
 				}
-				delta_C5[j] *= TanhDerivative(c5_output[j]);
+				//delta_C5[j] *= TanhDerivative(c5_output[j]);
+				delta_C5[j] *= LeakyReLUDerivative(c5_output[j], alpha);
 			}
 			vector<vector<vector<double>>> S4_deltamap;
 
@@ -4496,7 +4779,8 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 				{
 					for (int j = 0; j < n_kernelSize; ++j) 
 					{
-						S4_deltamap_k[i][j] *= TanhDerivative(S4_Matrices[k][i][j]);
+						//S4_deltamap_k[i][j] *= TanhDerivative(S4_Matrices[k][i][j]);
+						S4_deltamap_k[i][j] *= LeakyReLUDerivative(S4_Matrices[k][i][j], alpha);
 					}
 				}
 				S4_deltamap.push_back(S4_deltamap_k);
@@ -4527,7 +4811,8 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 				{
 					for (int j = 0; j < 10; ++j) 
 					{
-						delta_C3[k][i][j] = upsampled_delta_S4[k][i][j] * s4_weights_kernel[k] * TanhDerivative(C3_Matrices[k][i][j]);
+						//delta_C3[k][i][j] = upsampled_delta_S4[k][i][j] * s4_weights_kernel[k] * TanhDerivative(C3_Matrices[k][i][j]);
+						delta_C3[k][i][j] = upsampled_delta_S4[k][i][j] * s4_weights_kernel[k] * LeakyReLUDerivative(C3_Matrices[k][i][j], alpha);
 					}
 				}
 			}
@@ -4895,6 +5180,7 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 			save3DMatrixdouble(S2_deltamap_5,"S2_deltamap_5.txt");
 			save3DMatrixdouble(S2_deltamap_6,"S2_deltamap_6.txt");*/
 			
+			// Sum over the depth at [i][j] into a 2D matrix with class Matrix3DTo2D
 			// 14 rows, 14 columns, n_S2_map_k depth layers
 			Matrix3DTo2D S2_deltamap_1_final(14, 14, n_S2_map1);
 			Matrix3DTo2D S2_deltamap_2_final(14, 14, n_S2_map2);
@@ -4989,7 +5275,7 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 					S2_deltamap[5][i][j] = S2_Delta_Final6[i*14 + j];
 				}
 			}
-			//save3DMatrixdouble(S2_deltamap,"S2_deltamap_final.txt");
+			
 			// Display the resulting 2D values
 			/*cout << "Collapsed 2D Matrix:\n";
 			for (size_t i = 0; i < 14; ++i) 
@@ -5011,7 +5297,8 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 				{
 					for (int j = 0; j < 14; ++j) 
 					{
-						delta_S2_final[k] += S2_deltamap[k][i][j] * S2_Matrices_xi[k][i][j];
+						//delta_S2_final[k] += S2_deltamap[k][i][j] * S2_Matrices_xi[k][i][j] * TanhDerivative(S2_Matrices[k][i][j]);
+						delta_S2_final[k] += S2_deltamap[k][i][j] * S2_Matrices_xi[k][i][j] * LeakyReLUDerivative(S2_Matrices[k][i][j],alpha);
 						delta_sum += S2_deltamap[k][i][j];
 					}
 				}
@@ -5028,11 +5315,11 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 				{
 					for (int j = 0; j < 28; ++j) 
 					{
-						delta_C1[k][i][j] = upsampled_delta_S2[k][i][j] * s2_weights_kernel[k] * TanhDerivative(C1_Matrices[k][i][j]);
+						//delta_C1[k][i][j] = upsampled_delta_S2[k][i][j] * s2_weights_kernel[k] * TanhDerivative(C1_Matrices[k][i][j]);
+						delta_C1[k][i][j] = upsampled_delta_S2[k][i][j] * s2_weights_kernel[k] * LeakyReLUDerivative(C1_Matrices[k][i][j], alpha);
 					}
 				}
 			}
-
 			// Now we have obtained 4704 deltas in each neuron in 6x28x28 feature map for C1 layer.
 			vector<vector<vector<double>>> C1_weights_update;
 			for (int k = 0 ; k < 6; ++k)
@@ -5046,22 +5333,31 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 			// Weight Update from Output Layer to C1 Layer Starts Here
 
 			*/
+		
+			/*
 
+			Start of non optimized code for weight update
+
+			*/
+
+			
 			// Weight update formula for output layer
 			for (int i = 0; i < n_classification; ++i) 
 			{
-				output_bias[i] -= learning_rate*delta_outputlayer[i];
+				output_bias[i] -= learning_rate*delta_outputlayer[i];	
 			}
 			//  output_weights[84][10]
 			for (int j = 0; j < n_F6; ++j) 
 			{
 				f6_bias[j] -= learning_rate*delta_F6[j];
+				
 				for (int i = 0; i < n_classification; ++i) 
 				{
-					output_weights[j][i] -= learning_rate*delta_outputlayer[i]*ScaledTanhActivationfunction(f6_output[j]);
+					output_weights[j][i] -= learning_rate*delta_outputlayer[i]*f6_output[j];
 				}
 			}
-			// Weight update formula for F6 
+			
+			// Weight update formula for F6 , bias update formula for C5
 			// f6_weights_kernel[120][84]
 			for (int j = 0; j < n_C5; ++j) 
 			{
@@ -5071,9 +5367,10 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 					f6_weights_kernel[j][i] -= learning_rate*delta_F6[i]*c5_output[j];
 				}
 			}
-			// Weight update formua for C5
+			// Weight update formula for C5
 			// c5_weights_kernel[400][120]; the weight connecting flattened S4 layer to C5
 			// with Valid convolution
+			
 			for (int k5 = 0; k5 < 120; ++k5)
 			{
 				for (int k = 0; k <16; ++k) // 16 x 5 x 5
@@ -5088,6 +5385,7 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 					}
 					vector<vector<double>> C5_W(1, vector<double>(1, delta_C5[k5]));
 					vector<vector<double>> C5_weight_gradient = CNN_2DConvolutionOperation(S4,C5_W, C5_stride);
+									
 					for (int i = 0; i < n_kernelSize; ++i) 
 					{
 						for (int j = 0; j < n_kernelSize; ++j) 
@@ -5095,11 +5393,11 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 							// weight update for C5 trainable weight parameters
 							c5_weights_kernel[25*k + 5*i + j][k5] -= learning_rate*C5_weight_gradient[i][j];
 						}
-					}	
+					}
 				}
 			}
 
-			// Weight update formua for S4
+			// Weight update formula for S4
 			// s4_weights_kernel[16]; the weight for each feature map in S4 pooling layer
 			for (int j = 0; j < 16; ++j) 
 			{
@@ -5157,7 +5455,6 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 				}
 				k_c3_kernel += 1;
 			}
-			
 			for (int k = 0 ; k < 16; ++k)
 			{
 				double sum = 0;
@@ -5170,18 +5467,16 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 				}
 				c3_bias[k] -= learning_rate*sum;
 			}
-
-			// Weight update formua for S2
+			// Weight update formula for S2
 			// s2_weights_kernel[6];
 			for (int k = 0; k < 6; ++k) 
 			{
 				s2_weights_kernel[k] -= learning_rate*delta_S2_final[k];
 				s2_bias[k] -= learning_rate*delta_S2_final_bias[k];
 			}
-			// Weight update formua for C1
 			// c1_weights_kernel[6][5][5]
-			// Weight update formula for C3
-			for (int k = 0 ; k < 6; ++k) // The first 18 distinct kernels that connect 3 contiguous feature maps in S2
+			// Weight update formula for C1
+			for (int k = 0 ; k < 6; ++k) 
 			{
 				for (int i = 0; i < 5; ++i) 
 				{
@@ -5206,9 +5501,412 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 				c1_bias[k] -= learning_rate*sum;
 			}
 
-		}
+			/*
 
-		if ((epoch + 1) % (epochs / 100) == 0 || epoch == epochs - 1) 
+			End of non optimized code
+
+			*/
+
+			/*
+
+			Start of Adam Optimizer code for weight update
+
+			*/
+			/*
+			vector<double> adamoptimizer_bias_output = optimizer_output_bias.output(adam_m_bias_output, adam_v_bias_output, adam_beta1, adam_beta2, delta_outputlayer, epoch + 1); 
+			optimizer_output_bias.update(adam_m_bias_output, adam_v_bias_output, adam_beta1, adam_beta2, delta_outputlayer);
+		
+			// Weight update formula for output layer
+			for (int i = 0; i < n_classification; ++i) 
+			{
+				output_bias[i] -= learning_rate*adamoptimizer_bias_output[i];	
+			}
+			vector<double> output_weights_gradients(840,0.0);
+			
+			for (int j = 0; j < n_F6; ++j) 
+			{
+				for (int i = 0; i < n_classification; ++i) 
+				{
+					//output_weights_gradients[10*j+i] = delta_outputlayer[i]*ScaledTanhActivationfunction(f6_output[j]);
+					output_weights_gradients[10*j+i] = delta_outputlayer[i]*f6_output[j];
+				}
+			}
+			// Adam optimizer 
+			vector<double> adamoptimizer_weights_output = optimizer_output_weights.output(adam_m_weights_output, adam_v_weights_output, adam_beta1, adam_beta2, output_weights_gradients, epoch + 1); 
+			optimizer_output_weights.update(adam_m_weights_output, adam_v_weights_output, adam_beta1, adam_beta2, output_weights_gradients);
+
+			vector<double> adamoptimizer_bias_F6 = optimizer_F6_bias.output(adam_m_bias_F6, adam_v_bias_F6, adam_beta1, adam_beta2, delta_F6, epoch + 1); 
+			optimizer_F6_bias.update(adam_m_bias_F6, adam_v_bias_F6, adam_beta1, adam_beta2, delta_F6);
+
+			//  output_weights[84][10]
+			for (int j = 0; j < n_F6; ++j) 
+			{
+				f6_bias[j] -= learning_rate*adamoptimizer_bias_F6[j];
+				
+				for (int i = 0; i < n_classification; ++i) 
+				{				
+					// Adam optimizer 
+					output_weights[j][i] -= learning_rate*adamoptimizer_weights_output[10*j+i];
+				}
+			}
+			
+			vector<double> F6_weights_gradients(10080,0.0);
+			for (int j = 0; j < n_C5; ++j) 
+			{
+				for (int i = 0; i < n_F6; ++i) 
+				{
+					F6_weights_gradients[84*j+i] = delta_F6[i]*c5_output[j];
+				}
+			}
+			vector<double> adamoptimizer_weights_F6 = optimizer_F6_weights.output(adam_m_weights_F6, adam_v_weights_F6, adam_beta1, adam_beta2, F6_weights_gradients, epoch + 1); 
+			optimizer_F6_weights.update(adam_m_weights_F6, adam_v_weights_F6, adam_beta1, adam_beta2, F6_weights_gradients);
+			
+			vector<double> adamoptimizer_bias_C5 = optimizer_F6_bias.output(adam_m_bias_C5, adam_v_bias_C5, adam_beta1, adam_beta2, delta_C5, epoch + 1); 
+			optimizer_C5_bias.update(adam_m_bias_C5, adam_v_bias_C5, adam_beta1, adam_beta2, delta_C5);
+
+			// Weight update formula for F6 , bias update formula for C5
+			// f6_weights_kernel[120][84]
+			for (int j = 0; j < n_C5; ++j) 
+			{
+				c5_bias[j] -= learning_rate*adamoptimizer_bias_C5[j];
+				for (int i = 0; i < n_F6; ++i) 
+				{
+					f6_weights_kernel[j][i] -= learning_rate*adamoptimizer_weights_F6[84*j+i];
+				}
+			}
+			// Weight update formula for C5
+			// c5_weights_kernel[400][120]; the weight connecting flattened S4 layer to C5
+			// with Valid convolution
+			
+			vector<double> C5_weights_gradients(48000,0.0);
+			for (int k5 = 0; k5 < 120; ++k5)
+			{
+				for (int k = 0; k <16; ++k) // 16 x 5 x 5
+				{	
+					vector<vector<double>> S4(r_S4, vector<double>(c_S4, 0.0));
+					for (int i = 0; i < r_S4; ++i) 
+					{
+						for (int j = 0; j < c_S4; ++j) 
+						{
+							S4[i][j] = S4_Matrices[k][i][j]; 
+						}
+					}
+					vector<vector<double>> C5_W(1, vector<double>(1, delta_C5[k5]));
+					vector<vector<double>> C5_weight_gradient = CNN_2DConvolutionOperation(S4,C5_W, C5_stride);
+					for (int i = 0; i < n_kernelSize; ++i) 
+					{
+						for (int j = 0; j < n_kernelSize; ++j) 
+						{
+							C5_weights_gradients[400*k5+25*k+5*i+j] = C5_weight_gradient[i][j];
+						}
+					}						
+				}
+			}
+			vector<double> adamoptimizer_weights_C5 = optimizer_C5_weights.output(adam_m_weights_C5, adam_v_weights_C5, adam_beta1, adam_beta2, C5_weights_gradients, epoch + 1); 
+			optimizer_C5_weights.update(adam_m_weights_C5, adam_v_weights_C5, adam_beta1, adam_beta2, C5_weights_gradients);
+			for (int k5 = 0; k5 < 120; ++k5)
+			{
+				for (int k = 0; k <16; ++k) // 16 x 5 x 5
+				{						
+					for (int i = 0; i < n_kernelSize; ++i) 
+					{
+						for (int j = 0; j < n_kernelSize; ++j) 
+						{
+							// weight update for C5 trainable weight parameters
+							c5_weights_kernel[25*k + 5*i + j][k5] -= learning_rate*adamoptimizer_weights_C5[400*k5+25*k+5*i+j];
+						}
+					}	
+				}
+			}
+
+			// Weight update formula for S4
+			// s4_weights_kernel[16]; the weight for each feature map in S4 pooling layer
+			for (int j = 0; j < 16; ++j) 
+			{
+				s4_weights_kernel[j] += learning_rate*delta_S4_final[j];
+				s4_bias[j] += learning_rate*delta_S4_final_bias[j];
+			}
+
+			vector<double> C3_weights_gradients_first6(450,0.0);
+			vector<double> C3_weights_gradients_next6(600,0.0);
+			vector<double> C3_weights_gradients_next3(300,0.0);
+			vector<double> C3_weights_gradients_last1(150,0.0);
+
+			// Creating gradients for C3
+			k_c3_kernel = 0;
+			for (int k = 0 ; k < 18; ++k) // The first 18 distinct kernels that connect 3 contiguous feature maps in S2
+			{
+				for (int i = 0; i < 5; ++i) 
+				{
+					for (int j = 0; j < 5; ++j) 
+					{
+						C3_weights_gradients_first6[25*k + 5*i + j] = C3_Distinct_Kernels[k_c3_kernel][i][j];
+					}
+				}
+				k_c3_kernel += 1;
+			}
+
+			for (int k = 0 ; k < 24; ++k) // The next 24 distinct kernels that connect 4 contiguous feature maps in S2
+			{
+				for (int i = 0; i < 5; ++i) 
+				{
+					for (int j = 0; j < 5; ++j) 
+					{
+						C3_weights_gradients_next6[25*k + 5*i + j] = C3_Distinct_Kernels[k_c3_kernel][i][j];
+					}
+				}
+				k_c3_kernel += 1;
+			}
+
+
+			for (int k = 0 ; k < 12; ++k) // The next 12 distinct kernels that connect 4 discontiguous feature maps in S2
+			{
+				for (int i = 0; i < 5; ++i) 
+				{
+					for (int j = 0; j < 5; ++j) 
+					{
+						C3_weights_gradients_next3[25*k + 5*i + j] = C3_Distinct_Kernels[k_c3_kernel][i][j];
+					}
+				}
+				k_c3_kernel += 1;
+			}
+
+			for (int k = 0 ; k < 6; ++k) // The last 6 distinct kernels that connect to all 6 feature maps in S2
+			{
+				for (int i = 0; i < 5; ++i) 
+				{
+					for (int j = 0; j < 5; ++j) 
+					{
+						C3_weights_gradients_last1[25*k + 5*i + j] = C3_Distinct_Kernels[k_c3_kernel][i][j];
+					}
+				}
+				k_c3_kernel += 1;
+			}
+
+			// Adam optimizer for C3
+			vector<double> adamoptimizer_weights_C3_first6 = optimizer_C3_weights_first6.output(adam_m_weights_C3_first6, adam_v_weights_C3_first6, adam_beta1, adam_beta2, C3_weights_gradients_first6, epoch + 1); 
+			optimizer_C3_weights_first6.update(adam_m_weights_C3_first6, adam_v_weights_C3_first6, adam_beta1, adam_beta2, C3_weights_gradients_first6);
+
+			vector<double> adamoptimizer_weights_C3_next6 = optimizer_C3_weights_next6.output(adam_m_weights_C3_next6, adam_v_weights_C3_next6, adam_beta1, adam_beta2, C3_weights_gradients_next6, epoch + 1); 
+			optimizer_C3_weights_next6.update(adam_m_weights_C3_next6, adam_v_weights_C3_next6, adam_beta1, adam_beta2, C3_weights_gradients_next6);
+
+			vector<double> adamoptimizer_weights_C3_next3 = optimizer_C3_weights_next3.output(adam_m_weights_C3_next3, adam_v_weights_C3_next3, adam_beta1, adam_beta2, C3_weights_gradients_next3, epoch + 1); 
+			optimizer_C3_weights_next3.update(adam_m_weights_C3_next3, adam_v_weights_C3_next3, adam_beta1, adam_beta2, C3_weights_gradients_next3);
+
+			vector<double> adamoptimizer_weights_C3_last1 = optimizer_C3_weights_last1.output(adam_m_weights_C3_last1, adam_v_weights_C3_last1, adam_beta1, adam_beta2, C3_weights_gradients_last1, epoch + 1); 
+			optimizer_C3_weights_last1.update(adam_m_weights_C3_last1, adam_v_weights_C3_last1, adam_beta1, adam_beta2, C3_weights_gradients_last1);
+
+			// Weight update formula for C3
+			k_c3_kernel = 0;
+			for (int k = 0 ; k < 18; ++k) // The first 18 distinct kernels that connect 3 contiguous feature maps in S2
+			{
+				for (int i = 0; i < 5; ++i) 
+				{
+					for (int j = 0; j < 5; ++j) 
+					{
+						c3_weights_kernel_first6[25*k + 5*i + j] -= learning_rate*adamoptimizer_weights_C3_first6[25*k + 5*i + j];
+					}
+				}
+				k_c3_kernel += 1;
+			}
+
+			for (int k = 0 ; k < 24; ++k) // The next 24 distinct kernels that connect 4 contiguous feature maps in S2
+			{
+				for (int i = 0; i < 5; ++i) 
+				{
+					for (int j = 0; j < 5; ++j) 
+					{
+						c3_weights_kernel_next6[25*k + 5*i + j] -= learning_rate*adamoptimizer_weights_C3_next6[25*k + 5*i + j];
+					}
+				}
+				k_c3_kernel += 1;
+			}
+
+
+			for (int k = 0 ; k < 12; ++k) // The next 12 distinct kernels that connect 4 discontiguous feature maps in S2
+			{
+				for (int i = 0; i < 5; ++i) 
+				{
+					for (int j = 0; j < 5; ++j) 
+					{
+						c3_weights_kernel_next3[25*k + 5*i + j] -= learning_rate*adamoptimizer_weights_C3_next3[25*k + 5*i + j];
+					}
+				}
+				k_c3_kernel += 1;
+			}
+
+			for (int k = 0 ; k < 6; ++k) // The last 6 distinct kernels that connect to all 6 feature maps in S2
+			{
+				for (int i = 0; i < 5; ++i) 
+				{
+					for (int j = 0; j < 5; ++j) 
+					{
+						c3_weights_kernel_last1[25*k + 5*i + j] -= learning_rate*adamoptimizer_weights_C3_last1[25*k + 5*i + j];
+					}
+				}
+				k_c3_kernel += 1;
+			}
+			vector<double> vecdelta_C3(16, 0.0);
+			
+			for (int k = 0 ; k < 16; ++k)
+			{
+				double sum = 0;
+				for (int i = 0; i < 10 ; ++i) 
+				{
+					for (int j = 0; j < 10; ++j) 
+					{
+						sum += delta_C3[k][i][j] ;
+					}
+				}
+				vecdelta_C3[k] = sum;
+			}
+
+			vector<double> adamoptimizer_bias_C3 = optimizer_C3_bias.output(adam_m_bias_C3, adam_v_bias_C3, adam_beta1, adam_beta2, vecdelta_C3, epoch + 1); 
+			optimizer_C3_bias.update(adam_m_bias_C3, adam_v_bias_C3, adam_beta1, adam_beta2, vecdelta_C3);
+			for (int k = 0 ; k < 16; ++k)
+			{
+				
+				c3_bias[k] -= learning_rate*adamoptimizer_bias_C3[k];
+			}
+			// Weight update formula for S2
+			// s2_weights_kernel[6];
+			for (int k = 0; k < 6; ++k) 
+			{
+				s2_weights_kernel[k] -= learning_rate*delta_S2_final[k];
+				s2_bias[k] -= learning_rate*delta_S2_final_bias[k];
+			}
+
+			vector<double> C1_weights_gradients(150,0.0);
+	
+			// Create weights gradients for C1
+			for (int k = 0 ; k < 6; ++k)
+			{
+				for (int i = 0; i < 5; ++i) 
+				{
+					for (int j = 0; j < 5; ++j) 
+					{
+						C1_weights_gradients[25*k + 5*i + j] = C1_weights_update[k][i][j];
+					}
+				}
+				
+			}
+			vector<double> adamoptimizer_weights_C1 = optimizer_C1_weights.output(adam_m_weights_C1, adam_v_weights_C1, adam_beta1, adam_beta2, C1_weights_gradients, epoch + 1); 
+			optimizer_C1_weights.update(adam_m_weights_C1, adam_v_weights_C1, adam_beta1, adam_beta2, C1_weights_gradients);
+
+			// c1_weights_kernel[6][5][5]
+			// Weight update formula for C1
+			for (int k = 0 ; k < 6; ++k) 
+			{
+				for (int i = 0; i < 5; ++i) 
+				{
+					for (int j = 0; j < 5; ++j) 
+					{
+						c1_weights_kernel[k][i][j] -= learning_rate*adamoptimizer_weights_C1[25*k + 5*i + j];
+					}
+				}
+				
+			}
+
+			vector<double> vecdelta_C1(6, 0.0);
+			for (int k = 0 ; k < 6; ++k)
+			{
+				double sum = 0;
+				for (int i = 0; i < 28 ; ++i) 
+				{
+					for (int j = 0; j < 28; ++j) 
+					{
+						sum += delta_C1[k][i][j] ;
+					}
+				}
+				vecdelta_C1[k] = sum;				
+			}
+			vector<double> adamoptimizer_bias_C1 = optimizer_C1_bias.output(adam_m_bias_C1, adam_v_bias_C1, adam_beta1, adam_beta2, vecdelta_C1, epoch + 1); 
+			optimizer_C1_bias.update(adam_m_bias_C1, adam_v_bias_C1, adam_beta1, adam_beta2, vecdelta_C1);
+			for (int k = 0 ; k < 6; ++k)
+			{
+				c1_bias[k] -= learning_rate*adamoptimizer_bias_C1[k];
+			}
+			// Decaying the exponential decay
+			adam_beta1 = adam_beta1*0.99;
+			adam_beta2 = adam_beta2*0.99;*/
+		
+			/*
+
+				End of Adam Optimizer code
+
+			*/
+			// Save delta vector and matrices
+			saveVectordouble(delta_outputlayer,"output_delta.txt");
+			saveVectordouble(delta_F6,"F6_delta.txt");
+			saveVectordouble(delta_C5,"C5_delta.txt");
+			save3DMatrixdouble(S4_deltamap,"S4_deltamap_final.txt");
+			save3DMatrixdouble(delta_C3,"C3_deltamap_final.txt");
+			save3DMatrixdouble(S2_deltamap,"S2_deltamap_final.txt");
+			save3DMatrixdouble(delta_C1,"C1_deltamap_final.txt");
+			saveMatrixdouble(target_vector,"targetmatrix.txt");
+			/*saveVectordouble(adam_m_bias_output,"adam_m_bias_output.txt");
+			saveVectordouble(adam_v_bias_output,"adam_v_bias_output.txt");
+			saveVectordouble(adam_m_weights_output,"adam_m_weights_output.txt");
+			saveVectordouble(adam_v_weights_output,"adam_v_weights_output.txt");
+
+			saveVectordouble(adam_m_bias_F6,"adam_m_bias_F6.txt");
+			saveVectordouble(adam_v_bias_F6,"adam_v_bias_F6.txt");
+			saveVectordouble(adam_m_weights_F6,"adam_m_weights_F6.txt");
+			saveVectordouble(adam_v_weights_F6,"adam_v_weights_F6.txt");
+
+			saveVectordouble(adam_m_bias_C5,"adam_m_bias_C5.txt");
+			saveVectordouble(adam_v_bias_C5,"adam_v_bias_C5.txt");
+			saveVectordouble(adam_m_weights_C5,"adam_m_weights_C5.txt");
+			saveVectordouble(adam_v_weights_C5,"adam_v_weights_C5.txt");
+
+			saveVectordouble(adam_m_bias_C3,"adam_m_bias_C3.txt");
+			saveVectordouble(adam_v_bias_C3,"adam_v_bias_C3.txt");
+			saveVectordouble(adam_m_weights_C3_first6,"adam_m_weights_C3_first6.txt");
+			saveVectordouble(adam_v_weights_C3_first6,"adam_v_weights_C3_first6.txt");
+			saveVectordouble(adam_m_weights_C3_next6,"adam_m_weights_C3_next6.txt");
+			saveVectordouble(adam_v_weights_C3_next6,"adam_v_weights_C3_next6.txt");
+			saveVectordouble(adam_m_weights_C3_next3,"adam_m_weights_C3_next3.txt");
+			saveVectordouble(adam_v_weights_C3_next3,"adam_v_weights_C3_next3.txt");
+			saveVectordouble(adam_m_weights_C3_last1,"adam_m_weights_C3_last1.txt");
+			saveVectordouble(adam_v_weights_C3_last1,"adam_v_weights_C3_last1.txt");
+
+			saveVectordouble(adam_m_bias_C1,"adam_m_bias_C1.txt");
+			saveVectordouble(adam_v_bias_C1,"adam_v_bias_C1.txt");
+			saveVectordouble(adam_m_weights_C1,"adam_m_weights_C1.txt");
+			saveVectordouble(adam_v_weights_C1,"adam_v_weights_C1.txt");*/
+
+			/*saveVectordouble(output_weights_gradients,"output_weights_gradients.txt"); 
+			saveVectordouble(F6_weights_gradients,"F6_weights_gradients.txt"); 
+			saveVectordouble(C5_weights_gradients,"C5_weights_gradients.txt"); 
+			saveVectordouble(C3_weights_gradients_first6,"C3_weights_gradients_first6.txt"); 
+			saveVectordouble(C3_weights_gradients_next6,"C3_weights_gradients_next6.txt"); 
+			saveVectordouble(C3_weights_gradients_next3,"C3_weights_gradients_next3.txt"); 
+			saveVectordouble(C3_weights_gradients_last1,"C3_weights_gradients_last1.txt"); 
+			saveVectordouble(C1_weights_gradients,"C1_weights_gradients.txt"); */
+			save3DMatrixdouble(X,"Input_images.txt");	
+		}
+		lr_vector.push_back(learning_rate);
+		loss_vector.push_back(epoch_loss / X.size());
+		if(epoch > 1)
+		{
+			if(loss_vector[epoch] > 2 )
+			{
+				if(abs(loss_vector[epoch] - loss_vector[epoch-1]) < 0.1)
+				{
+					learning_rate = 0.06 ; // 0.05 is good
+				}
+			}
+			else if (loss_vector[epoch] < 2 )
+			{
+				learning_rate = 0.025;
+			}
+			else if (loss_vector[epoch] < 1 )
+			{
+				learning_rate = 0.01;
+			}
+
+		}
+		//if ((epoch + 1) % (epochs / 100) == 0 || epoch == epochs - 1) 
 		{
 			float progress = static_cast<float>(epoch + 1) / epochs;
 			int pos = static_cast<int>(bar_width * progress);
@@ -5230,88 +5928,276 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X, vector<int> &y, int epoch
 				}
 			}
 			std::cout << "] " << int(progress * 100.0) << "% ";
-			std::cout << "Epoch " << epoch + 1 << "/" << epochs << " - Loss: " << std::fixed << std::setprecision(4) << epoch_loss / X.size() << "\r";
+			std::cout << "Epoch " << epoch + 1 << "/" << epochs << " - Loss: " << std::fixed << std::setprecision(4) << epoch_loss / X.size() << " - Learning Rate: " << std::fixed << std::setprecision(8) << learning_rate << "\r";
 			std::cout.flush();
 		}
 
 		
 	} 
 	
+	saveVectordouble(loss_vector,"loss.txt"); 
+	saveVectordouble(lr_vector,"learningrate.txt"); 
 	cout << endl;
 }
 
 void CNN_LeNet5::save_model(const std::string &filename) 
 {
-	/*std::ofstream file(filename);
+	std::ofstream file(filename);
 	file << std::fixed << std::setprecision(6);
-	vector<vector<double>> mat_w_dummy(4, vector<double>(5, 0));
-	vector<vector<double>> mat_whidden_dummy(5, vector<double>(3, 0));
-	vector<double> vec_biashidden(5,0.0);
-	vector<double> vec_biasoutput(3,0.0);
-	for (int i = 0; i < 4; ++i) 
+
+	for (int k = 0; k < 6; ++k)
 	{
-		for (int j = 0; j < 5; ++j) 
+		for (int i = 0; i < 5; ++i) 
 		{
-			file << weights[i][j] << " ";
-			mat_w_dummy[i][j] = weights[i][j];
+			for (int j = 0; j < 5; ++j) 
+			{
+				file << c1_weights_kernel[k][i][j] << " " ;
+			}
 		}
 	}
-	for (int j = 0; j < 5; ++j) 
+	for (int k = 0; k < 6; ++k)
 	{
-		file << biashidden[j] << " ";
-		vec_biashidden[j]= biashidden[j];
+		file << c1_bias[k] << " " ;
 	}
-	for (int j = 0; j < 5; ++j) 
+	for (int k = 0; k < 6; ++k)
 	{
-		for (int k = 0; k < 3; ++k) 
+		file << s2_weights_kernel[k] << " " ;
+	}
+	for (int k = 0; k < 6; ++k)
+	{
+		file << s2_bias[k] << " " ;
+	}
+	
+	for (int k = 0; k < 450; ++k)
+	{
+		file << c3_weights_kernel_first6[k] << " " ;
+	}
+	
+	for (int k = 0; k < 600; ++k)
+	{
+		file << c3_weights_kernel_next6[k] << " " ;
+	}
+	for (int k = 0; k < 300; ++k)
+	{
+		file << c3_weights_kernel_next3[k] << " " ;
+	}
+	for (int k = 0; k < 150; ++k)
+	{
+		file << c3_weights_kernel_last1[k] << " " ;
+	}	
+
+	for (int k = 0; k < 16; ++k)
+	{
+		file << c3_bias[k] << " " ;
+	}
+	for (int k = 0; k < 16; ++k)
+	{
+		file << s4_weights_kernel[k] << " " ;
+	}
+	for (int k = 0; k < 16; ++k)
+	{
+		file << s4_bias[k] << " " ;
+	}
+
+	for (int i = 0; i < 400; ++i) 
+	{
+		for (int j = 0; j < 120; ++j) 
 		{
-			file << hiddenweights[j][k] << " ";
-			mat_whidden_dummy[j][k] = hiddenweights[j][k];
+			file << c5_weights_kernel[i][j] << " " ;
 		}
 	}
-	for (int k = 0; k < 3; ++k) 
+	
+	for (int k = 0; k < 120; ++k)
 	{
-		file << biasoutput[k] << " ";
-		vec_biasoutput[k]= biasoutput[k];
+		file << c5_bias[k] << " " ;
 	}
+	for (int i = 0; i < 120; ++i) 
+	{
+		for (int j = 0; j < 84; ++j) 
+		{
+			file << f6_weights_kernel[i][j] << " " ;
+		}
+	}
+	for (int i = 0; i < 84; ++i) 
+	{
+		file << f6_bias[i] << " " ;
+		
+	}
+	for (int i = 0; i < 84; ++i) 
+	{
+		for (int j = 0; j < 10; ++j) 
+		{
+			file << output_weights[i][j] << " " ;
+		}
+	}
+	for (int i = 0; i < 10; ++i) 
+	{
+		file << output_bias[i] << " " ;
+		
+	}
+
 	file.close();
-	cout << "\nThe model weights:" << endl;
-	printMatrix(mat_w_dummy);
-	cout << "\nThe model hiddenweights:" << endl;
-	printMatrix(mat_whidden_dummy);
-	cout << "\nThe model bias in the hidden layer:" << endl;
-	printVector(vec_biashidden);
-	cout << "\nThe model bias in the output layer:" << endl;
-	printVector(vec_biasoutput);*/
 
 }
 
 void CNN_LeNet5::load_model(const std::string& filename) 
 {
-	/*std::ifstream file(filename);
-	for (int i = 0; i < 4; ++i) 
+	std::ifstream file(filename);
+	for (int k = 0; k < 6; ++k)
 	{
-		for (int j = 0; j < 5; ++j) 
+		for (int i = 0; i < 5; ++i) 
 		{
-			file >> weights[i][j];
+			for (int j = 0; j < 5; ++j) 
+			{
+				file >> c1_weights_kernel[k][i][j]  ;
+			}
 		}
 	}
-	for (int j = 0; j < 5; ++j) 
+	for (int k = 0; k < 6; ++k)
 	{
-		file >> biashidden[j];
+		file >> c1_bias[k]  ;
 	}
-	for (int j = 0; j < 5; ++j) 
+	for (int k = 0; k < 6; ++k)
 	{
-		for (int k = 0; k < 3; ++k) 
+		file >> s2_weights_kernel[k] ;
+	}
+	for (int k = 0; k < 6; ++k)
+	{
+		file >> s2_bias[k] ;
+	}
+	
+	for (int k = 0; k < 450; ++k)
+	{
+		file >> c3_weights_kernel_first6[k]  ;
+	}
+	
+	for (int k = 0; k < 600; ++k)
+	{
+		file >> c3_weights_kernel_next6[k]  ;
+	}
+	for (int k = 0; k < 300; ++k)
+	{
+		file >> c3_weights_kernel_next3[k] ;
+	}
+	for (int k = 0; k < 150; ++k)
+	{
+		file >> c3_weights_kernel_last1[k] ;
+	}	
+	for (int k = 0; k < 16; ++k)
+	{
+		file >> c3_bias[k] ;
+	}
+	for (int k = 0; k < 16; ++k)
+	{
+		file >> s4_weights_kernel[k] ;
+	}
+	for (int k = 0; k < 16; ++k)
+	{
+		file >> s4_bias[k] ;
+	}
+
+	for (int i = 0; i < 400; ++i) 
+	{
+		for (int j = 0; j < 120; ++j) 
 		{
-			file >> hiddenweights[j][k];
+			file >> c5_weights_kernel[i][j] ;
 		}
 	}
-	for (int k = 0; k < 3; ++k) 
+	
+	for (int k = 0; k < 120; ++k)
 	{
-		file >> biasoutput[k];
+		file >> c5_bias[k] ;
 	}
-	file.close();*/
+	for (int i = 0; i < 120; ++i) 
+	{
+		for (int j = 0; j < 84; ++j) 
+		{
+			file >> f6_weights_kernel[i][j] ;
+		}
+	}
+	for (int i = 0; i < 84; ++i) 
+	{
+		file >> f6_bias[i] ;
+		
+	}
+	for (int i = 0; i < 84; ++i) 
+	{
+		for (int j = 0; j < 10; ++j) 
+		{
+			file >> output_weights[i][j] ;
+		}
+	}
+	for (int i = 0; i < 10; ++i) 
+	{
+		file >> output_bias[i] ;
+		
+	}
+	file.close();
+}
+
+
+void evaluate_model(CNN_LeNet5 &cnn, vector<vector<vector<int>>>& X_input, vector<int>& y, const vector<string>& label_names) 
+{
+	int correct = 0;
+	vector<vector<int>> confusion_matrix(10, vector<int>(10, 0));
+
+	cout << BLUE << BOLD << "\nEvaluating the model on the test set:" << RESET << endl;
+
+	int progress = 0;
+	int bar_width = 50;
+	int n_images = X_input.size();
+	int n_input = X_input[0].size();
+
+	vector<vector<vector<double>>> X(n_images, vector<vector<double>>(n_input, vector<double>(n_input, 0.0)));;
+	
+	for (int i = 0; i < n_images; ++i) 
+	{
+		// Normalize the input image
+		for(int j = 0; j < n_input; ++j)
+		{
+			for(int k = 0; k < n_input; ++k)
+			{
+				X[i][j][k] = divisiond(X_input[i][j][k]-127.5,127.5);
+				if (X[i][j][k] > 0)
+				{
+					X[i][j][k] = 0;
+				}
+			}
+		}
+		vector<double> prediction = cnn.predict(X[i]);
+		int predicted_class = std::distance(prediction.begin(), std::max_element(prediction.begin(), prediction.end()));
+        
+		if (predicted_class == y[i]) 
+		{
+			correct++;
+		}
+        
+		confusion_matrix[y[i]][predicted_class]++;
+
+		// Update progress bar
+		int new_progress = static_cast<int>((i + 1) * 100 / n_images);
+		if (new_progress > progress) 
+		{
+			progress = new_progress;
+			int pos = bar_width * progress / 100;
+			cout << "[";
+			for (int i = 0; i < bar_width; ++i) 
+			{
+				if (i < pos) cout << "=";
+				else if (i == pos) cout << ">";
+				else cout << " ";
+			}
+			cout << "] " << progress << "%\r";
+			cout.flush();
+		}
+	}
+	cout << endl;
+
+	double accuracy = static_cast<double>(correct) / n_images;
+	cout << GREEN << BOLD << "\nAccuracy: " << std::fixed << std::setprecision(2) << accuracy * 100 << "%" << RESET << endl;
+
+	print_confusion_matrix(confusion_matrix, label_names);
+	print_metrics(confusion_matrix, label_names);
 }
 
 

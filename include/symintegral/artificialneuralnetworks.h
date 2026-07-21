@@ -120,6 +120,22 @@ public:
 
 #endif
 
+#ifndef ADAM_OPTIMIZER_H
+#define ADAM_OPTIMIZER_H
+
+class AdamOptimizer {
+private:
+	
+public:
+	AdamOptimizer(); // Constructor	
+	
+	vector<double> output(vector<double>& m, vector<double>& v, double beta1, double beta2, const vector<double>& gradients, int timestep); 
+
+	void update(vector<double>& m, vector<double>& v, double beta1, double beta2, const vector<double>& gradients);
+};
+
+#endif
+
 #ifndef CNN_LENET5_H
 #define CNN_LENET5_H
 
@@ -157,7 +173,7 @@ public:
 	//CNN_LeNet5(int rows, int cols) 
         //: myMatrix(rows, vector<double>(cols, 0.0)) {}
 
-	vector<double> predict(const vector<vector<int>> &inputs);
+	vector<double> predict(const vector<vector<double>> &inputs);
 
 	void train(vector<vector<vector<int>>> &X, vector<int> &y, int epochs);
 
@@ -224,6 +240,7 @@ void FNN_1hiddenlayer_irisdataset_training(vector<vector<double>>&, vector<strin
 void FNN_1hiddenlayer_irisdataset_testing(vector<vector<double>>&, vector<string>&);
 
 vector<vector<double>> read_dataset_iris(const string &, vector<int> &, vector<string> &); 
+vector<vector<double>> read_dataset_images(const string &, vector<string> &); 
 
 void print_confusion_matrix(const vector<vector<int>>& , const vector<string>& );
 void print_metrics(const vector<vector<int>>& , const vector<string>& );
@@ -231,6 +248,8 @@ void evaluate_model(FNN_NoHiddenLayer_Iris &, vector<vector<double>> &, vector<i
 void evaluate_model(FNN_NoHiddenLayer_Iris_ConjugateGradient &, vector<vector<double>> &, vector<int> &, const vector<string> &);
 void evaluate_model(FNN_1HiddenLayer_Iris &, vector<vector<double>> &, vector<int> &, const vector<string> &);
 void evaluate_model(FNN_1HiddenLayer_Iris_ConjugateGradient &, vector<vector<double>> &, vector<int> &, const vector<string> &);
+
+void evaluate_model(CNN_LeNet5 &, vector<vector<vector<int>>> & , vector<int> & , const vector<string> &); 
 #endif
 #endif
 

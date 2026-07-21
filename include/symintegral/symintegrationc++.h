@@ -73,6 +73,7 @@
 #include "symintegral/geometryandvectors.h"
 #include "symintegral/infiniteseries.h"
 #include "symintegral/linearalgebra.h"
+#include "symintegral/machinelearning.h"
 #include "symintegral/mathematicalfinance.h"
 #include "symintegral/numericalmethod.h"
 #include "symintegral/operationsresearch.h"

@@ -59,6 +59,7 @@ It is able to compute
 27. Feed-forward neural network with steepest descent and conjugate gradient method.
 28. Extract RGBA matrices out of an image
 29. Perform kernel / convolution matrix on an image with OpenGL
+30. Convolutional Neural Network with LeNet5 Architecture with our own digit handwriting images using Steepest Descent method.
 
 # Learning the Code
 
@@ -175,6 +176,7 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Transcription and translation from DNA to mRNA to polypeptide (Molecular biology)			| Done
 |:sunflower:   | Genetic algorithms for unconstained optimization of a function with two variables			| Done
 |:sunflower:   | Feed-forward neural network for Classification problem with Iris Dataset (Steepest Descent and Conjugate Gradient)			| Done
+|:sunflower:   | Convolutional Neural Network with LeNet5 Architecture with our own digit handwriting images using Steepest Descent method		| Done
 
 We write the definitions, theorems, examples, how to run the source code and use the functions in the book. If you are curious, then read the book.
 
@@ -492,4 +494,9 @@ Resize images and convert the resized images into grayscale and create idx3-ubyt
 By June 29th, 2026: On Full moon day we have created a nice prediction class under CNN_LeNet5 class until layer C5. Backpropagation and training will be done as soon as possible.
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/CNNLeNet5Predict.gif" width="60%">
 
+By July 21st, 2026: We have finished with a nice training for Convolutional Neural Network with LeNet-5 architecture (under CNN_LeNet5 class), all layers using Leaky ReLU with alpha=0.8, the output is using softmax, we got 73% of accuracy after 20 epochs, which means not too overfitting. The code can be tested and modified. We start with learning rate of 0.1 and the learning rate is decreasing as the loss decreases.
+I saw an eagle too flying in VP forest in the Elder place today. Thanks Freya the Goddess.
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/LeNet51-FreyaHelpsMe.gif" width="60%">
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/LeNet51-PendalamanKitabSuci.gif" width="60%">
 
