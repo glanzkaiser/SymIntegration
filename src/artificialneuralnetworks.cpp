@@ -4178,7 +4178,7 @@ vector<double> CNN_LeNet5::predict(const vector<vector<double>> &inputs) // beco
 	vector<double>predicted_output_softmax = SoftMax_vectorresult_activationfunction(outputs);
 
 	
-	save3DMatrixdouble(C1_Matrices,"C1_matrix.txt");
+	/*save3DMatrixdouble(C1_Matrices,"C1_matrix.txt");
 	save3DMatrixdouble(C1_conv,"C1_conv.txt");
 	save3DMatrixdouble(S2_Matrices,"S2_matrix.txt");
 	save3DMatrixdouble(C3_Matrices,"C3_matrix.txt");
@@ -4188,7 +4188,7 @@ vector<double> CNN_LeNet5::predict(const vector<vector<double>> &inputs) // beco
 	saveVectordouble(f6_output,"F6_final_vector.txt"); // very good, June 29th, 2026
 	saveVectordouble(outputs,"output_logits.txt"); // very good, July 1st, 2026
 	saveVectordouble(predicted_output_softmax,"output_vector.txt"); // very good, July 1st, 2026
-	/**/
+	*/
 
 	return predicted_output_softmax;
 }
@@ -4305,9 +4305,7 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X_input, vector<int> &y, int
 			vector<double> outputs = predict(X[iter]);
 			vector<double> target(n_classification, 0.0);
 			target[y[iter]] = 1.0;
-			target_vector.push_back(target);
-			//mat_target.push_back(outputs);	
-			//mat_target.push_back(target);		
+			//target_vector.push_back(target);
 	 		std::vector<double> errors(n_classification, 0.0);
 			for (int k = 0; k < n_classification; ++k) 
 			{
@@ -4415,8 +4413,8 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X_input, vector<int> &y, int
 						{
 							C3_result[i][j] += c3_bias[k] ; // add a bias
 						}
-						C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
-						//C3_result[i][j] = LeakyReLUActivationfunction(C3_result[i][j], alpha); // apply the activation function
+						//C3_result[i][j] = TanhActivationfunction(C3_result[i][j]); // apply the activation function
+						C3_result[i][j] = LeakyReLUActivationfunction(C3_result[i][j], alpha); // apply the activation function
 					}
 				}	
 				C3_Matrices.push_back(C3_result);
@@ -5836,7 +5834,7 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X_input, vector<int> &y, int
 
 			*/
 			// Save delta vector and matrices
-			saveVectordouble(delta_outputlayer,"output_delta.txt");
+			/*saveVectordouble(delta_outputlayer,"output_delta.txt");
 			saveVectordouble(delta_F6,"F6_delta.txt");
 			saveVectordouble(delta_C5,"C5_delta.txt");
 			save3DMatrixdouble(S4_deltamap,"S4_deltamap_final.txt");
@@ -5844,7 +5842,7 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X_input, vector<int> &y, int
 			save3DMatrixdouble(S2_deltamap,"S2_deltamap_final.txt");
 			save3DMatrixdouble(delta_C1,"C1_deltamap_final.txt");
 			saveMatrixdouble(target_vector,"targetmatrix.txt");
-			/*saveVectordouble(adam_m_bias_output,"adam_m_bias_output.txt");
+			saveVectordouble(adam_m_bias_output,"adam_m_bias_output.txt");
 			saveVectordouble(adam_v_bias_output,"adam_v_bias_output.txt");
 			saveVectordouble(adam_m_weights_output,"adam_m_weights_output.txt");
 			saveVectordouble(adam_v_weights_output,"adam_v_weights_output.txt");
@@ -5883,7 +5881,7 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X_input, vector<int> &y, int
 			saveVectordouble(C3_weights_gradients_next3,"C3_weights_gradients_next3.txt"); 
 			saveVectordouble(C3_weights_gradients_last1,"C3_weights_gradients_last1.txt"); 
 			saveVectordouble(C1_weights_gradients,"C1_weights_gradients.txt"); */
-			save3DMatrixdouble(X,"Input_images.txt");	
+			//save3DMatrixdouble(X,"Input_images.txt");	
 		}
 		lr_vector.push_back(learning_rate);
 		loss_vector.push_back(epoch_loss / X.size());
@@ -5904,7 +5902,6 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X_input, vector<int> &y, int
 			{
 				learning_rate = 0.01;
 			}
-
 		}
 		//if ((epoch + 1) % (epochs / 100) == 0 || epoch == epochs - 1) 
 		{
@@ -5935,8 +5932,8 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X_input, vector<int> &y, int
 		
 	} 
 	
-	saveVectordouble(loss_vector,"loss.txt"); 
-	saveVectordouble(lr_vector,"learningrate.txt"); 
+	//saveVectordouble(loss_vector,"loss.txt"); 
+	//saveVectordouble(lr_vector,"learningrate.txt"); 
 	cout << endl;
 }
 
