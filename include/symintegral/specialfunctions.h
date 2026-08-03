@@ -37,6 +37,13 @@
 
 Symbolic hypergeometric_1F1(double, double, const Symbolic &, int);
 double hypergeometric_1F1(double, double, double, int);
+void physicists_Hermitepolynomials(int, const Symbolic &);
+void probabilists_Hermitepolynomials(int, const Symbolic &);
+void Jacobianpolynomials(double, double, int, const Symbolic &);
+void firstkind_Chebyshevpolynomials(int, const Symbolic &);
+void secondkind_Chebyshevpolynomials(int, const Symbolic &);
+void Gegenbauerpolynomials(double, int, const Symbolic &);
+void Laguerrepolynomials(double, int, const Symbolic &);
 
 #endif
 #endif

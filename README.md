@@ -61,6 +61,26 @@ It is able to compute
 29. Perform kernel / convolution matrix on an image with OpenGL
 30. Convolutional Neural Network with LeNet5 Architecture with our own digit handwriting images using Steepest Descent method.
 
+# Demos / Examples
+
+Differential Equations
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/SIDiffEq.gif" width="60%">
+
+Eigenvalues computation
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/SIEigenvalues.gif" width="60%">
+
+Financial Mathematics
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/SIFinancialMathematics.gif" width="60%">
+
+Feed-forward neural networks
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/SIFNN.gif" width="60%">
+
+Genetic algorithms and SVD
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/SIGASVD.gif" width="60%">
+
+Statistics
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/SIStatistics.gif" width="60%">
+
 # Learning the Code
 
 The C++ codes are only located in the `/src` directory , it is designed to contain all the `.cpp` files, then inside the `/include/` we have header files and another folder `/include/symintegral/` is also a folder that contain header files too.
@@ -71,6 +91,8 @@ There are total of 27 `.cpp` files and 26 `.h` / header files. So it won't take 
 
 # Installation
 Assuming you are using Linux ( we are using GFreya OS based on LFS version 11.0 System V) then you should have no problem in following these methods.
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/SIinstall.gif" width="60%">
 
 ## Move all .h / Header Files to /usr/include
 

@@ -4224,7 +4224,7 @@ void CNN_LeNet5::train(vector<vector<vector<int>>> &X_input, vector<int> &y, int
 	vector<vector<double>> target_vector;	
 	vector<vector<vector<double>>> X(n_images, vector<vector<double>>(n_input, vector<double>(n_input, 0.0)));;
 	// Adam parameters
-	double adam_beta1 = 0.9, adam_beta2 = 0.999;
+	//double adam_beta1 = 0.9, adam_beta2 = 0.999;
 	// Can we move this to private in artificalneuralnetworks.h ? yes, of course
 	
 	vector<double> adam_m_bias_output(10,0.0);
