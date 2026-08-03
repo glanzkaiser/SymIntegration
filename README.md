@@ -64,21 +64,27 @@ It is able to compute
 # Demos / Examples
 
 Differential Equations
+
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/SIDiffEq.gif" width="60%">
 
 Eigenvalues computation
+
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/SIEigenvalues.gif" width="60%">
 
 Financial Mathematics
+
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/SIFinancialMathematics.gif" width="60%">
 
 Feed-forward neural networks
+
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/SIFNN.gif" width="60%">
 
 Genetic algorithms and SVD
+
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/SIGASVD.gif" width="60%">
 
 Statistics
+
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/SIStatistics.gif" width="60%">
 
 # Learning the Code
