@@ -39,27 +39,30 @@ It is able to compute
 7. The integral of $`\int \sin^{n} (x) \ dx , \int \cos^{n} (x) \ dx, \int \tan^{n} (x) \ dx, \int \sec^{n} (x) \ dx, \int \csc^{n} (x) \ dx `$, but the speed to show the whole symbolic integral is slow compared to SymPy, needs to be fixed.
 8. The solution ($`y(t)`$) of first order linear ordinary differential equation of type $`ay' + ty = b`$, separable equation of type $`\frac{dy}{dx} = \frac{f(x)}{g(y)}`$, and separable equation with homogeneous ratio equations of type $`\frac{dy}{dx} = \frac{f(x,y)}{g(x,y)}`$ along with the initial value problem solution.
 9. The solution ($`y(t)`$) of second order linear ordinary differential equation of type $`ay'' +by'+ cy = g(t)`$ (for homogeneous and non-homogeneous equation) along with the initial value problem solution.
-10. The computation of divergence, gradient, and curl.
-11. The probability mass function, mean, variance, moment generating function of discrete distributions.
-12. The probability density function, cumulative distribution function, mean, variance, moment generating function of continuous distributions.
-13. The regression line equation along with Pearson's correlation ($`r`$) with input of vector of 2 columns
-14. Bond pricing and amortization table for mortgage loan or other credit related loan.
-15. Compute direction fields and plot it with gnuplot.
-16. Linear programming solution with Simplex Method.
-17. Numerical differentiation and Richardson's Extrapolation.
-18. Matrices multiplication, addition, LU decomposition, SVD, eigenvalues and eigenvectors approximation, QR-decomposition, Cholesky decomposition, Schur decomposition, Hessenberg decomposition, QR Algorithm with shifts
-19. Generate random number that has certain distribution (uniform, gamma, beta, normal, F, chi-squared) and plot the histogram with Hamzstplot
-20. Compute one-way ANOVA, two-way ANOVA, three-way ANOVA, multiple regression model.
-21. Compute one-tailed and two-tailed hypothesis testing. One- and Two-Sample Estimation Problem, e.g. Confidence Interval and Prediction Interval.
-22. Compute cdf of Normal, student's t distribution, F distribution, chi-squared distribution, beta distribution, gamma distribution without Boost.
-23. Compute the quantile of standard normal distribution / inverse of cdf without Boost.
-24. Transcription and translation from DNA to mRNA to polypeptide (Molecular biology).
-25. Genetic algorithms.
-26. Artificial neural networks.
-27. Feed-forward neural network with steepest descent and conjugate gradient method.
-28. Extract RGBA matrices out of an image
-29. Perform kernel / convolution matrix on an image with OpenGL
-30. Convolutional Neural Network with LeNet5 Architecture with our own digit handwriting images using Steepest Descent method.
+10. The power series solution ($`y(x)`$) of $`n`$-th order homogeneous linear ordinary differential equation with constant coefficients, $`ay'' + by' + cy = 0`$.
+11. The power series solution ($`y(x)`$) of $`2`$-nd order homogeneous linear ordinary differential equation with variable coefficients,  $`P(x)y'' + Q(x)y' + R(x)y = 0`$.
+12. The computation of divergence, gradient, and curl.
+13. The computation of divergence, gradient, and curl.
+14. The probability mass function, mean, variance, moment generating function of discrete distributions.
+15. The probability density function, cumulative distribution function, mean, variance, moment generating function of continuous distributions.
+16. The regression line equation along with Pearson's correlation ($`r`$) with input of vector of 2 columns
+17. Bond pricing and amortization table for mortgage loan or other credit related loan.
+18. Compute direction fields and plot it with gnuplot.
+19. Linear programming solution with Simplex Method.
+20. Numerical differentiation and Richardson's Extrapolation.
+21. Matrices multiplication, addition, LU decomposition, SVD, eigenvalues and eigenvectors approximation, QR-decomposition, Cholesky decomposition, Schur decomposition, Hessenberg decomposition, QR Algorithm with shifts
+22. Generate random number that has certain distribution (uniform, gamma, beta, normal, F, chi-squared) and plot the histogram with Hamzstplot
+23. Compute one-way ANOVA, two-way ANOVA, three-way ANOVA, multiple regression model.
+24. Compute one-tailed and two-tailed hypothesis testing. One- and Two-Sample Estimation Problem, e.g. Confidence Interval and Prediction Interval.
+25. Compute cdf of Normal, student's t distribution, F distribution, chi-squared distribution, beta distribution, gamma distribution without Boost.
+26. Compute the quantile of standard normal distribution / inverse of cdf without Boost.
+27. Transcription and translation from DNA to mRNA to polypeptide (Molecular biology).
+28. Genetic algorithms.
+29. Artificial neural networks.
+30. Feed-forward neural network with steepest descent and conjugate gradient method.
+31. Extract RGBA matrices out of an image
+32. Perform kernel / convolution matrix on an image with OpenGL
+33. Convolutional Neural Network with LeNet5 Architecture with our own digit handwriting images using Steepest Descent method.
 
 # Demos / Examples
 
@@ -181,6 +184,8 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Compute definite integral with improper integrals			| Done (write `INFINITY` to substitute `Inf`)
 |:sunflower:   | Compute the solution of first order linear ODE of several types	| Done
 |:sunflower:   | Compute the solution of second order linear ODE 			| Done
+|:sunflower:   | Compute the power series solution of n-th order homogeneous linear ODE with constant coefficients 			| Done
+|:sunflower:   | Compute the power series solution of second order homogeneous linear ODE with variable coefficients			| Done
 |:sunflower:   | Compute the probability mass function, mean, variance, moment generating function of geometric distribution, binomial distribution, negative binomial distribution, and Poisson distribution	| Done
 |:sunflower:   | Compute the probability density function, cumulative distribution function, mean, variance, moment generating function of uniform distribution, normal distribution, gamma, exponential, beta, cauchy, laplace, logistic, chi-squared, students't, and F distribution	| Done
 |:sunflower:   | Compute the root / solution of a function of one variable with bisection method and Newton-Raphson method	| Done
@@ -527,4 +532,9 @@ I saw an eagle too flying in VP forest in the Elder place today. Thanks Freya th
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/LeNet51-FreyaHelpsMe.gif" width="60%">
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/LeNet51-PendalamanKitabSuci.gif" width="60%">
+
+By August 16th, 2026: We have finished the class to compute the power series solution of n-th order homogeneous linear ODE with constant coefficients and compute the power series solution of 2-nd order homogeneous linear ODE with variable coefficients.
+I saw 3 eagles flying in VP forest in the Elder place on August 6th, 2026. Thanks Freya the Goddess.
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/53.png" width="60%">
 

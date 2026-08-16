@@ -19,5 +19,6 @@ Symbolic taylorseries(const Symbolic &f, const Symbolic &x, double x0, int N)
 	return sol;
 }
 
+
 #endif
 #endif

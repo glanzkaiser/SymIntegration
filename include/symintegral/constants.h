@@ -36,7 +36,7 @@ namespace SymbolicConstant
  static const Symbolic e       ("e");
  static const Symbolic pi      ("pi");
  static const Symbolic n_factorial      ("n!");
-
+ static const Symbolic sum_zeroinfinity      ("Σ_{n=0}^{∞}");
 }
 
 #endif

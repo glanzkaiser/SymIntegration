@@ -1,5 +1,5 @@
 /*
-   
+   Thank you Freya the Goddess, Sentinel, Berlin, all Nature, and Mother Mary from Catholic Divine
 */
 
 #include "symintegral/symintegrationc++.h"
@@ -8644,5 +8644,680 @@ void higherorderlineardiffeq_nonhomogeneousequations_variationofparameters(const
 		}
 		cout << "\nThe particular solution of the differential equation is: \nY(t) = "<< Yt_final << endl;
 }
+
+/* 
+
+	Initialize class to compute the series solution for homogeneous linear differential equation
+	with constant coefficients 
+
+*/
+
+// Constructor initializes the terms (series degree+1) and base boundary conditions
+HigherOrderODE_Homogeneous_PowerSeriesSolver::HigherOrderODE_Homogeneous_PowerSeriesSolver(const vector<double>& ode_coeffs, const vector<double>& init_conditions) 
+{
+	ode_coefficients = ode_coeffs;
+	initial_values = init_conditions;
+	order = ode_coeffs.size() - 1;
+	
+}
+
+void HigherOrderODE_Homogeneous_PowerSeriesSolver::computeSeries(int terms) 
+{
+	if (terms < 2) 
+	{
+		return;
+       	}
+
+	coefficients.resize(terms,0.0);
+
+	// Step 1: Assign initial conditions to the first m series terms
+	// Recall that y^(k)(0) = k! * coefficients_k, so coefficients_k = y^(k)(0) / k!
+	double factorial = 1.0;
+		for (int k = 0; k <= order - 1 && k < terms; ++k) 
+	{
+		if (k > 0) 
+		{
+		factorial *= k;
+		}
+		coefficients[k] = initial_values[k] / factorial;
+	}
+
+	// Step 2: Use recurrence relation to compute subsequent coefficients
+	double b_m = ode_coefficients[order];
+	if (b_m == 0.0) 
+	{
+		std::cerr << "Error: Leading coefficient b_m cannot be zero." << endl;
+	}
+
+	for (int n = 0; n <= terms - order - 1; ++n) 
+	{
+		double sum_terms = 0.0;
+		for (int k = 0; k < order; ++k) 
+		{
+			double mult = get_factorial_multiplier(n, k);
+			sum_terms += ode_coefficients[k] * coefficients[n + k] * mult;
+		}
+		    
+		double divisor = b_m * get_factorial_multiplier(n, order);
+		coefficients[n + order] = -sum_terms / divisor;
+	}
+	// To show the differential equation nicely
+	cout << "\n( " << ode_coefficients[0] << " ) y ";
+	for(int i = 1; i <= order ; ++i)
+	{
+		cout <<  "+ ( " << ode_coefficients[i] << " ) y^(" << i << ")";
+	}
+	cout << " = 0 " << endl;
+
+	cout << "\nInitial conditions:"<< endl;
+	cout << "y(0) = " << initial_values[0] << endl;
+	for(int i = 1; i < order ; ++i)
+	{
+		cout << "y^(" << i << ") (0) = " << initial_values[i] << endl;
+	}
+}
+
+vector<double> HigherOrderODE_Homogeneous_PowerSeriesSolver::coefficientsvector(int terms) 
+{
+	if (terms < 2) 
+	{
+		return {};
+       	}
+
+	coefficients.resize(terms,0.0);
+
+	// Step 1: Assign initial conditions to the first m series terms
+	// Recall that y^(k)(0) = k! * coefficients_k, so coefficients_k = y^(k)(0) / k!
+	double factorial = 1.0;
+		for (int k = 0; k <= order - 1 && k < terms; ++k) 
+	{
+		if (k > 0) 
+		{
+		factorial *= k;
+		}
+		coefficients[k] = initial_values[k] / factorial;
+	}
+
+	// Step 2: Use recurrence relation to compute subsequent coefficients
+	double b_m = ode_coefficients[order];
+	if (b_m == 0.0) 
+	{
+		std::cerr << "Error: Leading coefficient b_m cannot be zero." << endl;
+		return {};
+	}
+
+	for (int n = 0; n <= terms - order - 1; ++n) 
+	{
+		double sum_terms = 0.0;
+		for (int k = 0; k < order; ++k) 
+		{
+			double mult = get_factorial_multiplier(n, k);
+			sum_terms += ode_coefficients[k] * coefficients[n + k] * mult;
+		}
+		    
+		double divisor = b_m * get_factorial_multiplier(n, order);
+		coefficients[n + order] = -sum_terms / divisor;
+	}
+
+	return coefficients;
+}
+
+// Evaluates the power series at a specific value of x
+double HigherOrderODE_Homogeneous_PowerSeriesSolver::evaluateAt(double x, int terms)  
+{
+	double current_x_power = 1.0;
+	double sum = 0.0;
+        
+	for (int i = 0; i <= terms; ++i) 
+	{
+		sum += coefficients[i] * current_x_power;
+		current_x_power *= x;
+	}
+	return sum;
+}
+
+void HigherOrderODE_Homogeneous_PowerSeriesSolver::printSeries() const 
+{
+	cout << "\nSeries solution: \n"<< endl;
+	cout << "y(x) = ";
+	bool first = true;
+	for (size_t i = 0; i < coefficients.size(); ++i) 
+	{
+		if (coefficients[i] == 0.0) 
+		{
+			continue;
+		}
+		if (!first && coefficients[i] > 0) 
+		{
+			cout << " + ";
+		}		
+		if (coefficients[i] < 0) 
+		{
+			cout << " - ";
+		}
+		double abs_val = std::abs(coefficients[i]);
+		if (i == 0) 
+		{
+			cout << abs_val;
+		} 
+		else if (i == 1) 
+		{
+			cout << abs_val << "x";
+		} 
+		else 
+		{
+			cout << abs_val << "x^" << i;
+		}
+ 		first = false;
+        }
+	cout << " + ...\n";
+}
+
+/* 
+
+	Initialize class to compute the series solution for homogeneous second order linear differential equation
+	Solves p(x)y'' + q(x)*y' + r(x)*y = 0 with variable coefficients
+
+
+*/
+
+
+// Constructor initializes the terms (series degree+1) and base boundary conditions
+SecondOrderODE_Homogeneous_PowerSeriesSolver::SecondOrderODE_Homogeneous_PowerSeriesSolver(const Polynomialcoeff& P_input, 
+	const Polynomialcoeff& Q_input, const Polynomialcoeff& R_input, double x0_input, double y0_input, double dy0_input) 
+{
+	P = P_input;
+	Q = Q_input;
+	R = R_input;
+	x0 = x0_input;
+	// Initial conditions: y(0) = c_0, y'(0) = c_1
+	y0 = y0_input;
+	dy0 = dy0_input;
+}
+
+void SecondOrderODE_Homogeneous_PowerSeriesSolver::computeSeries(int terms) 
+{
+
+	coefficients.resize(terms, 0.0);
+	coefficients[0] = y0;
+	coefficients[1] = dy0;
+
+	 // 1. Shift variable coefficients around x0: P(t+x0), Q(t+x0), R(t+x0)
+	Polynomialcoeff P_shifted = P.shift_around(x0);
+	Polynomialcoeff Q_shifted = Q.shift_around(x0);
+	Polynomialcoeff R_shifted = R.shift_around(x0);
+
+	// Ensure the point is ordinary (P(x0) cannot be zero)
+	double p0 = P_shifted.get_coeff(0);
+	if (std::abs(p0) < 1e-9) 
+	{
+		std::cerr << "Error: x0 is a singular point. P(x0) cannot be 0.\n";
+	}
+
+	// Iteratively determine c_n using the algebraic recurrence relation
+	// The equation coefficient for X^m in P(X)y'' + Q(X)y' + R(X)y = 0 must equal 0
+	for (int m = 0; m < terms - 2; ++m) 
+	{
+		double sum_terms = 0.0;
+
+		// Contribution from P(X)y''
+		for (int k = 0; k <= m; ++k) 
+		{
+			int n = k + 2;
+			if (n < terms) 
+			{
+				sum_terms += P_shifted.get_coeff(m - k) * n * (n - 1) * coefficients[n];
+			}
+		}
+
+		// Contribution from Q(X)y'
+		for (int k = 0; k <= m; ++k) 
+		{
+			int n = k + 1;
+			if (n < terms) 
+			{
+				sum_terms += Q_shifted.get_coeff(m - k) * n * coefficients[n];
+			}
+		}
+
+		// Contribution from R(X)y
+		for (int k = 0; k <= m; ++k) 
+		{
+			int n = k;
+			if (n < terms) 
+			{
+				sum_terms += R_shifted.get_coeff(m - k) * coefficients[n];
+			}
+		}
+
+		// The term containing the unknown coefficient c[m+2] is isolated:
+		// p0 * (m+2) * (m+1) * c[m+2] + sum_terms_excluding_this_one = 0
+		// Therefore, we can correct the sum by tracking how much c[m+2] contributed dynamically
+		// and solving for it directly.
+		
+		// Alternatively, calculate next term explicitly by peeling off the c[m+2] multiplier:
+		double known_sum = 0.0;
+		
+		// P(X)y'' parts up to c[m+1]
+		for (int j = 1; j <= m; ++j) 
+		{
+			known_sum += P_shifted.get_coeff(j) * (m - j + 2) * (m - j + 1) * coefficients[m - j + 2];
+		}
+		// Q(X)y' parts up to c[m+1]
+		for (int j = 0; j <= m; ++j) 
+		{
+			known_sum += Q_shifted.get_coeff(j) * (m - j + 1) * coefficients[m - j + 1];
+		}
+		// R(X)y parts up to c[m]
+		for (int j = 0; j <= m; ++j) 
+		{
+			known_sum += R_shifted.get_coeff(j) * coefficients[m - j];
+		}
+
+		// Solve for c[m+2]
+		coefficients[m + 2] = -known_sum / (p0 * (m + 2) * (m + 1));
+	}
+
+	// To show the differential equation nicely
+	bool first = true;
+
+	cout << "( ";
+	for (int i = 0; i < P.maxDegree()+1 ; ++i) 
+	{
+		if (P.sum_coeff() == 0.0) 
+		{
+			cout << "0";
+			i = P.maxDegree();
+		}
+
+		if (P.get_coeff(i) == 0.0) 
+		{
+			
+			continue;
+		}
+		if (!first && P.get_coeff(i) > 0) 
+		{
+			cout << " + ";
+		}		
+		if (P.get_coeff(i) < 0) 
+		{
+			cout << " - ";
+		}
+		double abs_val = std::abs(P.get_coeff(i));
+
+		if (i == 0) 
+		{	
+			cout << abs_val;
+		} 
+		else if (i == 1) 
+		{
+			cout << abs_val << "x";
+		} 
+		else 
+		{
+			cout << abs_val << "x^" << i;
+		}
+ 		first = false;
+		
+        }
+	cout << " ) y'' + ( ";
+	first = true;
+	for (int i = 0; i < Q.maxDegree()+1  ; ++i) 
+	{
+		if (Q.sum_coeff() == 0.0) 
+		{
+			cout << "0";
+			i = Q.maxDegree();
+		}
+		if (Q.get_coeff(i) == 0.0) 
+		{
+			continue;
+		}
+		if (!first && Q.get_coeff(i) > 0) 
+		{
+			cout << " + ";
+		}		
+		if (Q.get_coeff(i) < 0) 
+		{
+			cout << " - ";
+		}
+		double abs_val = std::abs(Q.get_coeff(i));
+		if (i == 0) 
+		{
+			cout << abs_val;
+		} 
+		else if (i == 1) 
+		{
+			cout << abs_val << "x";
+		} 
+		else 
+		{
+			cout << abs_val << "x^" << i;
+		}
+ 		first = false;
+		
+        }
+	cout << " ) y' + ( ";
+
+	first = true;
+	for (int i = 0; i < R.maxDegree()+1 ; ++i) 
+	{
+		if (R.sum_coeff() == 0.0) 
+		{
+			cout << "0";
+			i = R.maxDegree();
+		}
+		if (R.get_coeff(i) == 0.0) 
+		{
+			continue;
+		}
+		if (!first && R.get_coeff(i) > 0) 
+		{
+			cout << " + ";
+		}		
+		if (R.get_coeff(i) < 0) 
+		{
+			cout << " - ";
+		}
+		double abs_val = std::abs(R.get_coeff(i));
+		if (i == 0) 
+		{
+			cout << abs_val;
+		} 
+		else if (i == 1) 
+		{
+			cout << abs_val << "x";
+		} 
+		else 
+		{
+			cout << abs_val << "x^" << i;
+		}
+ 		first = false;
+		
+        }
+	cout << " ) y ";
+	cout << "\nInitial conditions: y(0) = " << y0 << " , y'(0) = " << dy0 << endl;
+	cout << "\nx_{0} = " << x0 << std::endl;
+
+}
+
+// Alternative 2
+/*
+// Computes the power series coefficients for y = c0 + c1*(x-x0) + c2*(x-x0)^2 + ...
+// Up to a specified degree N using Taylor's method on: P(x)y'' + Q(x)y' + R(x)y = 0
+void SecondOrderODE_Homogeneous_PowerSeriesSolver::computeSeries(int terms) 
+{
+	// 1. Shift variable coefficients so they are expanded around u = (x - x0)
+	Polynomialcoeff Pu = P.shiftToCenter(x0);
+	Polynomialcoeff Qu = Q.shiftToCenter(x0);
+	Polynomialcoeff Ru = R.shiftToCenter(x0);
+
+	// Ensure x0 is an ordinary point (P(x0) != 0)
+	if (std::abs(Pu.evaluateAt(0.0)) < 1e-12) 
+	{
+		std::cerr << "Error: x0 is a singular point. P(x0) cannot be 0.\n";
+	}
+
+	// y_derivatives[n] stores the n-th derivative of y evaluated at x0: y^(n)(x0)
+	std::vector<double> y_derivatives(terms, 0.0);
+	y_derivatives[0] = y0;
+	y_derivatives[1] = dy0;
+
+	// Helper lambdas to fetch coefficient of u^k from shifted polynomials safely
+	auto getCoeff = [](const Polynomialcoeff& poly, int k) 
+	{
+		return (k >= 0 && k < static_cast<int>(poly.coeffs.size())) ? poly.coeffs[k] : 0.0;
+	};
+
+	// 2. Compute higher order derivatives recursively up to N using Leibniz rule
+	// Differentiating the ODE (n-2) times yields a system for y^(n)(x0)
+	for (int n = 2; n <= terms; ++n) 
+	{
+		int m = n - 2; // number of differentiations applied to the entire ODE
+        
+		double sum_P = 0.0;
+		for (int k = 1; k <= m; ++k) 
+		{
+			sum_P += binomialCoefficient(m, k) * getCoeff(Pu, k) * y_derivatives[m - k + 2];
+		}
+
+		double sum_Q = 0.0;
+		for (int k = 0; k <= m; ++k) 
+		{
+			sum_Q += binomialCoefficient(m, k) * getCoeff(Qu, k) * y_derivatives[m - k + 1];
+		}
+
+		double sum_R = 0.0;
+		for (int k = 0; k <= m; ++k) 
+		{
+			sum_R += binomialCoefficient(m, k) * getCoeff(Ru, k) * y_derivatives[m - k];
+		}
+
+		double P_val = getCoeff(Pu, 0); // P(x0)
+		y_derivatives[n] = -(sum_P + sum_Q + sum_R) / P_val;
+	}
+
+    // 3. Convert derivatives to power series coefficients: a_n = y^(n)(x0) / n!
+	coefficients.resize(terms, 0.0);
+	coefficients[0] = y0;
+	coefficients[1] = dy0;
+//    std::vector<double> series_coeffs(N + 1, 0.0);
+	double factorial = 1.0;
+	for (int n = 0; n <= terms; ++n) 
+	{
+		if (n > 0) 
+		{
+			factorial *= n;
+		}
+		coefficients[n] = y_derivatives[n] / factorial;
+	}
+
+} */
+
+// Alternative 3
+/*
+void SecondOrderODE_Homogeneous_PowerSeriesSolver::computeSeries(int terms) 
+{
+	// 1. Shift variable coefficients around x0: P(t+x0), Q(t+x0), R(t+x0)
+	Polynomialcoeff p_sh = P.shift(x0);
+	Polynomialcoeff q_sh = Q.shift(x0);
+	Polynomialcoeff r_sh = R.shift(x0);
+
+	// Check if x0 is an ordinary point
+	double p0 = p_sh.get_coeff(0);
+	if (std::abs(p0) < 1e-9) 
+	{
+		std::cerr << "Error: x0 = " << x0 << " is a singular point. This solver requires an ordinary point.\n";
+	}
+
+        // Initialize coefficient array for y(t) = c_0 + c_1*t + c_2*t^2 + ...
+	coefficients.resize(terms, 0.0);
+	coefficients[0] = y0;
+	if (terms > 1) 
+	{
+		coefficients[1] = dy0;
+	}
+
+	// 2. Iteratively solve the recurrence relation for higher-order terms
+	for (int m = 0; m < terms - 2; ++m) 
+	{
+		double sum = 0.0;
+
+		// Contribution from Q(t)*y'
+		for (int j = 0; j <= m; ++j) 
+		{
+			sum += q_sh.get_coeff(m - j) * (j + 1) * coefficients[j + 1];
+		}
+
+		// Contribution from R(t)*y
+		for (int j = 0; j <= m; ++j) 
+		{
+			sum += r_sh.get_coeff(m - j) * coefficients[j];
+		}
+
+		// Contribution from P(t)*y'' (excluding the leading p0 term)
+		for (int j = 1; j <= m + 1; ++j) 
+		{
+		sum += p_sh.get_coeff(m - j + 2) * (j + 1) * j * coefficients[j + 1];
+		}
+
+		// Recurrence formula derived by matching t^m coefficients
+		coefficients[m + 2] = -sum / (p0 * (m + 2) * (m + 1));
+	}
+} */
+
+vector<double> SecondOrderODE_Homogeneous_PowerSeriesSolver::coefficientsvector(int terms) 
+{
+	if (terms < 2) 
+	{
+		return {};
+       	}
+
+	coefficients.resize(terms, 0.0);
+	coefficients[0] = y0;
+	coefficients[1] = dy0;
+
+	Polynomialcoeff P_shifted = P.shift_around(x0);
+	Polynomialcoeff Q_shifted = Q.shift_around(x0);
+	Polynomialcoeff R_shifted = R.shift_around(x0);
+
+	// Ensure the point is ordinary (P(x0) cannot be zero)
+	double p0 = P_shifted.get_coeff(0);
+	if (std::abs(p0) < 1e-9) 
+	{
+		std::cerr << "Error: x is a singular point. P(x) cannot be 0.\n";
+	}
+
+	// Iteratively determine c_n using the algebraic recurrence relation
+	// The equation coefficient for X^m in P(X)y'' + Q(X)y' + R(X)y = 0 must equal 0
+	for (int m = 0; m < terms - 2; ++m) 
+	{
+		double sum_terms = 0.0;
+
+		// Contribution from P(X)y''
+		for (int k = 0; k <= m; ++k) 
+		{
+			int n = k + 2;
+			if (n < terms) 
+			{
+				sum_terms += P_shifted.get_coeff(m - k) * n * (n - 1) * coefficients[n];
+			}
+		}
+
+		// Contribution from Q(X)y'
+		for (int k = 0; k <= m; ++k) 
+		{
+			int n = k + 1;
+			if (n < terms) 
+			{
+				sum_terms += Q_shifted.get_coeff(m - k) * n * coefficients[n];
+			}
+		}
+
+		// Contribution from R(X)y
+		for (int k = 0; k <= m; ++k) 
+		{
+			int n = k;
+			if (n < terms) 
+			{
+				sum_terms += R_shifted.get_coeff(m - k) * coefficients[n];
+			}
+		}
+
+		// The term containing the unknown coefficient c[m+2] is isolated:
+		// p0 * (m+2) * (m+1) * c[m+2] + sum_terms_excluding_this_one = 0
+		// Therefore, we can correct the sum by tracking how much c[m+2] contributed dynamically
+		// and solving for it directly.
+		
+		// Alternatively, calculate next term explicitly by peeling off the c[m+2] multiplier:
+		double known_sum = 0.0;
+		
+		// P(X)y'' parts up to c[m+1]
+		for (int j = 1; j <= m; ++j) 
+		{
+			known_sum += P_shifted.get_coeff(j) * (m - j + 2) * (m - j + 1) * coefficients[m - j + 2];
+		}
+		// Q(X)y' parts up to c[m+1]
+		for (int j = 0; j <= m; ++j) 
+		{
+			known_sum += Q_shifted.get_coeff(j) * (m - j + 1) * coefficients[m - j + 1];
+		}
+		// R(X)y parts up to c[m]
+		for (int j = 0; j <= m; ++j) 
+		{
+			known_sum += R_shifted.get_coeff(j) * coefficients[m - j];
+		}
+
+		// Solve for c[m+2]
+		// Isolate and extract c[m+2] using the recurrence alignment rule
+		coefficients[m + 2] = -known_sum / (p0 * (m + 2) * (m + 1));
+	}
+	
+	return coefficients;
+}
+
+void SecondOrderODE_Homogeneous_PowerSeriesSolver::printCoefficients() const 
+{
+	// Output calculated power series coefficients to the console
+	cout << "\nComputed Power Series Coefficients:\n";
+	for (size_t i = 0; i < coefficients.size(); ++i) 
+	{
+		cout << "c_{" << i << "} = " << std::setw(10) << coefficients[i] << "\n";
+	}
+}
+
+void SecondOrderODE_Homogeneous_PowerSeriesSolver::printSolution() const 
+{
+	cout << "\nSeries solution: \n"<< endl;
+	cout << "y(x) = ";
+	bool first = true;
+	for (size_t i = 0; i < coefficients.size(); ++i) 
+	{
+		 if (std::abs(coefficients[i]) < 1e-9) 
+		{
+			continue;
+		}
+		if (!first && coefficients[i] > 0) 
+		{
+			cout << " + ";
+		}
+		if (coefficients[i] < 0) 
+		{
+			cout << " - ";
+		}
+		cout << std::abs(coefficients[i]);
+		if (i > 0) 
+		{
+			if (x0==0)
+			{
+				cout << "*x";
+			}
+			else if (x0 != 0)
+			{
+				cout << "*(x - " << x0 << ")";
+			}
+			if (i > 1) 
+			{
+				cout << "^" << i;
+			}
+		}
+        first = false;
+        }
+	cout << " + ... \n";
+}
+
+
+// Evaluates the power series at a specific value of x
+double SecondOrderODE_Homogeneous_PowerSeriesSolver::evaluateAt(double x, int terms)  
+{
+	double result = 0.0;
+        for (int i = terms - 1; i >= 0; --i) 
+	{
+		result = result * x + coefficients[i]; // Horner's method for numeric stability
+	}
+        return result;
+
+}
+
 #endif
 #endif

@@ -26,37 +26,30 @@
 #include "symintegrationc++.h"
 #include <bits/stdc++.h>
 #include <cmath>
+#include <chrono>
 
 #define π 3.1415926535897f
 
+using namespace std::chrono;
 using namespace std;
 using namespace SymbolicConstant;
 
-double division(double x, double y)
-{
-	return x/y;
-}
 
 int main(void)
 {
-	Symbolic y("y"),t("t");
-	
-	// 2y' + ty = 2
-	
-	//cout << "\nDSolve for y'' + 5y'+ 6y = 0\n" <<endl;
-	//dsolvesecondorderlinear(1,5,6,y,t);		
+	// Get starting timepoint
+	auto start = high_resolution_clock::now();
 
-	cout << "\nIVP Solve for y'' + 5y'+ 6y = 0 with y(0) = 2, y'(0) = 3\n" <<endl;
-	secondorderlineardiffeq_ivpsolution(1,5,6,y,t,0,2,3);		
+	Symbolic x("x");
+	int n = 20;
+	double bn = bernoullinumbers(n);
+	cout << "B_{" << n << "} = "<< bn << endl;
 
-	cout << "\nIVP Solve for y'' - y = 0 with y(0) = 2, y'(0) = -1\n" <<endl;
-	secondorderlineardiffeq_ivpsolution(1,0,-1,y,t,0,2,-1);		
+	// Get ending timepoint
+	auto stop = high_resolution_clock::now();
+	auto duration = duration_cast<microseconds>(stop - start);
 
-	cout << "\nIVP Solve for 4y'' - 8y' +  3y = 0 with y(0) = 2, y'(0) = 1/2\n" <<endl;
-	secondorderlineardiffeq_ivpsolution(4,-8,3,y,t,0,2,0.5);		
-
-	cout << "\nIVP Solve for y'' + 3y' +  2y = 0 with y(0) = 1, y'(0) = 2\n" <<endl;
-	secondorderlineardiffeq_ivpsolution(1,3,2,y,t,0,1,2);		
+	cout << "\nTime taken by function: " << duration.count() << " microseconds" << endl;
 
 	return 0; 
 }

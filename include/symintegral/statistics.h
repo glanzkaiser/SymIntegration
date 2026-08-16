@@ -73,6 +73,7 @@ double divisionint(double, double);
 
 double factoriald(int);
 double combinationsd(int, int);
+double bernoullinumbers(int);
 
 void save3DMatrixdouble(vector<vector<vector<double>>>, const string&);
 void save3DMatrixint(vector<vector<vector<int>>>, const string&);

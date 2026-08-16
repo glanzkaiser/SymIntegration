@@ -26,37 +26,50 @@
 #include "symintegrationc++.h"
 #include <bits/stdc++.h>
 #include <cmath>
+#include <chrono>
 
 #define π 3.1415926535897f
 
+using namespace std::chrono;
 using namespace std;
 using namespace SymbolicConstant;
 
-double division(double x, double y)
-{
-	return x/y;
-}
 
 int main(void)
 {
-	Symbolic y("y"),t("t");
+	// Get starting timepoint
+	auto start = high_resolution_clock::now();
+
+	Polynomialcoeff P({1.0, 0.0, 0.0});
+	Polynomialcoeff Q({0.0, 0.0, 0.0});
+	Polynomialcoeff R({0.0, -1.0, 0.0});
+
+	double x0 = 1.0; 
+	// Initial conditions: y(0) = y0, y'(0) = dy0 -> c0 = ... , c1 = ...
+	double y0 = 1.0; // y(0) = 1
+	// we set this to 1 to compute Bi(x) of the Airy function
+	double dy0 = 0.0; // y'(0) = 1
+	int num_terms = 14;
+
+	double test_x = 0.45;
+
+	SecondOrderODE_Homogeneous_PowerSeriesSolver solver(P, Q, R, x0, y0, dy0);
+	solver.computeSeries(num_terms);
+    
+	//cout << std::fixed << std::setprecision(10);
+	//solver.printCoefficients();
+	solver.printSolution();
+
+	double approximation = solver.evaluateAt(test_x, 10);
+	cout << "\nx = " << test_x << std::endl;
+	cout << "Power Series Approximation at x : " << std::fixed << std::setprecision(6) << approximation << endl;
 	
-	// 2y' + ty = 2
 	
-	//cout << "\nDSolve for y'' + 5y'+ 6y = 0\n" <<endl;
-	//dsolvesecondorderlinear(1,5,6,y,t);		
+	// Get ending timepoint
+	auto stop = high_resolution_clock::now();
+	auto duration = duration_cast<microseconds>(stop - start);
 
-	cout << "\nIVP Solve for y'' + 5y'+ 6y = 0 with y(0) = 2, y'(0) = 3\n" <<endl;
-	secondorderlineardiffeq_ivpsolution(1,5,6,y,t,0,2,3);		
-
-	cout << "\nIVP Solve for y'' - y = 0 with y(0) = 2, y'(0) = -1\n" <<endl;
-	secondorderlineardiffeq_ivpsolution(1,0,-1,y,t,0,2,-1);		
-
-	cout << "\nIVP Solve for 4y'' - 8y' +  3y = 0 with y(0) = 2, y'(0) = 1/2\n" <<endl;
-	secondorderlineardiffeq_ivpsolution(4,-8,3,y,t,0,2,0.5);		
-
-	cout << "\nIVP Solve for y'' + 3y' +  2y = 0 with y(0) = 1, y'(0) = 2\n" <<endl;
-	secondorderlineardiffeq_ivpsolution(1,3,2,y,t,0,1,2);		
+	cout << "\nTime taken by function: " << duration.count() << " microseconds" << endl;
 
 	return 0; 
 }

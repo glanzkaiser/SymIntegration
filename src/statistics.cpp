@@ -99,6 +99,35 @@ int fibonacciseries(int n)
 	return nextTerm;
 }
 
+double bernoullinumbers(int n)
+{
+	double Bn[n];
+	Bn[0] = 1;
+	Bn[1] = -0.5;
+    	//cout << "Bernoulli numbers: ";
+	//cout << "\nB_{"<< 0 << "}: "<< Bn[0] << endl; 
+	//cout << "\nB_{"<< 1 << "}: "<< Bn[1] << endl; 
+    	for (int i = 2; i <= n; ++i) 
+	{    
+		if (i % 2 == 0)
+		{
+			for (int j = 0; j < i; ++j)
+			{    
+				Bn[i] += combinationsd(i+1,j)*Bn[j];
+			}
+			Bn[i] = -divisiond(1,i+1)*Bn[i];
+		}
+		else if (i % 2 != 0)
+		{
+			Bn[i] = 0;
+		}
+		//cout << "\nB_{"<< i << "}: "<< Bn[i] << endl; 
+
+    	}
+	//cout << "\nB_{"<< n << "}: "<< endl; 
+	return Bn[n];
+}
+
 Symbolic divisions(Symbolic x, Symbolic y)
 {
 	return x/y;

@@ -40,8 +40,7 @@ using Complex = std::complex<double>;
 using ComplexVector = std::vector<Complex>;
 using ComplexMatrix = std::vector<std::vector<Complex>>;
 
-void complexnumber_analysis(complex<double> &);
-
+void complexnumber_analysis(complex<double> &c);
 
 #endif
 #endif
