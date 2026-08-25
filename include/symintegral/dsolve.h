@@ -106,18 +106,7 @@ public:
 
 #endif
 
-// Helper structure to compute combinations for polynomial shifting
-long long binomialCoefficient(int n, int k) 
-{
-	if (k < 0 || k > n) return 0;
-	if (k == 0 || k == n) return 1;
-	long long res = 1;
-	for (int i = 1; i <= k; ++i) 
-	{
-		res = res * (n - i + 1) / i;
-	}
-	return res;
-}
+long long binomialCoefficient(int, int );
 
 // Represents a polynomial coefficient (e.g., P(x) = p0 + p1*x + p2*x^2 + ...)
 // Polynomialcoeff P({p0, p1, p2, p3, ...});
@@ -228,14 +217,14 @@ public:
 		return 0.0;
 	}
 	
-	// to obtain the sum of the polynomial coefficients
+	// to obtain the absolute sum of the polynomial coefficients
 	double sum_coeff() const
 	{
 		int n = coeffs.size();
 		double sum = 0;
 		for (int i = 0; i < n; ++i) 
 		{
-			sum += coeffs[i];
+			sum += abs(coeffs[i]);
 		}
 		return sum;
 
@@ -296,7 +285,7 @@ public:
 #endif
 
 Symbolic ivp(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
-
+void secondorderlineardiffeq_derivativesvalueatx0(const Symbolic &, const Symbolic &, const Symbolic &, double, Symbolic, Symbolic);
 
 #endif
 #endif

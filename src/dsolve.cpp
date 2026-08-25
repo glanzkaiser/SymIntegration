@@ -8645,6 +8645,19 @@ void higherorderlineardiffeq_nonhomogeneousequations_variationofparameters(const
 		cout << "\nThe particular solution of the differential equation is: \nY(t) = "<< Yt_final << endl;
 }
 
+// Helper structure to compute combinations for polynomial shifting
+long long binomialCoefficient(int n, int k) 
+{
+	if (k < 0 || k > n) return 0;
+	if (k == 0 || k == n) return 1;
+	long long res = 1;
+	for (int i = 1; i <= k; ++i) 
+	{
+		res = res * (n - i + 1) / i;
+	}
+	return res;
+}
+
 /* 
 
 	Initialize class to compute the series solution for homogeneous linear differential equation
@@ -8921,18 +8934,18 @@ void SecondOrderODE_Homogeneous_PowerSeriesSolver::computeSeries(int terms)
 	// To show the differential equation nicely
 	bool first = true;
 
-	cout << "( ";
+	cout << "\n\nDifferential Equation: ( ";
 	for (int i = 0; i < P.maxDegree()+1 ; ++i) 
 	{
 		if (P.sum_coeff() == 0.0) 
 		{
 			cout << "0";
 			i = P.maxDegree();
+			continue;
 		}
 
 		if (P.get_coeff(i) == 0.0) 
 		{
-			
 			continue;
 		}
 		if (!first && P.get_coeff(i) > 0) 
@@ -9271,9 +9284,10 @@ void SecondOrderODE_Homogeneous_PowerSeriesSolver::printSolution() const
 	cout << "\nSeries solution: \n"<< endl;
 	cout << "y(x) = ";
 	bool first = true;
+	int n_terms = 0;
 	for (size_t i = 0; i < coefficients.size(); ++i) 
 	{
-		 if (std::abs(coefficients[i]) < 1e-9) 
+		if (std::abs(coefficients[i]) < 1e-9) 
 		{
 			continue;
 		}
@@ -9302,8 +9316,17 @@ void SecondOrderODE_Homogeneous_PowerSeriesSolver::printSolution() const
 			}
 		}
         first = false;
+	n_terms += 1;
         }
-	cout << " + ... \n";
+	
+	if (n_terms >= int(coefficients.size()))
+	{
+		cout << " + ... \n";
+	}
+	else if (n_terms < int(coefficients.size()) )
+	{
+		cout << " " ;
+	}
 }
 
 
@@ -9317,6 +9340,42 @@ double SecondOrderODE_Homogeneous_PowerSeriesSolver::evaluateAt(double x, int te
 	}
         return result;
 
+}
+
+void secondorderlineardiffeq_derivativesvalueatx0(const Symbolic &diffeq, const Symbolic &y, const Symbolic &x, double x0, Symbolic y0, Symbolic dy0)
+{
+	cout << "\nThe differential equation :\n" <<  diffeq << endl;
+	cout << "\nx0 = " << x0<< ", y(" << x0 << ") = " << y0 << ", y'(" << x0 << ") = " << dy0 << endl;
+	
+	Equations Eq_dy2_x0 = solve(diffeq,df(y[x],x,2));
+	
+	Equations rules = (  df(y[x],x,1) == dy0, y[x] == y0, x == x0);
+	Symbolic dy2_x0_final = Eq_dy2_x0.front().rhs.subst_all(rules);
+
+	cout << "\ny'' = " <<  Eq_dy2_x0.front().rhs << endl;
+	cout << "\ny''(x0) = " << dy2_x0_final  << endl;	
+
+	Symbolic dy3 = df(diffeq,x) ;
+	Symbolic dy4 = df(diffeq,x,2);
+	cout << "\nDifferentiate the differential equation with respect to " << x <<" :\n" <<  dy3 << endl;
+	
+	Equations Eq_dy3_x0 = solve(dy3,df(y[x],x,3));
+	
+	Equations rules2 = ( df(y[x],x,2) == dy2_x0_final, df(y[x],x,1) == dy0, y == y0, x == x0);
+	Symbolic dy3_x0_final = Eq_dy3_x0.front().rhs.subst_all(rules2);
+
+	cout << "\ny''' = " <<  Eq_dy3_x0.front().rhs << endl;
+	cout << "\ny'''(x0) = " << dy3_x0_final  << endl;
+	
+	cout << "\nDifferentiate the differential equation again with respect to " << x << " :\n" <<  dy4 << endl;
+
+	Equations Eq_dy4_x0 = solve(dy4,df(y[x],x,4));
+	
+	Equations rules3 = ( df(y[x],x,3) == dy3_x0_final , df(y[x],x,2) == dy2_x0_final, df(y[x],x,1) == dy0, y == y0, x == x0);
+	Symbolic dy4_x0_final = Eq_dy4_x0.front().rhs.subst_all(rules3);
+
+	cout << "\ny''' = " <<  Eq_dy4_x0.front().rhs << endl;
+	cout << "\ny'''(x0) = " << dy4_x0_final  << endl;
 }
 
 #endif

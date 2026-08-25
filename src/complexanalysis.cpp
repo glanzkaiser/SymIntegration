@@ -54,5 +54,11 @@ void complexnumber_analysis(complex<double> &c)
 	cout << "Polar form : \nz = |z| (cos Φ + i sin Φ) = " << polar_form << endl;
 	
 }
+
+double complexdistance(complex<double> &z1, complex<double> &z2)
+{
+	double distance = std::abs(z2 - z1);
+	return distance;
+}
 #endif
 #endif

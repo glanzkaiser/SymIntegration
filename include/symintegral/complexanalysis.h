@@ -41,7 +41,7 @@ using ComplexVector = std::vector<Complex>;
 using ComplexMatrix = std::vector<std::vector<Complex>>;
 
 void complexnumber_analysis(complex<double> &c);
-
+double complexdistance(complex<double> &z1, complex<double> &z2);
 #endif
 #endif
 
