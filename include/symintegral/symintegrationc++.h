@@ -75,7 +75,7 @@
 #include "symintegral/linearalgebra.h"
 #include "symintegral/machinelearning.h"
 #include "symintegral/mathematicalfinance.h"
-#include "symintegral/numericalmethod.h"
+#include "symintegral/numericalmethods.h"
 #include "symintegral/operationsresearch.h"
 #include "symintegral/simplify.h"
 #include "symintegral/statistics.h"

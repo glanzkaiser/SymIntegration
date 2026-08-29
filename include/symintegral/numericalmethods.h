@@ -19,21 +19,19 @@
 */
 
 
-// dsolve.h
-
-#ifndef SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHOD
+#ifndef SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHODS
 
 #ifdef  SYMBOLIC_FORWARD
-#ifndef SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHOD_FORWARD
-#define SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHOD_FORWARD
+#ifndef SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHODS_FORWARD
+#define SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHODS_FORWARD
 
 #endif
 #endif
 
 #ifdef  SYMBOLIC_DECLARE
-#define SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHOD
-#ifndef SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHOD_DECLARE
-#define SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHOD_DECLARE
+#define SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHODS
+#ifndef SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHODS_DECLARE
+#define SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHODS_DECLARE
 
 double divisiond(double, double);
 
@@ -59,10 +57,38 @@ double simpsonsrule38(const Symbolic &, const Symbolic &, double, double);
 
 double richardsonextrapolation(const Symbolic &, const Symbolic &, double, double, int, int);
 
-void conjugategradient(const Symbolic &, const Symbolic &, double, double, int);
+void gradientdescent(const Symbolic &, const Symbolic &, double, double, int);
 
 void choleskyDecomposition(vector<vector<double>>);
 void LUDecomposition(vector<vector<double>>,vector<vector<double>>,vector<vector<double>>);
+
+void JacobiMethod(const vector<vector<double>>& , const vector<double>& , int, double); 
+bool GaussSeidel(const vector<vector<double>>&, const vector<double>& , vector<double>&, double, int); 
+bool SORIterativeMethod(const vector<vector<double>>&, const vector<double>&, vector<double>&,  double, double, int ); 
+
+/*
+
+	Iterative Techniques in Matrix Algebra
+
+*/
+#ifndef STRUCT_CRS_MATRIX
+#define STRUCT_CRS_MATRIX
+
+// Defining struct  in .h file (header file) will make it work when we call it from .cpp file from anywhere that use SymIntegration library
+// Structure to store a sparse matrix in Compressed Row Storage (CRS) format
+struct CRSMatrix {
+	vector<double> values;     // Non-zero elements
+	vector<int> col_indices;   // Column indices of non-zero elements
+	vector<int> row_ptr;       // Row pointers
+	int num_rows;
+	int num_cols;
+};
+
+CRSMatrix denseToCRS(const vector<vector<double>>& dense);
+vector<double> spmv(const CRSMatrix& A, const std::vector<double>& x);
+double dotProduct(const vector<double>& u, const vector<double>& v);
+vector<double> conjugateGradient(const CRSMatrix& A, const vector<double>& b, double tolerance, int max_iterations);
+#endif
 
 #endif
 #endif

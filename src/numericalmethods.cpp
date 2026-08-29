@@ -4,8 +4,8 @@
 #include "symintegral/symintegrationc++.h"
 
 #ifdef  SYMBOLIC_DEFINE
-#ifndef SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHOD_DEFINE
-#define SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHOD_DEFINE
+#ifndef SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHODS_DEFINE
+#define SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHODS_DEFINE
 
 #include <iostream>
 #include <fstream>
@@ -430,7 +430,7 @@ double richardsonextrapolation(const Symbolic &f, const Symbolic &x, double x0, 
 	return squareMatrix[level-1][level-1] ;
 }
 
-void conjugategradient(const Symbolic &f, const Symbolic &x, double x0, double alpha, int epochs)
+void gradientdescent(const Symbolic &f, const Symbolic &x, double x0, double alpha, int epochs)
 {
 	double x_iter = x0;           // Starting point (initial guess)
 	Symbolic der_f = df(f,x);
@@ -584,5 +584,328 @@ void LUDecomposition(vector<vector<double>> &A, vector<vector<double>> &L, vecto
 	}
 }
 
+/*
+
+	Iterative Techniques in Matrix Algebra
+
+*/
+
+// Function to solve Ax = b using Jacobi Iteration
+void JacobiMethod(const vector<vector<double>>& A, const vector<double>& b, int maxIterations, double tolerance) 
+{
+	int n = b.size();
+	vector<double> x(n, 0.0);      // Current iteration values (initialized to 0)
+	vector<double> x_old(n, 0.0);  // Previous iteration values
+
+	cout << std::fixed << std::setprecision(6);
+	cout << "Starting Jacobi Iteration...\n\n";
+
+	for (int k = 1; k <= maxIterations; ++k) 
+	{
+		// Save current results to x_old before updating, simultaneous updates
+		x_old = x;
+
+		for (int i = 0; i < n; ++i) 
+		{
+			double sum = 0.0;
+			for (int j = 0; j < n; ++j) 
+			{
+				if (i != j) 
+				{
+					sum += A[i][j] * x_old[j];
+				}
+			}
+			// Apply Jacobi formula
+			x[i] = (b[i] - sum) / A[i][i];
+		}
+
+		// Check for convergence (L2 norm of the difference / standard Euclidean difference)
+		double diffNorm = 0.0;
+		for (int i = 0; i < n; ++i) 
+		{
+			diffNorm += std::pow(x[i] - x_old[i], 2);
+		}
+		diffNorm = std::sqrt(diffNorm);
+
+		// Print progress
+  		cout << "Iteration " << k << ": ";
+		for (int i = 0; i < n; ++i) 
+		{
+			cout << "x[" << i << "]=" << x[i] << "  \t ";
+		}
+		cout << "(Error: " << diffNorm << ")\n";
+
+		// Stop if the solution has converged
+		if (diffNorm < tolerance) 
+		{
+			cout << "\nConverged in " << k << " iterations.\n";
+			return;
+		}
+	}
+	cout << "\nReached maximum iterations without full convergence.\n";
+}
+
+// Function to perform the Gauss-Seidel Method
+bool GaussSeidel(
+	const vector<vector<double>>& A, 
+	const vector<double>& b, 
+	vector<double>& x, 
+	double tolerance , 
+	int maxIterations 
+) 
+{
+	int n = b.size();
+    
+	cout << std::fixed << std::setprecision(6);
+	cout << "Starting Gauss-Seidel Method \n";
+
+	// Check if diagonal elements are zero
+	for (int i = 0; i < n; ++i) 
+	{
+		if (std::abs(A[i][i]) < 1e-12) 
+		{
+			std::cerr << "Error: Diagonal element A[" << i << "][" << i << "] is close to zero." << std::endl;
+			return false;
+		}
+	}
+
+	cout << "Iterative Steps:\n";
+    
+	for (int iter = 1; iter <= maxIterations; ++iter) 
+	{
+		bool converged = true;
+        	double diffNorm = 0.0;
+		for (int i = 0; i < n; ++i) 
+		{
+			double sum = b[i];
+            
+			for (int j = 0; j < n; ++j) 
+			{
+				if (i != j) 
+				{
+					sum -= A[i][j] * x[j]; // Uses updated x[j] if j < i, and old x[j] if j > i
+				}
+			}
+            
+			double newValue = sum / A[i][i];
+
+			diffNorm += std::pow(newValue - x[i], 2);
+
+ 			// Check convergence criteria based on absolute change
+			// alternative: std::abs(newValue - x[i]) > tolerance
+			if (std::abs(newValue - x[i]) > tolerance) 
+			{
+				converged = false;
+			}
+            
+			x[i] = newValue; // Instant update
+		}
+		
+		diffNorm = std::sqrt(diffNorm);
+
+		// Print current iteration values
+		cout << "Iteration " << iter << ": ";
+		for (int i = 0; i < n; ++i) 
+		{
+			cout << "x[" << i << "]=" << x[i] << "  \t ";
+		}
+		cout << "(Error: " << diffNorm << ")\n"; // alternative use max_error
+
+		if (converged) 
+		{
+			cout << "\nConverged successfully in " << iter << " iterations.\n";
+			return true;
+		}
+	}
+
+	cout << "\nWarning: Reached maximum iterations without complete convergence.\n";
+	return false;
+}
+
+// Function to solve Ax = b using SOR method
+bool SORIterativeMethod(
+	const vector<vector<double>>& A, // Coefficient matrix
+	const vector<double>& b,              // Right-hand side vector
+	vector<double>& x,                    // Initial guess / output solution
+	double omega,                              // Relaxation factor (1 < omega < 2)
+	double tolerance,                          // Convergence threshold
+	int maxIterations                          // Iteration safety cap
+) 
+{
+	int n = A.size();
+	vector<double> x_old = x;
+
+	cout << std::fixed << std::setprecision(6);
+	cout << "Starting SOR Method with omega = " << omega << "\n\n";
+
+	for (int iter = 1; iter <= maxIterations; ++iter) 
+	{
+		double max_error = 0.0;
+
+		for (int i = 0; i < n; ++i) 
+		{
+			double sum = 0.0;
+
+			// Calculate the summation part of the equation
+			for (int j = 0; j < n; ++j) 
+			{
+				if (j != i) 
+				{
+					sum += A[i][j] * x[j]; // Uses newly updated values for j < i automatically
+				}
+			}
+
+		// Gauss-Seidel intermediate step
+		double gs_value = (b[i] - sum) / A[i][i];
+
+		// Apply the SOR relaxation formula
+		x[i] = (1.0 - omega) * x_old[i] + omega * gs_value;
+
+		// Track the maximum absolute change for convergence criteria
+		max_error = std::max(max_error, std::abs(x[i] - x_old[i]));
+
+		}
+		// Check for convergence (L2 norm of the difference / standard Euclidean difference)
+		double diffNorm = 0.0;
+		for (int i = 0; i < n; ++i) 
+		{
+			diffNorm += std::pow(x[i] - x_old[i], 2);
+		}
+		diffNorm = std::sqrt(diffNorm);
+
+		
+		// Print progress (optional)
+  		cout << "Iteration " << iter << ": ";
+		for (int i = 0; i < n; ++i) 
+		{
+			cout << "x[" << i << "]=" << x[i] << "  \t ";
+		}
+		cout << "(Error: " << diffNorm << ")\n"; // alternative use max_error
+
+		// Check for convergence
+		if (diffNorm < tolerance) 
+		{
+			cout << "\nConverged in " << iter << " iterations.\n";
+			return true;
+		}
+
+		// Update old values for the next iteration
+		x_old = x;
+	}
+
+	cout << "\nReached maximum iterations without strict convergence.\n";
+	return false;
+}
+
+// Functions to solve Ax = b using Conjugate Gradient with CRS format
+// Function to convert a dense 2D vector to CRS format
+CRSMatrix denseToCRS(const vector<vector<double>>& dense) 
+{
+	CRSMatrix crs;
+	crs.num_rows = dense.size();
+	crs.num_cols = crs.num_rows > 0 ? dense[0].size() : 0;
+    
+	crs.row_ptr.push_back(0); // First element is always 0
+
+	for (int i = 0; i < crs.num_rows; ++i) 
+	{
+		for (int j = 0; j < crs.num_cols; ++j) 
+		{
+			if (dense[i][j] != 0.0) 
+			{
+				crs.values.push_back(dense[i][j]);
+				crs.col_indices.push_back(j);
+			}
+		}
+		crs.row_ptr.push_back(crs.values.size());
+	}
+	return crs;
+}
+
+// Helper function: Sparse Matrix-Vector Multiplication (y = A * x)
+vector<double> spmv(const CRSMatrix& A, const std::vector<double>& x) 
+{
+	vector<double> y(A.num_rows, 0.0);
+	for (int i = 0; i < A.num_rows; ++i) 
+	{
+		double sum = 0.0;
+		int row_start = A.row_ptr[i];
+		int row_end = A.row_ptr[i + 1];
+		for (int k = row_start; k < row_end; ++k) 
+		{
+			sum += A.values[k] * x[A.col_indices[k]];
+		}
+		y[i] = sum;
+	}
+	return y;
+}
+
+// Helper function: Vector dot product (u . v)
+double dotProduct(const vector<double>& u, const vector<double>& v) 
+{
+	double dot = 0.0;
+	for (size_t i = 0; i < u.size(); ++i) 
+	{
+		dot += u[i] * v[i];
+	}
+	return dot;
+}
+
+// Conjugate Gradient Solver for CRS Matrix
+vector<double> conjugateGradient(const CRSMatrix& A, const vector<double>& b, double tolerance, int max_iterations) 
+{
+	int n = A.num_rows;
+	vector<double> x(n, 0.0); // Initial guess x_0 = 0
+    
+	// r = b - A * x
+	vector<double> Ax = spmv(A, x);
+	vector<double> r(n);
+	for (int i = 0; i < n; ++i) 
+	{
+		r[i] = b[i] - Ax[i];
+	}
+    
+	// p = r
+	vector<double> p = r;
+	double rsold = dotProduct(r, r);
+    
+	if (std::sqrt(rsold) < tolerance) 
+	{
+		return x; // Initial guess is already close enough
+	}
+
+	for (int iter = 0; iter < max_iterations; ++iter) 
+	{
+		vector<double> Ap = spmv(A, p);
+		double alpha = rsold / dotProduct(p, Ap);
+        
+		// Update x and r
+		for (int i = 0; i < n; ++i) 
+		{
+			x[i] += alpha * p[i];
+			r[i] -= alpha * Ap[i];
+		}
+        
+		double rsnew = dotProduct(r, r);
+        
+		// Check convergence
+		if (std::sqrt(rsnew) < tolerance) 
+		{
+			cout << "Converged in " << iter + 1 << " iterations.\n";
+			return x;
+		}
+        
+		// Update direction p
+		double beta = rsnew / rsold;
+		for (int i = 0; i < n; ++i) 
+		{
+			p[i] = r[i] + beta * p[i];
+		}
+		rsold = rsnew;
+	}
+    
+	cout << "Warning: Maximum iterations reached without full convergence.\n";
+	return x;
+}
 #endif
 #endif
