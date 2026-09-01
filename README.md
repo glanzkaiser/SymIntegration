@@ -195,6 +195,7 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Linear Programming: Simplex Method					| Done
 |:sunflower:   | Generate Random Number with Mersenne Twister				| Done
 |:sunflower:   | Numerical differentiation and Richardson's Extrapolation		| Done
+|:sunflower:   | Iterative techniques in matrix algebra: Jacobi iterative method, Gauss-Seidel method, Successive Over-Relaxation (SOR) method, conjugate gradient, and preconditioned conjugate gradient with Compressed Row Storage (CRS) format		| Done
 |:sunflower:   | LU-decomposition, Cholesky decomposition, and Singular Value Decomposition			| Done
 |:sunflower:   | Eigenvalues and Eigenvectors approximation				| Done
 |:sunflower:   | Gram-Schmidt Process and QR-Decomposition				| Done
