@@ -57,10 +57,10 @@ int main(void)
 	vector<double> b = {6.0, 25.0, -11.0, 15.0};*/
 
 	// Initial guesses (typically initialized to zero)
-	vector<double> x = {1.0, 1.0, 1.0}; 
+	vector<double> x = {0.0, 0.0, 0.0, 0.0, 0.0}; 
     
 	double omega = 1.25;         // Relaxation factor
-	double tolerance = 1e-7;    // Stopping error tolerance
+	double tolerance = 1e-3;    // Stopping error tolerance
 	int maxIterations = 100;    // Maximum loop limit
 
 	if (SORIterativeMethod(A, b, x, omega, tolerance, maxIterations)) 

@@ -57,7 +57,7 @@ int main(void)
 	};
 	vector<double> b = {6.0, 25.0, -11.0, 15.0};*/
 
-	int maxIterations = 20;
+	int maxIterations = 100;
 	double tolerance = 0.001;
 
 	JacobiMethod(A, b, maxIterations, tolerance);

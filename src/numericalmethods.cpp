@@ -851,9 +851,33 @@ double dotProduct(const vector<double>& u, const vector<double>& v)
 	return dot;
 }
 
-// Conjugate Gradient Solver for CRS Matrix
-vector<double> conjugateGradient(const CRSMatrix& A, const vector<double>& b, double tolerance, int max_iterations) 
+// Extracts the diagonal elements for the Jacobi preconditioner
+vector<double> get_Jacobi_preconditioner(const CRSMatrix& A) 
 {
+	vector<double> inv_M(A.num_rows, 0.0);
+	for (int i = 0; i < A.num_rows; ++i) 
+	{
+		for (int j = A.row_ptr[i]; j < A.row_ptr[i + 1]; ++j) 
+		{
+			if (A.col_indices[j] == i) 
+			{
+				if (std::abs(A.values[j]) < 1e-12) 
+				{
+					throw std::runtime_error("Zero or near-zero diagonal element encountered.");
+				}
+				inv_M[i] = 1.0 / A.values[j]; // Store inverse of diagonal
+				break;
+			}
+		}
+	}
+	return inv_M;
+}
+
+// Conjugate Gradient Solver for CRS Matrix
+vector<double> ConjugateGradient(const CRSMatrix& A, const vector<double>& b, double tolerance, int max_iterations) 
+{
+	cout << "Starting Conjugate Gradient Method.\n\n";
+
 	int n = A.num_rows;
 	vector<double> x(n, 0.0); // Initial guess x_0 = 0
     
@@ -887,7 +911,15 @@ vector<double> conjugateGradient(const CRSMatrix& A, const vector<double>& b, do
 		}
         
 		double rsnew = dotProduct(r, r);
-        
+        	
+		// Print progress (optional)
+  		cout << "Iteration " << iter + 1 << ": ";
+		for (int i = 0; i < n; ++i) 
+		{
+			cout << "x[" << i << "]=" << x[i] << "  \t ";
+		}
+		cout << "( || r || : " << rsnew << ")\n"; 
+
 		// Check convergence
 		if (std::sqrt(rsnew) < tolerance) 
 		{
@@ -907,5 +939,102 @@ vector<double> conjugateGradient(const CRSMatrix& A, const vector<double>& b, do
 	cout << "Warning: Maximum iterations reached without full convergence.\n";
 	return x;
 }
+
+// Preconditioned Conjugate Gradient (PCG) Solver
+vector<double> PreconditionedConjugateGradient(const CRSMatrix& A, const vector<double>& b, double tolerance, int max_iter) 
+{
+	int n = A.num_rows;
+	vector<double> x(n, 0.0); // Initial guess x_0 = 0
+	vector<double> r(n);
+	vector<double> z(n);
+	vector<double> p(n);
+	vector<double> Ap;
+
+	//cout << std::fixed << std::setprecision(8);
+	cout << "Starting Preconditioned Conjugate Gradient Method.\n\n";
+
+	// Get the inverse diagonal for Jacobi preconditioning
+	vector<double> inv_M = get_Jacobi_preconditioner(A);
+
+	// Compute initial residual: r = b - A * x
+	Ap = spmv(A, x);
+	for (int i = 0; i < n; ++i) 
+	{
+		r[i] = b[i] - Ap[i];
+	}
+
+	// Check if initial guess is already accurate enough
+	double r_norm = std::sqrt(dotProduct(r, r));
+	if (r_norm < tolerance) 
+	{
+		cout << "Converged in " << 0 << " iterations.\n";
+	}
+
+	// Apply Preconditioner: z = M^-1 * r
+	for (int i = 0; i < n; ++i) 
+	{
+		z[i] = inv_M[i] * r[i];
+	}
+
+	// Initial search direction: p = z
+	p = z;
+
+	double rho = dotProduct(r, z);
+
+	for (int iter = 1; iter <= max_iter; ++iter) 
+	{
+		// Ap = A * p
+		Ap = spmv(A, p);
+
+		// Compute step length alpha = (r . z) / (p . Ap)
+		double p_Ap = dotProduct(p, Ap);
+		double alpha = rho / p_Ap;
+
+		// Update solution and residual
+		for (int i = 0; i < n; ++i) 
+		{
+			x[i] += alpha * p[i];
+			r[i] -= alpha * Ap[i];
+		}
+		
+		// Check convergence
+		r_norm = std::sqrt(dotProduct(r, r));
+
+		// Print progress (optional)
+  		cout << "Iteration " << iter << ": ";
+		for (int i = 0; i < n; ++i) 
+		{
+			cout << "x[" << i << "]=" << x[i] << "  \t ";
+		}
+		cout << "( || r || : " << r_norm << ")\n"; 
+
+		
+        	if (r_norm < tolerance) 
+		{
+			cout << "Converged in " << iter  << " iterations.\n";
+			return x;
+		}
+
+		// Apply Preconditioner to new residual: z = M^-1 * r
+		for (int i = 0; i < n; ++i) 
+		{
+			z[i] = inv_M[i] * r[i];
+		}
+
+		// Compute beta = (r_new . z_new) / (r_old . z_old)
+		double rho_new = dotProduct(r, z);
+		double beta = rho_new / rho;
+		rho = rho_new;
+
+		// Update search direction: p = z + beta * p
+		for (int i = 0; i < n; ++i) 
+		{
+			p[i] = z[i] + beta * p[i];
+		}
+	}
+	cout << "Warning: Maximum iterations reached without full convergence.\n";  // Did not converge within max_iter
+	return x;
+}
+
 #endif
 #endif

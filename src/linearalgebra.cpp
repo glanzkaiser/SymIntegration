@@ -5482,6 +5482,174 @@ vector<vector<double>> gramschmidt(vector<vector<double>> &A)
 	return orthonormal_basis_final;
 }
 
+// Function to check if a square matrix is symmetric
+bool isSymmetric(const vector<vector<double>>& matrix) 
+{
+	int n = matrix.size();
+	for (int i = 0; i < n; ++i) 
+	{
+		for (int j = 0; j < i; ++j) 
+		{
+			if (std::abs(matrix[i][j] - matrix[j][i]) > 1e-9) 
+			{
+				cout << "The matrix is not symmetric." << endl;
+				return false;
+			}
+		}
+	}
+	cout << "The matrix is symmetric." << endl;
+	return true;
+}
+
+// Function to check if a matrix is positive definite using Cholesky Decomposition
+bool isPositiveDefinite(const vector<vector<double>>& matrix) 
+{
+	int n = matrix.size();
+	cout <<"Matrix A:" << endl;
+	printMatrix(matrix);
+
+	// Matrix must be square
+	for (const auto& row : matrix) 
+	{
+		if (int(row.size()) != n) 
+		{
+			return false;
+		}
+	}
+
+	// Matrix must be symmetric
+	if (!isSymmetric(matrix)) 
+	{
+		return false;
+	}
+
+	vector<vector<double>> L(n, vector<double>(n, 0.0));
+
+	for (int i = 0; i < n; ++i) 
+	{
+		for (int j = 0; j <= i; ++j) 
+		{
+			double sum = 0.0;
+
+			for (int k = 0; k < j; ++k) 
+			{
+				sum += L[i][k] * L[j][k];
+			}
+
+			if (i == j) 
+			{
+				double val = matrix[i][i] - sum;
+				// Diagonal elements must be strictly positive
+				if (val <= 0.0) 
+				{
+					cout << "The matrix is not positive definite." << endl;
+					return false; 
+				}
+				L[i][j] = std::sqrt(val);
+			} 
+			else 
+			{
+				L[i][j] = (matrix[i][j] - sum) / L[j][j];
+			}
+		}
+	}
+	cout << "The matrix is positive definite." << endl;
+	return true;
+	
+}
+
+// Helper to compute vector transpose * Matrix * vector: v1^T * A * v2
+double computeAInnerProduct(const vector<double>& v1, const vector<vector<double>>& A, const vector<double>& v2) 
+{
+	int n = A.size();
+	double result = 0.0;
+	for (int i = 0; i < n; ++i) 
+	{
+		double Av_i = 0.0;
+		for (int j = 0; j < n; ++j) 
+		{
+			Av_i += A[i][j] * v2[j];
+		}
+		result += v1[i] * Av_i;
+	}
+	return result;
+}
+
+
+// Computes the A-orthogonal set of vectors
+vector<vector<double>> computeAOrthogonal(const vector<vector<double>>& A, const vector<vector<double>>& X) 
+{
+	int numVectors = X.size();
+	int vecDim = X[0].size();
+	vector<vector<double>> V(numVectors, Vector(vecDim, 0.0));
+
+	for (int k = 0; k < numVectors; ++k) 
+	{
+		V[k] = X[k]; // Start with the original vector
+        
+		for (int i = 0; i < k; ++i) 
+		{
+			double numerator = computeAInnerProduct(X[k], A, V[i]);
+			double denominator = computeAInnerProduct(V[i], A, V[i]);
+            
+			// Project out the component along V[i]
+			double projectionFactor = numerator / denominator;
+			for (int j = 0; j < vecDim; ++j) 
+			{
+				V[k][j] -= projectionFactor * V[i][j];
+			}
+		}
+	}
+	return V;
+}
+
+// Performs Modified Gram-Schmidt for A-orthogonality
+// Updates the input vectors 'V' in-place to become A-orthogonal
+void ModifiedGramSchmidtA(const vector<vector<double>>& A, vector<vector<double>>& V) 
+{
+	int m = V.size(); // Number of vectors
+	cout <<"Matrix A:" << endl;
+	printMatrix(A);
+
+	for (int i = 0; i < m; ++i) 
+	{
+		// Step 1: Normalize the current vector with respect to the A-norm
+		double a_norm_sq = computeAInnerProduct(V[i], A, V[i]);
+		if (a_norm_sq < 1e-12) 
+		{
+			std::cerr << "Warning: Vectors are linearly dependent or matrix not positive definite." << std::endl;
+			return;
+		}
+		double a_norm = std::sqrt(a_norm_sq);
+       
+		for (double& val : V[i]) 
+		{
+			val /= a_norm;
+		}
+
+		// Step 2: Project subsequent vectors onto the newly stabilized vector V[i]
+		for (int j = i + 1; j < m; ++j) 
+		{
+			double projection = computeAInnerProduct(V[i], A, V[j]);
+			for (size_t k = 0; k < V[j].size(); ++k) 
+			{
+				V[j][k] -= projection * V[i][k];
+			}
+		}
+	}
+	// Print resulting A-orthogonalized vectors
+	cout << "\nA-orthogonalized (and A-normalized) vectors:\n";
+	for (int i = 0; i < m; ++i) 
+	{
+		cout << "Vector " << i << ": [ ";
+		for (double val : V[i]) 
+		{
+			cout << val << " ";
+		}
+		cout << "]\n";
+	}
+}
+
 void QRDecomposition(vector<vector<double>> &A, vector<vector<double>> &Q, vector<vector<double>> &R)
 {
 	int n = A.size();

@@ -157,6 +157,11 @@ vector<vector<double>> penrose(vector<double> &, vector<double> &);
 vector<vector<complex<double>>> penroseComplex(vector<complex<double>> &, vector<complex<double>> &);
 
 vector<vector<double>> gramschmidt(vector<vector<double>> &);
+bool isSymmetric(const vector<vector<double>>&);
+bool isPositiveDefinite(const vector<vector<double>>&);
+double computeAInnerProduct(const vector<double>&, const vector<vector<double>>&, const vector<double>&);
+vector<vector<double>> computeAOrthogonal(const vector<vector<double>>&, const vector<vector<double>>& );
+void ModifiedGramSchmidtA(const vector<vector<double>>&, vector<vector<double>>& ) ;
 void QRDecomposition(vector<vector<double>> &, vector<vector<double>> &, vector<vector<double>> &); 
 void QRDecompositionComplex(vector<vector<complex<double>>> &, vector<vector<complex<double>>> &, vector<vector<complex<double>>> &); 
 void QRDecompositionComplexHouseholder(vector<vector<complex<double>>> &, vector<vector<complex<double>>> &, vector<vector<complex<double>>> &); 

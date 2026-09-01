@@ -87,7 +87,9 @@ struct CRSMatrix {
 CRSMatrix denseToCRS(const vector<vector<double>>& dense);
 vector<double> spmv(const CRSMatrix& A, const std::vector<double>& x);
 double dotProduct(const vector<double>& u, const vector<double>& v);
-vector<double> conjugateGradient(const CRSMatrix& A, const vector<double>& b, double tolerance, int max_iterations);
+vector<double> get_Jacobi_preconditioner(const CRSMatrix& A);
+vector<double> ConjugateGradient(const CRSMatrix& A, const vector<double>& b, double tolerance, int max_iterations);
+vector<double> PreconditionedConjugateGradient(const CRSMatrix& A, const vector<double>& b, double tolerance, int max_iterations);
 #endif
 
 #endif

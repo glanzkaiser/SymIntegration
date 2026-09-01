@@ -34,6 +34,7 @@ using namespace std::chrono;
 using namespace std;
 using namespace SymbolicConstant;
 
+
 int main(void)
 {
 	// Get starting timepoint
@@ -55,19 +56,21 @@ int main(void)
 	};
 	vector<double> b = {6.0, 25.0, -11.0, 15.0};*/
 
-	// Initial guesses (typically initialized to zero)
-	vector<double> x = {0.0, 0.0, 0.0, 0.0, 0.0}; 
+	// 1. Convert Dense to CRS representation
+	CRSMatrix A_crs = denseToCRS(A);
     
+	int maxIterations = 20;
 	double tolerance = 0.001;
-	int maxIterations = 50;
 
-	if (GaussSeidel(A, b, x, tolerance, maxIterations)) 
+	// 2. Solve Ax = b using Conjugate Gradient
+	vector<double> x = ConjugateGradient(A_crs, b, tolerance, maxIterations);
+    
+	// Print results
+	cout << "\nSolution vector x:\n";
+	cout << std::fixed << std::setprecision(8);
+	for (size_t i = 0; i < x.size(); ++i) 
 	{
-		cout << "\nFinal Solution:\n";
-		for (size_t i = 0; i < x.size(); ++i) 
-		{
-			cout << "x[" << i + 1 << "] = " << std::setprecision(6) << x[i] << "\n";
-		}
+		cout << "x[" << i << "] = " << x[i] << "\n";
 	}
 
 	// Get ending timepoint
