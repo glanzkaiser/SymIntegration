@@ -1,13 +1,10 @@
 # SymIntegration
 
-SymIntegration is a C++ library that is branching out from SymbolicC++3.35.
-The main idea is to improve its symbolic integration codes. Our main focus is to make it able to compute:
+SymIntegration is a C++ library for scientific computing.
+This project is started on April 9th, 2025.
+It is branching out from SymbolicC++3.35.
 
-1. All kinds of standard integral form (trigonometry, inverse trigonometry, polynomial, transcendental, hyperbolic)
-2. The sum, product and divide combination of the standard functions
-3. To be able to compute improper integrals with cases (e.g. computing mean and variance for exponential distribution)
-
-But as time goes by we add more than integral from calculus, we add differential equations solver, statistics, and more in the future.
+It covers differential equations solver, statistics, operations research, linear algebra, genetic algorithms, machine learning, and more will be added in the future.
 
 # Manual / Documentation
 
@@ -40,7 +37,7 @@ It is able to compute
 8. The solution ($`y(t)`$) of first order linear ordinary differential equation of type $`ay' + ty = b`$, separable equation of type $`\frac{dy}{dx} = \frac{f(x)}{g(y)}`$, and separable equation with homogeneous ratio equations of type $`\frac{dy}{dx} = \frac{f(x,y)}{g(x,y)}`$ along with the initial value problem solution.
 9. The solution ($`y(t)`$) of second order linear ordinary differential equation of type $`ay'' +by'+ cy = g(t)`$ (for homogeneous and non-homogeneous equation) along with the initial value problem solution.
 10. The power series solution ($`y(x)`$) of $`n`$-th order homogeneous linear ordinary differential equation with constant coefficients, $`ay'' + by' + cy = 0`$.
-11. The power series solution ($`y(x)`$) of $`2`$-nd order homogeneous linear ordinary differential equation with variable coefficients,  $`P(x)y'' + Q(x)y' + R(x)y = 0`$.
+11. The power series solution ($`y(x)`$) of $`2`$-nd order homogeneous linear ordinary differential equation with variable coefficients,  $`P(x)y'' + Q(x)y' + R(x)y = 0`$ for ordinary point and regular singular point.
 12. The computation of divergence, gradient, and curl.
 13. The computation of divergence, gradient, and curl.
 14. The probability mass function, mean, variance, moment generating function of discrete distributions.
@@ -185,7 +182,8 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Compute the solution of first order linear ODE of several types	| Done
 |:sunflower:   | Compute the solution of second order linear ODE 			| Done
 |:sunflower:   | Compute the power series solution of n-th order homogeneous linear ODE with constant coefficients 			| Done
-|:sunflower:   | Compute the power series solution of second order homogeneous linear ODE with variable coefficients			| Done
+|:sunflower:   | Compute the power series solution of second order homogeneous linear ODE with variable coefficients for ordinary point			| Done
+|:sunflower:   | Compute the power series solution of second order homogeneous linear ODE with variable coefficients for regular singular point with Frobenius method or Euler-Cauchy method			| Done
 |:sunflower:   | Compute the probability mass function, mean, variance, moment generating function of geometric distribution, binomial distribution, negative binomial distribution, and Poisson distribution	| Done
 |:sunflower:   | Compute the probability density function, cumulative distribution function, mean, variance, moment generating function of uniform distribution, normal distribution, gamma, exponential, beta, cauchy, laplace, logistic, chi-squared, students't, and F distribution	| Done
 |:sunflower:   | Compute the root / solution of a function of one variable with bisection method and Newton-Raphson method	| Done
@@ -538,4 +536,12 @@ By August 16th, 2026: We have finished the class to compute the power series sol
 I saw 3 eagles flying in VP forest in the Elder place on August 6th, 2026. Thanks Freya the Goddess.
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/53.png" width="60%">
+
+By September 20th, 2026: We have finished the class to compute the power series solution of second order homogeneous linear ODE with variable coefficients for regular singular point with Frobenius method.
+I saw an eagle on September 19th, 2026 in RK. Again, thanks Freya the Goddess.
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/54.png" width="60%">
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/55.png" width="60%">
+
 

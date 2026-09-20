@@ -40,9 +40,9 @@ int main(void)
 	// Get starting timepoint
 	auto start = high_resolution_clock::now();
 
-	Polynomialcoeff P({1.0, 0.0, 0.0});
-	Polynomialcoeff Q({0.0, 0.0, 0.0});
-	Polynomialcoeff R({0.0, -1.0, 0.0});
+	PolynomialDouble P({1.0, 0.0, 0.0});
+	PolynomialDouble Q({0.0, 0.0, 0.0});
+	PolynomialDouble R({0.0, -1.0, 0.0});
 
 	double x0 = 1.0; 
 	// Initial conditions: y(0) = y0, y'(0) = dy0 -> c0 = ... , c1 = ...

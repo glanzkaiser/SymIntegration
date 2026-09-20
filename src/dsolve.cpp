@@ -8836,8 +8836,8 @@ void HigherOrderODE_Homogeneous_PowerSeriesSolver::printSeries() const
 
 
 // Constructor initializes the terms (series degree+1) and base boundary conditions
-SecondOrderODE_Homogeneous_PowerSeriesSolver::SecondOrderODE_Homogeneous_PowerSeriesSolver(const Polynomialcoeff& P_input, 
-	const Polynomialcoeff& Q_input, const Polynomialcoeff& R_input, double x0_input, double y0_input, double dy0_input) 
+SecondOrderODE_Homogeneous_PowerSeriesSolver::SecondOrderODE_Homogeneous_PowerSeriesSolver(const PolynomialDouble& P_input, 
+	const PolynomialDouble& Q_input, const PolynomialDouble& R_input, double x0_input, double y0_input, double dy0_input) 
 {
 	P = P_input;
 	Q = Q_input;
@@ -8856,9 +8856,9 @@ void SecondOrderODE_Homogeneous_PowerSeriesSolver::computeSeries(int terms)
 	coefficients[1] = dy0;
 
 	 // 1. Shift variable coefficients around x0: P(t+x0), Q(t+x0), R(t+x0)
-	Polynomialcoeff P_shifted = P.shift_around(x0);
-	Polynomialcoeff Q_shifted = Q.shift_around(x0);
-	Polynomialcoeff R_shifted = R.shift_around(x0);
+	PolynomialDouble P_shifted = P.shift_around(x0);
+	PolynomialDouble Q_shifted = Q.shift_around(x0);
+	PolynomialDouble R_shifted = R.shift_around(x0);
 
 	// Ensure the point is ordinary (P(x0) cannot be zero)
 	double p0 = P_shifted.get_coeff(0);
@@ -9061,9 +9061,9 @@ void SecondOrderODE_Homogeneous_PowerSeriesSolver::computeSeries(int terms)
 void SecondOrderODE_Homogeneous_PowerSeriesSolver::computeSeries(int terms) 
 {
 	// 1. Shift variable coefficients so they are expanded around u = (x - x0)
-	Polynomialcoeff Pu = P.shiftToCenter(x0);
-	Polynomialcoeff Qu = Q.shiftToCenter(x0);
-	Polynomialcoeff Ru = R.shiftToCenter(x0);
+	PolynomialDouble Pu = P.shiftToCenter(x0);
+	PolynomialDouble Qu = Q.shiftToCenter(x0);
+	PolynomialDouble Ru = R.shiftToCenter(x0);
 
 	// Ensure x0 is an ordinary point (P(x0) != 0)
 	if (std::abs(Pu.evaluateAt(0.0)) < 1e-12) 
@@ -9077,7 +9077,7 @@ void SecondOrderODE_Homogeneous_PowerSeriesSolver::computeSeries(int terms)
 	y_derivatives[1] = dy0;
 
 	// Helper lambdas to fetch coefficient of u^k from shifted polynomials safely
-	auto getCoeff = [](const Polynomialcoeff& poly, int k) 
+	auto getCoeff = [](const PolynomialDouble& poly, int k) 
 	{
 		return (k >= 0 && k < static_cast<int>(poly.coeffs.size())) ? poly.coeffs[k] : 0.0;
 	};
@@ -9132,9 +9132,9 @@ void SecondOrderODE_Homogeneous_PowerSeriesSolver::computeSeries(int terms)
 void SecondOrderODE_Homogeneous_PowerSeriesSolver::computeSeries(int terms) 
 {
 	// 1. Shift variable coefficients around x0: P(t+x0), Q(t+x0), R(t+x0)
-	Polynomialcoeff p_sh = P.shift(x0);
-	Polynomialcoeff q_sh = Q.shift(x0);
-	Polynomialcoeff r_sh = R.shift(x0);
+	PolynomialDouble p_sh = P.shift(x0);
+	PolynomialDouble q_sh = Q.shift(x0);
+	PolynomialDouble r_sh = R.shift(x0);
 
 	// Check if x0 is an ordinary point
 	double p0 = p_sh.get_coeff(0);
@@ -9190,9 +9190,9 @@ vector<double> SecondOrderODE_Homogeneous_PowerSeriesSolver::coefficientsvector(
 	coefficients[0] = y0;
 	coefficients[1] = dy0;
 
-	Polynomialcoeff P_shifted = P.shift_around(x0);
-	Polynomialcoeff Q_shifted = Q.shift_around(x0);
-	Polynomialcoeff R_shifted = R.shift_around(x0);
+	PolynomialDouble P_shifted = P.shift_around(x0);
+	PolynomialDouble Q_shifted = Q.shift_around(x0);
+	PolynomialDouble R_shifted = R.shift_around(x0);
 
 	// Ensure the point is ordinary (P(x0) cannot be zero)
 	double p0 = P_shifted.get_coeff(0);
@@ -9340,6 +9340,1424 @@ double SecondOrderODE_Homogeneous_PowerSeriesSolver::evaluateAt(double x, int te
 	}
         return result;
 
+}
+
+
+// Function to find the minimum index shift for a regular singular point
+int find_L(const PolynomialComplex& P, const PolynomialComplex& Q, const PolynomialComplex& R) 
+{
+	int L = 1e9;
+	for (int i = 0; i < int(P.coeffs.size()); ++i) 
+	{
+		if (abs(P.coeffs[i]) > 1e-9) 
+		{ 
+			L = min(L, i - 2); 
+			break; 
+		}
+	}
+	for (int i = 0; i < int(Q.coeffs.size()); ++i) 
+	{
+		if (abs(Q.coeffs[i]) > 1e-9) 
+		{ 
+			L = min(L, i - 1); 
+			break; 
+		}
+	}
+	for (int i = 0; i < int(R.coeffs.size()); ++i) 
+	{
+		if (abs(R.coeffs[i]) > 1e-9) 
+		{ 
+			L = min(L, i); 
+			break; 
+		}
+	}
+	return L;
+}
+
+/* 
+
+	Initialize class to compute the series solution for homogeneous second order linear differential equation
+	Solves p(x)y'' + q(x)*y' + r(x)*y = 0 with variable coefficients
+	Near a Regular Singular Points
+	with Frobenius method
+
+*/
+// Small epsilon value to manage floating-point accuracy with complex numbers
+const double EPSILON = 1e-7;
+
+bool is_near_zero(complex<double> val) 
+{
+	return abs(val) < EPSILON;
+}
+void SecondOrderODE_Homogeneous_Frobenius_PowerSeriesSolver::classify_ode()
+{
+	PolynomialComplex Pc = P_unshifted; 
+	PolynomialComplex Qc = Q_unshifted; 
+	PolynomialComplex Rc = R_unshifted; 
+
+	// 1. Check if it's an ordinary point
+	if (!is_near_zero(Pc.evaluateAt(x0))) 
+	{
+		cout << "--> Result: Ordinary Point.\n";
+		cout << "    Solve using a standard Power Series (Taylor Series).\n\n";
+	}
+
+	// 2. It is a Singular Point. Let's find limits using algebraic reduction.
+	// We factor out (x - x0) from P(x), Q(x), and R(x) to compute the analytic limits.
+    
+	// Divide P once and twice
+	auto [P_div1, P_rem1] = Pc.divide_by_linear(x0);
+	auto [P_div2, P_rem2] = P_div1.divide_by_linear(x0);
+
+	auto [Q_div1, Q_rem1] = Qc.divide_by_linear(x0);
+	auto [R_div1, R_rem1] = Rc.divide_by_linear(x0);
+
+	// Limit p0 = lim (x-x0)*Q(x)/P(x)
+	// If Q has at least the same multiplicity root as P_minus_1_factor, the limit exists.
+	p0_exists = is_near_zero(P_rem1); 
+	complex<double> p0(0.0,0.0);
+	if (p0_exists) 	
+	{
+		// If P has root of mult 1, then lim = Q(x0) / P_div1(x0)
+		complex<double> p_denom = P_div1.evaluateAt(x0);
+		if (!is_near_zero(p_denom)) {
+			p0 = Qc.evaluateAt(x0) / p_denom;
+		} 
+		else 
+		{
+			// P has higher multiplicity root, check if Q cancels it out
+			if (is_near_zero(Q_rem1)) 
+			{
+				p0 = Q_div1.evaluateAt(x0) / P_div2.evaluateAt(x0);
+			} 
+			else 
+			{
+				p0_exists = false;
+			}
+		}
+	}
+
+	// Limit q0 = lim (x-x0)^2*R(x)/P(x)
+	q0_exists = false;
+	complex<double> q0(0.0,0.0);
+	complex<double> p_denom_2 = P_div1.evaluateAt(x0);
+    
+	if (!is_near_zero(p_denom_2)) 
+	{
+		// P has single root, (x-x0)^2 * R / P vanishes to 0 because of the extra (x-x0) up top
+		q0_exists = true;
+		q0 = 0.0;
+	} 
+	else 
+	{
+		// P has at least multiplicity 2 root
+		complex<double> p_denom_3 = P_div2.evaluateAt(x0);
+		if (!is_near_zero(p_denom_3)) 
+		{
+			q0_exists = true;
+			q0 = Rc.evaluateAt(x0) / p_denom_3;
+		}
+	}
+	// Classify the differential equation first
+	cout << "Analyzing ODE at point x0 = " << x0 << "\n";
+	if (p0_exists && q0_exists) 
+	{
+		// 3. Check for specific Euler-Cauchy structure: a*(x-x0)^2 y'' + b*(x-x0) y' + c y = 0
+		// Centered around x0, this implies deg(P)<=2, deg(Q)<=1, deg(R)==0 relative to shift
+		if (Pc.maxDegree() == 2 && Qc.maxDegree() == 1 && Rc.maxDegree() == 0) 
+		{
+			cout << "--> Result: Euler-Cauchy Equation.\n";
+			cout << "    Solve exactly using the auxiliary algebraic characteristic equation.\n";
+			EulerCauchy = true;
+			Frobenius = false;
+			// Indicial Equation for Euler-Cauchy: m^2 + (p0 - 1)m + q0 = 0
+			/*complex<double> b = p0 - 1.0;
+			complex<double> c = q0;
+			complex<double> disc = b*b - 4.0*c;
+			complex<double> m1 = (-b + sqrt(disc)) / 2.0;
+			complex<double>m2 = (-b - sqrt(disc)) / 2.0;
+			cout << "    Indicial complex roots: m1 = " << m1 << ", m2 = " << m2 << "\n\n";*/
+		} 
+		else 
+		{
+			cout << "--> Result: Regular Singular Point.\n";
+			cout << "    Solve using the Frobenius method.\n";
+			EulerCauchy = false;
+			Frobenius = true;
+			/*complex<double>b = p0 - 1.0;
+			complex<double> c = q0;
+			complex<double> disc = b*b - 4.0*c;
+			complex<double> r1 = (-b + sqrt(disc)) / 2.0;
+		    	complex<double> r2 = (-b - sqrt(disc)) / 2.0;
+			cout << "    Frobenius Indicial roots: r1 = " << r1 << ", r2 = " << r2 << "\n\n";*/
+		}
+	} 
+	else 
+	{
+		cout << "--> Result: Irregular Singular Point.\n";
+		cout << "    Frobenius method fails. Solutions are divergent or non-Frobenius series.\n\n";
+	}
+}
+
+// Evaluates one Frobenius series solution for a given root  up to max_terms
+void SecondOrderODE_Homogeneous_Frobenius_PowerSeriesSolver::computeSeriesCoefficients() 
+{
+	if(Frobenius)
+	{
+		
+		/*
+			case r1 != r2 and abs(r1-r2) is an integer
+			Computes coefficients for the standard Frobenius series: y = x^r * sum(a_n * x^n)
+		*/
+		
+		// Convert to complex polynomial using the conversion constructor
+		PolynomialComplex Pc = P; 
+		PolynomialComplex Qc = Q; 
+		PolynomialComplex Rc = R; 
+		
+		cout << "\nP(x) y'' + Q(x)y'+ R(x) y = 0" <<endl ;
+
+		cout << "\nP(x) = ";
+		Pc.print();
+		cout << "\nQ(x) = " ; 
+		Qc.print();
+		cout << "\nR(x) = ";
+		Rc.print() ;
+
+		cout << "\nx0 = " << x0 ;
+		//cout << "\nreal(r1 - r2) = " << N << "\n";
+		cout << "\nr1 = " << r1 << "\n";
+		cout << "r2 = " << r2 << "\n\n";
+		
+		coefficients_root1.resize(max_terms,0.0);
+		coefficients_root2.resize(max_terms,0.0);
+		
+		if (integer_diff && !complex_roots) 
+		{
+			
+			int N = static_cast<int>(std::round(real(r1) - real(r2)));
+
+			coefficients_root1[0] = 1.0; // Arbitrary normalization factor
+			coefficients_root2[0] = 1.0; // Arbitrary initialization
+
+			cout << "Case 1: Different roots; roots differ by an integer." << endl;
+
+			// Compute the first solution y1(x)
+			for (int n = 1; n < max_terms; ++n) 
+			{
+				complex<double> Rn = 0.0;
+				complex<double> current_r = r1 + static_cast<double>(n);
+
+				// Collect contributions from previous terms
+				for (int k = 0; k < n; ++k) 
+				{
+					complex<double> r_k = r1 + static_cast<double>(k);
+					int shift = n - k;
+
+					complex<double> P_part = Pc.get_coeff(shift + 2) * r_k * (r_k - 1.0);
+					complex<double> Q_part = Qc.get_coeff(shift + 1) * r_k;
+					complex<double> R_part = Rc.get_coeff(shift);
+
+					Rn += coefficients_root1[k] * (P_part + Q_part + R_part);
+				}
+
+				// Indicial-like denominator for the current step
+				complex<double> P2 = Pc.get_coeff(2);
+				complex<double> Q1 = Qc.get_coeff(1);
+				complex<double> R0 = Rc.get_coeff(0);
+				complex<double> denom = P2 * current_r * (current_r - 1.0) + Q1 * current_r + R0;
+
+				if (abs(denom) < 1e-9) 
+				{
+					// Indicial zero encountered (expected for r2 when roots differ by integer)
+					coefficients_root1[n] = 0.0; 
+				} 
+				else 
+				{
+					coefficients_root1[n] = -Rn / denom;
+				}
+			}
+				
+			// Compute the second solution y2(x)
+			// Extracting regular singular point values
+			int L = find_L(P, Q, R);
+
+			Complex p2 = Pc.get_coeff(L+2);
+			Complex q1 = Qc.get_coeff(L + 1);
+			Complex r0 = Rc.get_coeff(L );
+
+			// Set up Frobenius parameter around smaller root: r = r2 + eps
+			Dual2 r(r2, 1.0, 0.0);
+
+			vector<Dual2> b(max_terms);
+
+			// For distinct roots differing by integer, initialize a0 = r - r2 = eps
+			b[0] = Dual2(0.0, 1.0, 0.0);
+
+			// Lambda to evaluate Indicial polynomial of the form: P2*K*(K-1) + Q1*K + R0
+			auto indicial_poly = [&](Dual2 K) 
+			{
+				return p2 * K * (K - Complex(1.0, 0.0)) + q1 * K + r0;
+			};
+
+			// Compute coefficients using Frobenius recurrence relations
+			for (int n = 1; n < max_terms; ++n) 
+			{
+				Dual2 sum(0.0, 0.0, 0.0);
+				for (int k = 0; k < n; ++k) 
+				{
+					Dual2 K = r + Complex(double(k), 0.0);
+					Complex p_term = Pc.get_coeff(n - k + 2);
+					Complex q_term = Qc.get_coeff(n - k + 1);
+					Complex r_term = Rc.get_coeff(n - k);
+
+					Dual2 bracket = p_term * K * (K - Complex(1.0, 0.0)) + q_term * K + r_term;
+					sum = sum + b[k] * bracket;
+				}
+				Dual2 denom = indicial_poly(r + Complex(double(n), 0.0));
+				b[n] = (Complex(-1.0, 0.0) * sum) / denom;
+			}
+			C_log = b[N].a; 
+			for (int n = 0; n < max_terms; ++n) 
+			{
+				coefficients_root2[n] =b[n].b;
+			}
+			
+		}
+		if (noninteger_diff && !complex_roots) 
+		{
+			coefficients_root1[0] = 1.0; // Arbitrary scaling
+			coefficients_root2[0] = 1.0; // Arbitrary initialization
+
+			cout << "Case 2: Different roots; roots differ by non-integer." << endl;
+			// Compute the first solution y1(x)
+			for (int n = 1; n < max_terms; ++n) 
+			{
+				complex<double> Rn = 0.0;
+				complex<double> current_r = r1 + complex<double>(n);
+
+				// Collect contributions from previous terms / convolve with shifted indices
+				for (int k = 0; k < n; ++k) 
+				{
+					complex<double> r_k = r1 + complex<double>(k);
+					int shift = n - k;
+
+					complex<double> P_part = Pc.get_coeff(shift + 2) * r_k * (r_k - 1.0);
+					complex<double> Q_part = Qc.get_coeff(shift + 1) * r_k;
+					complex<double> R_part = Rc.get_coeff(shift);
+
+					Rn += coefficients_root1[k] * (P_part + Q_part + R_part);
+
+				}
+
+				// Indicial-like denominator for the current step
+				complex<double> P2 = Pc.get_coeff(2);
+				complex<double> Q1 = Qc.get_coeff(1);
+				complex<double> R0 = Rc.get_coeff(0);
+				complex<double> denom = P2 * current_r * (current_r - 1.0) + Q1 * current_r + R0;
+				
+				if (abs(denom) < 1e-9) 
+				{
+					// Indicial zero encountered (expected for r2 when roots differ by integer)
+					coefficients_root1[n] = 0.0; 
+				} 
+				else 
+				{
+					coefficients_root1[n] = -Rn / denom;
+				}
+			}
+
+			// Compute the second solution y2(x)
+			for (int n = 1; n < max_terms; ++n) 
+			{
+				
+				complex<double> Rn = 0.0;
+				complex<double> current_r = r2 + complex<double>(n);
+
+				// Collect contributions from previous terms / convolve with shifted indices
+				for (int k = 0; k < n; ++k) 
+				{
+					complex<double> r_k = r2 + complex<double>(k);
+					int shift = n - k;
+
+					complex<double> P_part = Pc.get_coeff(shift + 2) * r_k * (r_k - 1.0);
+					complex<double> Q_part = Qc.get_coeff(shift + 1) * r_k;
+					complex<double> R_part = Rc.get_coeff(shift);
+					
+					Rn += coefficients_root2[k] * (P_part + Q_part + R_part);
+				}
+				
+				// Indicial-like denominator for the current step
+				complex<double> P2 = Pc.get_coeff(2);
+				complex<double> Q1 = Qc.get_coeff(1);
+				complex<double> R0 = Rc.get_coeff(0);
+				complex<double> denom = P2 * current_r * (current_r - 1.0) + Q1 * current_r + R0;
+
+				if (abs(denom) < 1e-9) 
+				{
+					// Indicial zero encountered (expected for r2 when roots differ by integer)
+					coefficients_root2[n] = 0.0; 
+				} 
+				else 
+				{
+					coefficients_root2[n] = -Rn / denom;
+				}
+			}
+			
+		}
+		if (repeated_roots && !complex_roots) 
+		{
+			complex<double> p0 = Pc.get_coeff(2);
+			complex<double> q0 = Qc.get_coeff(1);
+			complex<double> r0 = Rc.get_coeff(0);
+
+			coefficients_root1[0] = 1.0; // Arbitrary scaling
+			coefficients_root2[0] = 0.0; // Arbitrary initialization
+			cout << "Case 3: Repeated roots." << endl;
+
+			//  Setup recurrence using Dual numbers for automatic differentiation
+			// We compute a_n as a function of r: a_n(r) and its derivative a_n'(r)
+			vector<Dual> a(max_terms);
+			a[0] = Dual(1.0, 0.0); // Set a_0(r) = 1, so da_0/dr = 0
+
+			// Compute the first solution y1(x) and the second solution y2(x), only need 1 for loop since it is repeated roots
+			for (int k = 1; k < max_terms; ++k) 
+			{
+				Dual sum(0.0, 0.0);
+				
+				// Collect contributions from previous terms / convolve with shifted indices
+				for (int j = 0; j < k; ++j) 
+				{
+					int shift = k - j;
+		    
+					complex<double> p_k = Pc.get_coeff(shift + 2);
+					complex<double> q_k = Qc.get_coeff(shift + 1);
+					complex<double> r_k = Rc.get_coeff(shift);
+
+					// Compute the linear operator inside recurrence for variable r using Dual numbers
+					// F(r + j) = p_k*(r+j)*(r+j-1) + q_k*(r+j) + r_k
+					Dual r_plus_j(r1 + complex<double>(j), 1.0); // Variable r has a derivative of 1.0
+					Dual F_val = Dual(p_k) * r_plus_j * (r_plus_j - Dual(1.0)) + Dual(q_k) * r_plus_j + Dual(r_k);
+		               
+					sum = sum + F_val * a[j];
+				}
+
+				// Indicial function denominator evaluated at (r + k)
+				Dual r_plus_k(r1 + Complex(k), 1.0);
+				Dual Denom = Dual(p0) * r_plus_k * (r_plus_k - Dual(1.0)) + Dual(q0) * r_plus_k + Dual(r0);
+
+				// a_k(r) = - sum / Denom
+				a[k] = Dual(0.0) - (sum / Denom);
+
+				coefficients_root1[k] = a[k].val;
+				coefficients_root2[k] = a[k].der;
+				
+			}
+
+		}
+		if (complex_roots) 
+		{
+			cout << "Case 4: Complex roots." << endl;
+			coefficients_root1[0] = 1.0; // Arbitrary scaling
+			coefficients_root2[0] = 1.0; // Arbitrary initialization
+
+			// Compute the first solution y1(x)
+			vector<Dual1> a(max_terms);
+			a[0] = Dual1(1.0,0.0); // Standard choice for a_0
+
+			Dual1 r1_dual(r1, 1.0); // Seed the root into the Dual1 number
+			Dual1 p2 = Pc.get_coeff(2);
+			Dual1 q1 = Qc.get_coeff(1);
+			Dual1 r0 = Rc.get_coeff(0);
+
+			for (int n = 1; n < max_terms; ++n) 
+			{
+				Dual1 sum(0.0);
+				for (int k = 0; k < n; ++k) 
+				{
+					complex<double> p_term = Pc.get_coeff(n - k + 2);
+					complex<double> q_term = Qc.get_coeff(n - k + 1);
+					complex<double> r_term = Rc.get_coeff(n - k);
+
+					Dual1 k_r = r1_dual + double(k);
+					Dual1 factor = p_term * k_r * (k_r - 1.0) + q_term * k_r + r_term;
+					sum = sum + factor * a[k];
+				}
+				Dual1 n_r = r1_dual + double(n);
+				Dual1 denom = p2 * n_r * (n_r - 1.0) + q1 * n_r + r0;
+				
+				//cout << "sum = " << sum.val << endl;
+				a[n] = (Dual1(0.0, 0.0) - sum) / denom;
+				coefficients_root1[n] = a[n].val;
+			}
+		
+			// Compute the second solution y2(x)
+			vector<Dual1> b(max_terms);
+			b[0] = Dual1(1.0,0.0); // Standard choice for b_0
+
+			Dual1 r2_dual(r2, 1.0); // Seed the root into the Dual1 number
+
+			for (int n = 1; n < max_terms; ++n) 
+			{
+				Dual1 sum(0.0);
+				for (int k = 0; k < n; ++k) 
+				{
+					complex<double> p_term = Pc.get_coeff(n - k + 2);
+					complex<double> q_term = Qc.get_coeff(n - k + 1);
+					complex<double> r_term = Rc.get_coeff(n - k);
+
+					Dual1 k_r = r2_dual + double(k);
+					Dual1 factor = p_term * k_r * (k_r - 1.0) + q_term * k_r + r_term;
+					sum = sum + factor * b[k];
+				}
+				Dual1 n_r = r2_dual + double(n);
+				Dual1 denom = p2 * n_r * (n_r - 1.0) + q1 * n_r + r0;
+				
+				//cout << "sum = " << sum.val << endl;
+				b[n] = (Dual1(0.0, 0.0) - sum) / denom;
+				coefficients_root2[n] = b[n].val;
+			}
+
+		}
+	}
+	else if(EulerCauchy)
+	{
+		// Convert to complex polynomial using the conversion constructor
+		PolynomialComplex Pc = P; 
+		PolynomialComplex Qc = Q; 
+		PolynomialComplex Rc = R; 
+
+		int N = static_cast<int>(real(r1 - r2)); 
+		integer_diff = (N > 0 && abs((r1 - r2) - (double)N) < 1e-7);
+		noninteger_diff = ( N > 0 && abs((r1 - r2) - (double)N) > 1e-7 );
+		
+		cout << "\nP(x) y'' + Q(x)y'+ R(x) y = 0" <<endl ;
+
+		cout << "\nP(x) = ";
+		Pc.print();
+		cout << "\nQ(x) = " ; 
+		Qc.print();
+		cout << "\nR(x) = ";
+		Rc.print() ;
+
+		cout << "\nx0 = " << x0 ;
+		//cout << "\nreal(r1 - r2) = " << N << "\n";
+		cout << "\nr1 = " << r1 << "\n";
+		cout << "r2 = " << r2 << "\n\n";
+		
+		
+		if (integer_diff && !complex_roots) 
+		{
+			cout << "Case 1: Different roots; roots differ by an integer." << endl;
+			
+		}
+		if (noninteger_diff && !complex_roots) 
+		{
+			cout << "Case 2: Different roots; roots differ by non-integer." << endl;
+			
+		}
+		if (repeated_roots && !complex_roots) 
+		{
+			cout << "Case 3: Repeated roots." << endl;
+
+		}
+		if (complex_roots) 
+		{
+			cout << "Case 4: Complex roots." << endl;
+			
+
+		}
+
+	}
+}
+
+complex<double> SecondOrderODE_Homogeneous_Frobenius_PowerSeriesSolver::get_indicial_value(complex<double> rho) // necessary or not?
+{
+	complex<double> one(1,0.0);
+	return P.get_coeff(2) * rho * (rho - one) + P.get_coeff(1) * rho + R.get_coeff(0);
+}
+
+void SecondOrderODE_Homogeneous_Frobenius_PowerSeriesSolver::solve_indicial_equation() 
+{
+	// 1.All arbitrary polynomials already shifted around the point x0
+	
+
+	// 2. Identify valuations (lowest non-zero powers)
+	int vP = P.valuation();
+	int vQ = Q.valuation();
+	int vR = R.valuation();
+
+	// 3. Check Regular Singularity Condition
+	// If P(x0) != 0, it's an ordinary point, not a singular point. 
+	// For it to be a regular singular point: vQ >= vP - 1 and vR >= vP - 2
+	if (vP == 0 || vQ < vP - 1 || vR < vP - 2) 
+	{
+	std::cerr << "Error: Point x0 = " << x0 << " is not a regular singular point!\n";
+        
+	}
+
+	// 4. Extract dominant structural coefficients
+	double leadP = P.coeffs[vP];
+	double leadQ = (vQ == vP - 1) ? Q.coeffs[vQ] : 0.0;
+	double leadR = (vR == vP - 2) ? R.coeffs[vR] : 0.0;
+
+	// 5. Compute limits p0 and q0 exactly
+	double p0 = leadQ / leadP;
+	double q0 = leadR / leadP;
+
+	// 6. Set up and solve the quadratic indicial equation: r^2 + (p0 - 1)r + q0 = 0
+	complex<double> b(p0 - 1.0, 0.0);
+	complex<double> c(q0, 0.0);
+    
+	complex<double> discriminant = b * b - 4.0 * c;
+	complex<double> sqrt_disc = std::sqrt(discriminant);
+
+	r1 = (-b + sqrt_disc) / 2.0;
+	r2 = (-b - sqrt_disc) / 2.0;     
+
+	// Ensure r1 has the larger real part
+	if (r2.real() > r1.real()) 
+	{
+		swap(r1, r2);
+	}
+	// categorize the roots
+	complex_roots = (abs(imag(sqrt_disc)) > 1e-10 );
+	repeated_roots = (abs(real(sqrt_disc)) < 1e-10 && abs(imag(sqrt_disc)) < 1e-10);
+	int N = static_cast<int>(real(r1 - r2)); 
+	integer_diff = (N > 0 && abs((r1 - r2) - (double)N) < 1e-7);
+	noninteger_diff = ( N > 0 && abs((r1 - r2) - (double)N) > 1e-7 );
+	//repeated_roots = ( real(r1) - real(r2) < 1e-8);
+}
+// Solves the indicial equation: P_0*r*(r-1) + Q_0*r + R_0 = 0
+std::pair<complex<double>, complex<double>> SecondOrderODE_Homogeneous_Frobenius_PowerSeriesSolver::solve_indicial_equation_inpair() {
+
+
+	// 2. Identify valuations (lowest non-zero powers)
+	int vP = P.valuation();
+	int vQ = Q.valuation();
+	int vR = R.valuation();
+
+	// 3. Check Regular Singularity Condition
+	// If P(x0) != 0, it's an ordinary point, not a singular point. 
+	// For it to be a regular singular point: vQ >= vP - 1 and vR >= vP - 2
+	if (vP == 0 || vQ < vP - 1 || vR < vP - 2) 
+	{
+		std::cerr << "Error: Point x0 = " << x0 << " is not a regular singular point!\n";
+	}
+
+	// 4. Extract dominant structural coefficients
+	double leadP = P.coeffs[vP];
+	double leadQ = (vQ == vP - 1) ? Q.coeffs[vQ] : 0.0;
+	double leadR = (vR == vP - 2) ? R.coeffs[vR] : 0.0;
+
+	// 5. Compute limits p0 and q0 exactly
+	double p0 = leadQ / leadP;
+	double q0 = leadR / leadP;
+
+	// 6. Set up and solve the quadratic indicial equation: r^2 + (p0 - 1)r + q0 = 0
+	complex<double> b(p0 - 1.0, 0.0);
+	complex<double> c(q0, 0.0);
+    
+	complex<double> discriminant = b * b - 4.0 * c;
+	complex<double> sqrt_disc = std::sqrt(discriminant);
+
+	complex<double> r1 = (-b + sqrt_disc) / 2.0;
+	complex<double> r2 = (-b - sqrt_disc) / 2.0;     
+
+	// Ensure r1 has the larger real part
+	if (r2.real() > r1.real()) 
+	{
+		swap(r1, r2);
+	}
+	return {r1, r2};
+}
+
+// Evaluates fundamental solution y_basis at target x
+complex<double> SecondOrderODE_Homogeneous_Frobenius_PowerSeriesSolver::evaluate_series_y1(complex<double> x) 
+{
+		complex<double> t = x - x0;
+		if (abs(t) <= 0.0 && std::floor(real(r1)) != real(r1)) 
+		{
+			return 0.0; // Guard against negative fractional bases
+		}
+		complex<double> sum(0.0,0.0);
+		for (int n = max_terms - 1; n >= 0; --n) 
+		{
+			sum = sum * t + coefficients_root1[n];
+		}
+		return sum * std::pow(t, r1);
+}
+// This function is necessary since the formula to compute y2(x) depends on the type of roots.
+complex<double> SecondOrderODE_Homogeneous_Frobenius_PowerSeriesSolver::evaluate_series_y2(complex<double> x) 
+{
+		complex<double> t = x - x0;
+		if (abs(t) <= 0.0 && std::floor(real(r2)) != real(r2)) 
+		{
+			return 0.0; // Guard against negative fractional bases
+		}
+		complex<double> y1(0.0,0.0), y2(0.0, 0.0);
+		for (int n = max_terms - 1; n >= 0; --n) 
+		{
+			y1 = y1 * t + coefficients_root1[n];
+		}
+		y1 = y1 * std::pow(t, r1);
+
+		complex<double> sum(0.0,0.0);
+		if(noninteger_diff  || complex_roots)
+		{
+			for (int n = max_terms - 1; n >= 0; --n) 
+			{
+				sum = sum * t + coefficients_root2[n];
+			}
+			y2 = sum * std::pow(t, r2);
+		}
+		if(integer_diff && !complex_roots)
+		{
+			for (int n = max_terms - 1; n >= 0; --n) 
+			{
+				sum = sum * t + coefficients_root2[n];
+			}
+			y2 = (C_log * log(t) * y1) + ( sum * std::pow(t, r2) );
+		}
+		if(repeated_roots)
+		{
+			for (int n = max_terms - 1; n >= 0; --n) 
+			{
+				sum = sum * t + coefficients_root2[n];
+			}
+			y2 = (log(t) * y1) + ( sum * std::pow(t, r2) );
+		}
+		
+		return y2;
+}
+
+// Create evaluate_series_y2(const vector<complex<double>>& a, vector<complex<double>>& y1, complex<double> r2, complex<double> x) 
+// Evaluates derivative of basis solution
+complex<double> SecondOrderODE_Homogeneous_Frobenius_PowerSeriesSolver::evaluate_series_derivative(const vector<complex<double>>& a, complex<double> r_val, complex<double> x) 
+{
+		complex<double> t = x - x0;
+		complex<double> sum(0.0,0.0);
+		for (int n = max_terms - 1; n >= 0; --n) 
+		{
+			// Power rule tracking d/dt [a_n * t^(n+r)] = (n+r)*a_n * t^(n+r-1)
+			sum = sum * t + a[n] * (complex<double>(n) + r_val);
+		}
+		return sum * std::pow(t, r_val - complex<double>(1));
+}
+
+// Solves Initial Value Problem given y(x_init) and y'(x_init)
+void SecondOrderODE_Homogeneous_Frobenius_PowerSeriesSolver::solve_ivp(double x_init, double y_init, double dy_init, const vector<complex<double>>& test_points) 
+{
+
+	// Basis evaluations at configuration step
+	complex<double> y1_0 = evaluate_series_y1(x_init);
+	complex<double> y2_0 = evaluate_series_y2(x_init);
+	complex<double> dy1_0 = evaluate_series_derivative(coefficients_root1, r1, x_init);
+	complex<double> dy2_0 = evaluate_series_derivative(coefficients_root2, r2, x_init);
+
+	// Solve Cramer's system: 
+	// [ y1_0  y2_0 ] [ C1 ]  =  [ y_init  ]
+	// [dy1_0 dy2_0 ] [ C2 ] = [ dy_init ]
+	complex<double> det = y1_0 * dy2_0 - y2_0 * dy1_0;
+	if (std::abs(det) < 1e-9) 
+	{
+		std::cerr << "Error: Wronskian determinant too small at initial point." << std::endl;
+		return;
+	}
+
+	complex<double> C1 = (y_init * dy2_0 - y2_0 * dy_init) / det;
+	complex<double> C2 = (y1_0 * dy_init - y_init * dy1_0) / det;
+
+	cout << "\n--- IVP Solution Results ---" << endl;
+ 	cout << "Initial Conditions:\nt0 = " << x_init << ",\t y(t0) = " << y_init << ", \t y'(t0) = " << dy_init << endl;
+	cout << "Linear Coefficients: C1 = " << C1 << ", C2 = " << C2 << "\n\n";
+	cout << "x\t\t\ty(x)" << endl;
+	cout << "-----------------------------------" << endl;
+        
+	for (complex<double> x : test_points) 
+	{
+		complex<double> y_val = C1 * evaluate_series_y1(x) + C2 * evaluate_series_y2(x);
+		cout << x << "\t\t\t" << y_val << endl;
+	}
+}
+
+void SecondOrderODE_Homogeneous_Frobenius_PowerSeriesSolver::printCoefficients() const 
+{
+	// Output calculated power series coefficients to the console
+	cout << "\n\nComputed Power Series Coefficients\n\n";
+	cout << "y1(x) coefficients (r = " << r1 << "):" << endl;
+	for (int i = 0; i < int(coefficients_root1.size()); ++i) 
+	{
+		cout << "a_{" << i << "} = " << std::setw(1) << coefficients_root1[i] << "\n";
+	}
+
+	cout << "\n\ny2(x) coefficients (r = " << r2 << "):" << endl;
+	if(integer_diff)
+	{	
+		cout << "Logarithmic constant C = " << C_log << endl;
+	}
+	for (int i = 0; i < int(coefficients_root1.size()); ++i) 
+	{
+		cout << "b_{" << i << "} = " << std::setw(1) << coefficients_root2[i] << "\n";
+	}
+
+	
+}
+
+void SecondOrderODE_Homogeneous_Frobenius_PowerSeriesSolver::printSolution() const 
+{
+	if(Frobenius)
+	{
+		if(integer_diff )
+		{
+			cout << "\nSeries solution: \n"<< endl;
+			cout << "y1(x) = x^" << r1 << " ( ";
+			bool first = true;
+			int n_terms = 0;
+			for (size_t i = 0; i < coefficients_root1.size(); ++i) 
+			{
+				if (std::abs(real(coefficients_root1[i])) < 1e-9) 
+				{
+					continue;
+				}
+				if (!first && real(coefficients_root1[i]) > 0) 
+				{
+					cout << " + ";
+				}
+				if (real(coefficients_root1[i]) < 0) 
+				{
+					cout << " - ";
+				}
+				cout << std::abs((coefficients_root1[i]));
+				if (i > 0) 
+				{
+					if (abs(x0)==0)
+					{
+						cout << "*x";
+					}
+					else if (abs(x0) != 0)
+					{
+						cout << "*(x - " << x0 << ")";
+					}
+					if (i > 1) 
+					{
+						cout << "^" << i;
+					}
+				}
+			first = false;
+			n_terms += 1;
+			}
+			
+			if (n_terms >= int(coefficients_root1.size()))
+			{
+				cout << " + ... \n";
+			}
+			else if (n_terms < int(coefficients_root1.size()) )
+			{
+				cout << " " ;
+			}
+
+			cout << ")\ny2(x) = " << C_log << " * ln(x) y1(x) + x^" << r2 <<" ( ";
+
+			first = true;
+			n_terms = 0;
+			for (size_t i = 0; i < coefficients_root2.size(); ++i) 
+			{
+				if (std::abs(real(coefficients_root2[i])) < 1e-9) 
+				{
+					continue;
+				}
+				if (!first && real(coefficients_root2[i]) > 0) 
+				{
+					cout << " + ";
+				}
+				if (real(coefficients_root2[i]) < 0) 
+				{
+					cout << " - ";
+				}
+				cout << std::abs((coefficients_root2[i]));
+				if (i > 0) 
+				{
+					if (abs(x0)==0)
+					{
+						cout << "*x";
+					}
+					else if (abs(x0) != 0)
+					{
+						cout << "*(x - " << x0 << ")";
+					}
+					if (i > 1) 
+					{
+						cout << "^" << i;
+					}
+				}
+			first = false;
+			n_terms += 1;
+			}
+			
+			if (n_terms >= int(coefficients_root2.size()))
+			{
+				cout << " + ... \n";
+			}
+			else if (n_terms < int(coefficients_root2.size()) )
+			{
+				cout << " " ;
+			}
+			cout << ")";
+		}
+		if(noninteger_diff)
+		{
+			cout << "\nSeries solution: \n"<< endl;
+			cout << "y1(x) = x^" << r1 <<" ( ";
+			bool first = true;
+			int n_terms = 0;
+			for (size_t i = 0; i < coefficients_root1.size(); ++i) 
+			{
+				if (std::abs(real(coefficients_root1[i])) < 1e-9) 
+				{
+					continue;
+				}
+				if (!first && real(coefficients_root1[i]) > 0) 
+				{
+					cout << " + ";
+				}
+				if (real(coefficients_root1[i]) < 0) 
+				{
+					cout << " - ";
+				}
+				cout << std::abs((coefficients_root1[i]));
+				if (i > 0) 
+				{
+					if (abs(x0)==0)
+					{
+						cout << "*x";
+					}
+					else if (abs(x0) != 0)
+					{
+						cout << "*(x - " << x0 << ")";
+					}
+					if (i > 1) 
+					{
+						cout << "^" << i;
+					}
+				}
+			first = false;
+			n_terms += 1;
+			}
+			
+			if (n_terms >= int(coefficients_root1.size()))
+			{
+				cout << " + ... \n";
+			}
+			else if (n_terms < int(coefficients_root1.size()) )
+			{
+				cout << " " ;
+			}
+			
+			cout << ")\ny2(x) = x^" << r2 <<" ( ";
+
+			first = true;
+			n_terms = 0;
+			for (size_t i = 0; i < coefficients_root2.size(); ++i) 
+			{
+				if (std::abs(real(coefficients_root2[i])) < 1e-9) 
+				{
+					continue;
+				}
+				if (!first && real(coefficients_root2[i]) > 0) 
+				{
+					cout << " + ";
+				}
+				if (real(coefficients_root2[i]) < 0) 
+				{
+					cout << " - ";
+				}
+				cout << std::abs((coefficients_root2[i]));
+				if (i > 0) 
+				{
+					if (abs(x0)==0)
+					{
+						cout << "*x";
+					}
+					else if (abs(x0) != 0)
+					{
+						cout << "*(x - " << x0 << ")";
+					}
+					if (i > 1) 
+					{
+						cout << "^" << i;
+					}
+				}
+			first = false;
+			n_terms += 1;
+			}
+			
+			if (n_terms >= int(coefficients_root2.size()))
+			{
+				cout << " + ... \n";
+			}
+			else if (n_terms < int(coefficients_root2.size()) )
+			{
+				cout << " " ;
+			}
+			cout <<" )";
+		}
+		if(repeated_roots)
+		{
+			cout << "\nSeries solution: \n"<< endl;
+			cout << "y1(x) = x^"<< r1 << " ( ";
+			bool first = true;
+			int n_terms = 0;
+			for (size_t i = 0; i < coefficients_root1.size(); ++i) 
+			{
+				if (std::abs(real(coefficients_root1[i])) < 1e-9) 
+				{
+					continue;
+				}
+				if (!first && real(coefficients_root1[i]) > 0) 
+				{
+					cout << " + ";
+				}
+				if (real(coefficients_root1[i]) < 0) 
+				{
+					cout << " - ";
+				}
+				cout << std::abs((coefficients_root1[i]));
+				if (i > 0) 
+				{
+					if (abs(x0)==0)
+					{
+						cout << "*x";
+					}
+					else if (abs(x0) != 0)
+					{
+						cout << "*(x - " << x0 << ")";
+					}
+					if (i > 1) 
+					{
+						cout << "^" << i;
+					}
+				}
+			first = false;
+			n_terms += 1;
+			}
+			
+			if (n_terms >= int(coefficients_root1.size()))
+			{
+				cout << " + ... \n";
+			}
+			else if (n_terms < int(coefficients_root1.size()) )
+			{
+				cout << " " ;
+			}
+			cout << ")\ny2(x) = y1(x) ln(x) + x^" << r1 <<" ( ";
+
+			first = true;
+			n_terms = 0;
+			for (size_t i = 0; i < coefficients_root2.size(); ++i) 
+			{
+				if (std::abs(real(coefficients_root2[i])) < 1e-9) 
+				{
+					continue;
+				}
+				if (!first && real(coefficients_root2[i]) > 0) 
+				{
+					cout << " + ";
+				}
+				if (real(coefficients_root2[i]) < 0) 
+				{
+					cout << " - ";
+				}
+				cout << std::abs((coefficients_root2[i]));
+				if (i > 0) 
+				{
+					if (abs(x0)==0)
+					{
+						cout << "*x";
+					}
+					else if (abs(x0) != 0)
+					{
+						cout << "*(x - " << x0 << ")";
+					}
+					if (i > 1) 
+					{
+						cout << "^" << i;
+					}
+				}
+			first = false;
+			n_terms += 1;
+			}
+			
+			if (n_terms >= int(coefficients_root2.size()))
+			{
+				cout << " + ... \n";
+			}
+			else if (n_terms < int(coefficients_root2.size()) )
+			{
+				cout << " " ;
+			}
+			cout <<")";
+		}
+		if(complex_roots)
+		{
+			cout << "\nSeries solution: \n"<< endl;
+			cout << "y1(x) = x^" << r1 <<" ( ";
+			bool first = true;
+			int n_terms = 0;
+			for (size_t i = 0; i < coefficients_root1.size(); ++i) 
+			{
+				if (std::abs(real(coefficients_root1[i])) < 1e-9) 
+				{
+					continue;
+				}
+				if (!first && real(coefficients_root1[i]) > 0) 
+				{
+					cout << " + ";
+				}
+				if (real(coefficients_root1[i]) < 0) 
+				{
+					cout << " + ";
+				}
+				cout << coefficients_root1[i];
+				if (i > 0) 
+				{
+					if (abs(x0)==0)
+					{
+						cout << "*x";
+					}
+					else if (abs(x0) != 0)
+					{
+						cout << "*(x - " << x0 << ")";
+					}
+					if (i > 1) 
+					{
+						cout << "^" << i;
+					}
+				}
+			first = false;
+			n_terms += 1;
+			}
+			
+			if (n_terms >= int(coefficients_root1.size()))
+			{
+				cout << " + ... \n";
+			}
+			else if (n_terms < int(coefficients_root1.size()) )
+			{
+				cout << " " ;
+			}
+			
+			cout << ")\ny2(x) = x^" << r2 <<" ( ";
+
+			first = true;
+			n_terms = 0;
+			for (size_t i = 0; i < coefficients_root2.size(); ++i) 
+			{
+				if (std::abs(real(coefficients_root2[i])) < 1e-9) 
+				{
+					continue;
+				}
+				if (!first && real(coefficients_root2[i]) > 0) 
+				{
+					cout << " + ";
+				}
+				if (real(coefficients_root2[i]) < 0) 
+				{
+					cout << " + ";
+				}
+				cout << coefficients_root2[i];
+				if (i > 0) 
+				{
+					if (abs(x0)==0)
+					{
+						cout << "*x";
+					}
+					else if (abs(x0) != 0)
+					{
+						cout << "*(x - " << x0 << ")";
+					}
+					if (i > 1) 
+					{
+						cout << "^" << i;
+					}
+				}
+			first = false;
+			n_terms += 1;
+			}
+			
+			if (n_terms >= int(coefficients_root2.size()))
+			{
+				cout << " + ... \n";
+			}
+			else if (n_terms < int(coefficients_root2.size()) )
+			{
+				cout << " " ;
+			}
+			cout <<" )";
+
+			// to show real-valued solutions
+
+			cout << "\n\nReal-valued series solution: \n"<< endl;
+			if (abs(x0)==0)
+			{
+				cout << "y1(x) = x^" << r1.real() <<"[ cos( " << r1.imag() << " ln (x) ) * ( ";
+			}
+			else if (abs(x0) != 0)
+			{
+				cout << "y1(x) = x^" << r1.real() <<"[ cos( " << r1.imag() << " ln (x-" << x0 << " ) ) * ( " ;
+			}
+			first = true;
+			n_terms = 0;
+			for (size_t i = 0; i < coefficients_root1.size(); ++i) 
+			{
+				if (std::abs(real(coefficients_root1[i])) < 1e-9) 
+				{
+					continue;
+				}
+				if (!first && real(coefficients_root1[i]) > 0) 
+				{
+					cout << " + ";
+				}
+				if (real(coefficients_root1[i]) < 0) 
+				{
+					cout << " - ";
+				}
+				cout << real(coefficients_root1[i]);
+				if (i > 0) 
+				{
+					if (abs(x0)==0)
+					{
+						cout << "*x";
+					}
+					else if (abs(x0) != 0)
+					{
+						cout << "*(x - " << x0 << ")";
+					}
+					if (i > 1) 
+					{
+						cout << "^" << i;
+					}
+				}
+			first = false;
+			n_terms += 1;
+			}
+			
+			if (n_terms >= int(coefficients_root1.size()))
+			{
+				cout << " + ... \n";
+			}
+			else if (n_terms < int(coefficients_root1.size()) )
+			{
+				cout << " ) " ;
+			}
+
+			if (abs(x0)==0)
+			{
+				cout << " - sin( " << r1.imag() << " ln (x) ) * ( " ;
+			}
+			else if (abs(x0) != 0)
+			{
+				cout << " - sin( " << r1.imag() << " ln (x-" << x0 << " ) ) * ( " ;
+			}
+			first = true;
+			n_terms = 0;
+			for (size_t i = 0; i < coefficients_root1.size(); ++i) 
+			{
+				if (std::abs(imag(coefficients_root1[i])) < 1e-9) 
+				{
+					continue;
+				}
+				if (!first && imag(coefficients_root1[i]) > 0) 
+				{
+					cout << " + ";
+				}
+				if (imag(coefficients_root1[i]) < 0) 
+				{
+					cout << " - ";
+				}
+				cout << imag(coefficients_root1[i]);
+				if (i > 0) 
+				{
+					if (abs(x0)==0)
+					{
+						cout << "*x";
+					}
+					else if (abs(x0) != 0)
+					{
+						cout << "*(x - " << x0 << ")";
+					}
+					if (i > 1) 
+					{
+						cout << "^" << i;
+					}
+				}
+			first = false;
+			n_terms += 1;
+			}
+			
+			if (n_terms >= int(coefficients_root1.size()))
+			{
+				cout << " + ... \n";
+			}
+			else if (n_terms < int(coefficients_root1.size()) )
+			{
+				cout << " ) " ;
+			}
+
+			cout << "]\ny2(x) = x^" << r1.real() <<" [ ";
+
+			if (abs(x0)==0)
+			{
+				cout << "sin( " << r1.imag() << " ln (x) ) * ( ";
+			}
+			else if (abs(x0) != 0)
+			{
+				cout << "sin( " << r1.imag() << " ln (x-" << x0 << " ) ) * ( " ;
+			}
+			first = true;
+			n_terms = 0;
+			for (size_t i = 0; i < coefficients_root1.size(); ++i) 
+			{
+				if (std::abs(real(coefficients_root1[i])) < 1e-9) 
+				{
+					continue;
+				}
+				if (!first && real(coefficients_root1[i]) > 0) 
+				{
+					cout << " + ";
+				}
+				if (real(coefficients_root1[i]) < 0) 
+				{
+					cout << " - ";
+				}
+				cout << real(coefficients_root1[i]);
+				if (i > 0) 
+				{
+					if (abs(x0)==0)
+					{
+						cout << "*x";
+					}
+					else if (abs(x0) != 0)
+					{
+						cout << "*(x - " << x0 << ")";
+					}
+					if (i > 1) 
+					{
+						cout << "^" << i;
+					}
+				}
+			first = false;
+			n_terms += 1;
+			}
+			
+			if (n_terms >= int(coefficients_root1.size()))
+			{
+				cout << " + ... \n";
+			}
+			else if (n_terms < int(coefficients_root1.size()) )
+			{
+				cout << " ) " ;
+			}
+
+			if (abs(x0)==0)
+			{
+				cout << " + cos( " << r1.imag() << " ln (x) ) * ( " ;
+			}
+			else if (abs(x0) != 0)
+			{
+				cout << " + cos( " << r1.imag() << " ln (x-" << x0 << " ) ) * ( " ;
+			}
+			first = true;
+			n_terms = 0;
+			for (size_t i = 0; i < coefficients_root1.size(); ++i) 
+			{
+				if (std::abs(imag(coefficients_root1[i])) < 1e-9) 
+				{
+					continue;
+				}
+				if (!first && imag(coefficients_root1[i]) > 0) 
+				{
+					cout << " + ";
+				}
+				if (imag(coefficients_root1[i]) < 0) 
+				{
+					cout << " - ";
+				}
+				cout << imag(coefficients_root1[i]);
+				if (i > 0) 
+				{
+					if (abs(x0)==0)
+					{
+						cout << "*x";
+					}
+					else if (abs(x0) != 0)
+					{
+						cout << "*(x - " << x0 << ")";
+					}
+					if (i > 1) 
+					{
+						cout << "^" << i;
+					}
+				}
+			first = false;
+			n_terms += 1;
+			}
+			
+			if (n_terms >= int(coefficients_root1.size()))
+			{
+				cout << " + ... \n";
+			}
+			else if (n_terms < int(coefficients_root1.size()) )
+			{
+				cout << " ) ]" ;
+			}
+		}
+	}
+	else if(EulerCauchy)
+	{
+		if(integer_diff || noninteger_diff)
+		{
+			if (abs(x0)==0)
+			{
+				cout << "\nGeneral solution: \n"<< endl;
+				cout << "y(x) = C1 * x^" << r1 << " + C2 * x^" << r2 ;
+			}
+			else if (abs(x0)!=0)
+			{
+				cout << "\nGeneral solution: \n"<< endl;
+				cout << "y(x) = C1 * (x - "<< x0 << ")" <<"^" << r1 << " + C2 * (x - " << x0 << ")^" << r2 ;
+			}
+		}
+		
+		if(repeated_roots )
+		{
+			if (abs(x0)==0)
+			{
+				cout << "\nGeneral solution: \n"<< endl;
+				cout << "y(x) = ( C1 + C2 ln(x) ) x^" << r1  ;
+			}
+			else if (abs(x0)!=0)
+			{
+				cout << "\nGeneral solution: \n"<< endl;
+				cout << "y(x) = ( C1 + C2 ln(x - " << x0 << ") ) (x - " << x0 << ")^" << r1  ;
+			}
+
+		}
+		if(complex_roots )
+		{
+			if (abs(x0)==0)
+			{
+				cout << "\nGeneral solution: \n"<< endl;
+				cout << "y(x) = [ C1 *  x^{" << r1.real() << "} cos ( "<< abs(r1.imag()) << " ln(x) ) ] + [ C2 *  x^{" << r1.real() << "} sin ( "<< abs(r1.imag()) << " ln(x) ) ] ";
+			}
+			else if (abs(x0)!=0)
+			{
+				cout << "\nGeneral solution: \n"<< endl;
+				cout << "y(x) = [ C1 *  (x - " << x0 << ")^{" << r1.real() << "} cos ( "<< abs(r1.imag()) << " ln(x - " << x0 << ") ) ] + [ C2 *  (x - " << x0 << ")^{" << r1.real() << "} sin ( "<< abs(r1.imag()) << " ln(x - " << x0 << ") ) ] ";
+			}
+			
+		}
+	}
 }
 
 void secondorderlineardiffeq_derivativesvalueatx0(const Symbolic &diffeq, const Symbolic &y, const Symbolic &x, double x0, Symbolic y0, Symbolic dy0)
