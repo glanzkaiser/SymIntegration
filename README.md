@@ -60,6 +60,7 @@ It is able to compute
 31. Extract RGBA matrices out of an image
 32. Perform kernel / convolution matrix on an image with OpenGL
 33. Convolutional Neural Network with LeNet5 Architecture with our own digit handwriting images using Steepest Descent method.
+34. Compute nonlinear systems of equations solutions with Newton's method, Quasi-Newton, RK4, Steepest Descent, and Particle Swarm Optimization.
 
 # Demos / Examples
 
@@ -194,6 +195,7 @@ If you prefer the old way then you can compile the old way / type `g++ -o main m
 |:sunflower:   | Generate Random Number with Mersenne Twister				| Done
 |:sunflower:   | Numerical differentiation and Richardson's Extrapolation		| Done
 |:sunflower:   | Iterative techniques in matrix algebra: Jacobi iterative method, Gauss-Seidel method, Successive Over-Relaxation (SOR) method, conjugate gradient, and preconditioned conjugate gradient with Compressed Row Storage (CRS) format		| Done
+|:sunflower:   | Numerical solutions of nonlinear systems of equations with Newton’s method, QuasiNewton, Steepest Descent, RK4, and Particle Swarm Optimization (PSO).			| Done
 |:sunflower:   | LU-decomposition, Cholesky decomposition, and Singular Value Decomposition			| Done
 |:sunflower:   | Eigenvalues and Eigenvectors approximation				| Done
 |:sunflower:   | Gram-Schmidt Process and QR-Decomposition				| Done
@@ -544,4 +546,6 @@ I saw an eagle on September 19th, 2026 in RK. Again, thanks Freya the Goddess.
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/55.png" width="60%">
 
+By October 5th, 2026: We have created some classes to compute the numerical solutions of nonlinear systems of equations with Newton’s method, Quasi-Newton, Steepest Descent, RK4, and Particle Swarm Optimization (PSO).
 
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/56.png" width="60%">

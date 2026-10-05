@@ -121,10 +121,15 @@
 #define SYMBOLIC_FORWARD
 #include "symintegral/symintegrationc++.h"
 #undef  SYMBOLIC_FORWARD
+const double PI = acos(-1.0);
+
+using Complex = complex<double>;
+using ComplexVector = vector<Complex>;
+using ComplexVectorFunction = function<ComplexVector(const ComplexVector&)>;
 
 typedef list<Equation> Equations;
 typedef list<Equations> PatternMatches;
-
+ 
 typedef complex<double> complexd;
 typedef vector<vector<complex<double>>> cmat;
 typedef vector<complex<double>> cvec;
@@ -139,6 +144,7 @@ typedef vector<vector<string>> smat;
 
 // declarations for non-member functions
 // also used in definition phase for clarity
+
 
 Symbolic expand(const SymbolicInterface&);
 ostream &operator<<(ostream &,const Symbolic &);

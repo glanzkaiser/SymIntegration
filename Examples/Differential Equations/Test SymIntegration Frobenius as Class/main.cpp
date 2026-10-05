@@ -110,7 +110,37 @@ int main(void)
 	PolynomialDouble Q9({0.0, 2.5, 0.0});     
 	PolynomialDouble R9({1.0, 1.0, 0.0}); 
 
-	complex<double> x0(0.0,0.0); // Centered around regular singular point x0 = 0.
+	// Example : Regular Singular Point requiring Frobenius (Not pure Euler-Cauchy due to degrees)
+	// x^2 y'' + x y' + (x^2 - 4) y = 0  (Bessel Equation) at x0 = (0.0,0.0)
+	PolynomialDouble P10({0.0, 0.0, 1.0});
+	PolynomialDouble Q10({0.0, 1.0});
+	PolynomialDouble R10({-4.0, 0.0, 1.0}); 
+
+	// Example : Ordinary Point evaluation with P10, Q10, R10 at x0 = (1.0,1.0)
+	
+	// Example : Euler-Cauchy at x0 = (0.0,0.0)
+	PolynomialDouble P11({0.0, 0.0, 1.0}); 
+	PolynomialDouble Q11({0.0, 1.0});      
+	PolynomialDouble R11({4.0});           
+	
+	PolynomialDouble P12({0.0, 0.0, 1.0}); 
+	PolynomialDouble Q12({0.0, 5.0});      
+	PolynomialDouble R12({4.0});   
+
+	PolynomialDouble P13({0.0, 0.0, 2.0}); 
+	PolynomialDouble Q13({0.0, 3.0});      
+	PolynomialDouble R13({-1.0});   
+
+	PolynomialDouble P14({0.0, 0.0, 1.0}); 
+	PolynomialDouble Q14({0.0, 5.0});      
+	PolynomialDouble R14({8.0});   
+
+	// complex roots, solved with Euler-Cauchy x0 = (2,0)
+	PolynomialDouble P15({4.0, -4.0, 1.0}); 
+	PolynomialDouble Q15({-10.0, 5.0,0.0});      
+	PolynomialDouble R15({8.0,0.0,0.0});   
+
+	complex<double> x0(2.0,0.0); // Centered around regular singular point x0 = 0.
 	int terms = 16;
 
 	// Provide initial values close to regular singular boundary (e.g., at x = 0.1)
@@ -119,12 +149,13 @@ int main(void)
 	double dy_init = -0.13938;				// y'(t0)
 	vector<complex<double>> evaluation_points = {{1.0,0.0}, {1.2,0.0}, {1.4,0.0}, {1.6,0.0}, {1.8,0.0}, {2.0,0.0}};
 	complex<double> c0_first = 1.0;
-	SecondOrderODE_Homogeneous_Frobenius_PowerSeriesSolver solver1(P9, Q9, R9, x0, terms);
+	SecondOrderODE_Homogeneous_Frobenius_PowerSeriesSolver solver1(P15, Q15, R15, x0, terms);
+
 
 	solver1.computeSeriesCoefficients();
 	solver1.printSolution();
-	solver1.printCoefficients();
-	solver1.solve_ivp(x_init, y_init, dy_init, evaluation_points);
+	//solver1.printCoefficients();
+	//solver1.solve_ivp(x_init, y_init, dy_init, evaluation_points);
 	
 	
 	

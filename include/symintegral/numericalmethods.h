@@ -18,7 +18,7 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-
+#include "symintegral/dual.h"
 #ifndef SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHODS
 
 #ifdef  SYMBOLIC_FORWARD
@@ -90,6 +90,157 @@ double dotProduct(const vector<double>& u, const vector<double>& v);
 vector<double> get_Jacobi_preconditioner(const CRSMatrix& A);
 vector<double> ConjugateGradient(const CRSMatrix& A, const vector<double>& b, double tolerance, int max_iterations);
 vector<double> PreconditionedConjugateGradient(const CRSMatrix& A, const vector<double>& b, double tolerance, int max_iterations);
+#endif
+
+/*
+
+	Numerical Solutions of Nonlinear Systems of Equations
+
+*/
+
+using SystemFunction = std::function<vector<DualClass>(const vector<DualClass>&)>;
+
+#ifndef NONLINEAR_NEWTONSOLVER_H
+#define NONLINEAR_NEWTONSOLVER_H
+
+class NonlinearNewtonSolver {
+private:
+	vector<complex<double>> roots;
+	SystemFunction system;
+	int max_iter ;
+	double tol ;
+	
+public:
+	NonlinearNewtonSolver(int max_iter_in, double tol_in)
+	: max_iter(max_iter_in), tol(tol_in)
+	{}
+
+	// Gaussian Elimination with partial pivoting for complex systems
+	vector<complex<double>> solveLinearSystem(vector<vector<complex<double>>> J, vector<complex<double>> F) ;
+	vector<complex<double>> solve(SystemFunction func, const vector<complex<double>>& initial_guess)  ;
+	void solve_printSolution(SystemFunction func, const vector<complex<double>>& initial_guess) ;
+};
+
+
+#endif
+
+typedef vector<DualClass> (*NonlinearSystem)(const vector<DualClass>&);
+
+#ifndef QUASINEWTONSOLVER_H
+#define QUASINEWTONSOLVER_H
+
+class QuasiNewtonSolver {
+private:
+	vector<complex<double>> roots;
+	int max_iter ;
+	double tol ;
+	
+public:
+	QuasiNewtonSolver(int max_iter_in, double tol_in)
+	: max_iter(max_iter_in), tol(tol_in)
+	{}
+
+	// Gaussian Elimination with partial pivoting for complex systems
+	bool solveLinearSystem(vector<vector<complex<double>>> A, vector<complex<double>> b, vector<complex<double>>& x) ;
+	void solve(NonlinearSystem system, const vector<complex<double>>& x0) ;
+	vector<complex<double>> solve_getvector(NonlinearSystem system, const vector<complex<double>>& x0) ;
+	void printSolution() const;
+};
+
+
+#endif
+
+#ifndef STEEPESTDESCENTSOLVER_H
+#define STEEPESTDESCENTSOLVER_H
+
+class SteepestDescentSolver {
+private:
+	vector<complex<double>> roots;
+	int max_iter ;
+	double tol ;
+	
+public:
+	using SystemFunction = std::function<vector<DualClass>(const vector<DualClass>&)>;
+
+	SteepestDescentSolver(int max_iter_in, double tol_in)
+	: max_iter(max_iter_in), tol(tol_in)
+	{}
+
+	vector<complex<double>> solve(SystemFunction system, const vector<complex<double>>& x0) ;
+	void solve_printSolution(SystemFunction system, const vector<complex<double>>& x0) ;
+};
+
+
+#endif
+
+
+#ifndef PSOMULTIROOTFINDER_H
+#define PSOMULTIROOTFINDER_H
+
+class PSOMultiRootFinder {
+private:
+	int num_vars;        // Number of complex variables
+	int pop_size;        // Swarm population size
+	int max_iter;        // Maximum iterations per run
+	
+	double lower_bound;  // Bound for initializing search space
+	double upper_bound;  // Bound for initializing search space
+
+	vector<ComplexVector> final_roots;
+
+	struct Particle {
+	vector<double> position; // Alternating [Real(x0), Imag(x0), Real(x1), Imag(x1)...]
+	vector<double> velocity;
+	vector<double> best_position;
+	double best_fitness;
+	};
+
+	// Converts internal real representation back to std::complex<double>
+	ComplexVector toComplexVector(const vector<double>& real_vec);
+
+	// Evaluates system and returns the total residual magnitude squared
+	double evaluateFitness(const vector<double>& real_vec, const ComplexVectorFunction& system);
+
+public:
+	PSOMultiRootFinder(int vars, int pop, int iter, double lb, double ub )
+	: num_vars(vars), pop_size(pop), max_iter(iter), lower_bound(lb), upper_bound(ub) {}
+
+	// Executes a single PSO run to locate a single global minimum root
+	ComplexVector findOneRoot(const ComplexVectorFunction& system, mt19937& rng) ;
+
+	// Multiroot manager using multi-start check routine to identify unique roots
+	vector<ComplexVector> findMultipleRoots(const ComplexVectorFunction& system, int num_runs);
+	void findMultipleRoots_printSolution(const ComplexVectorFunction& system, int num_runs);
+
+};
+
+
+#endif
+
+
+#ifndef RK4MULTIROOTSOLVER_H
+#define RK4MULTIROOTSOLVER_H
+// Typedef for your system function wrapper using DualClassTemplate numbers
+typedef vector<DualClassTemplate<complex<double>>> (*SystemFunc)(const vector<DualClassTemplate<complex<double>>>&);
+
+class RK4MultiRootSolver {
+private:
+	vector<vector<complex<double>>> initial_guesses;
+	SystemFunc targetSystem;
+	int steps;
+
+public:
+	RK4MultiRootSolver(vector<vector<complex<double>>> initial_guesses_in, SystemFunc targetSystem_in, int steps_in)
+	: initial_guesses(initial_guesses_in), targetSystem(targetSystem_in), steps(steps_in){}
+
+	bool solveLinearSystem(vector<vector<complex<double>>>& A, vector<complex<double>>& b, vector<complex<double>>& x) ;
+	vector<complex<double>> computeDerivatives(const vector<complex<double>>& x, SystemFunc system); 
+	vector<complex<double>> solve(vector<complex<double>> x0, SystemFunc system);
+
+	void printSolution();
+};
+
+
 #endif
 
 #endif

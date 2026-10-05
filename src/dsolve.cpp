@@ -3,6 +3,7 @@
 */
 
 #include "symintegral/symintegrationc++.h"
+#include "symintegral/dual.h"
 
 #ifdef  SYMBOLIC_DEFINE
 #ifndef SYMINTEGRATION_CPLUSPLUS_DSOLVE_DEFINE
@@ -23,6 +24,7 @@
 #include <random> // For random number generation
 #include <complex>
 
+using Complex = std::complex<double>;
 double roundToDecimal(double value, int places) 
 {
 	double multiplier = std::pow(10.0, places);
@@ -9373,7 +9375,79 @@ int find_L(const PolynomialComplex& P, const PolynomialComplex& Q, const Polynom
 	}
 	return L;
 }
+/*
+#ifndef STRUCT_DUAL1
+#define STRUCT_DUAL1
+// Dual1 number structure for automatic differentiation over complex numbers
+struct Dual1 {
+    complex<double> val;
+    complex<double> der;
 
+    Dual1(complex<double> v = 0.0, complex<double> d = 0.0) : val(v), der(d) {}
+
+    friend Dual1 operator+(const Dual1& a, const Dual1& b) { return Dual1(a.val + b.val, a.der + b.der); }
+    friend Dual1 operator-(const Dual1& a, const Dual1& b) { return Dual1(a.val - b.val, a.der - b.der); }
+    friend Dual1 operator*(const Dual1& a, const Dual1& b) { return Dual1(a.val * b.val, a.val * b.der + a.der * b.val); }
+    friend Dual1 operator/(const Dual1& a, const Dual1& b) { return Dual1(a.val / b.val, (a.der * b.val - a.val * b.der) / (b.val * b.val));  }
+
+    // Overloads for mixing with complex<double> / double
+    friend Dual1 operator+(const Dual1& a, complex<double> b) { return Dual1(a.val + b, a.der); }
+    friend Dual1 operator+(complex<double> a, const Dual1& b) { return Dual1(a + b.val, b.der); }
+    friend Dual1 operator-(const Dual1& a, complex<double> b) { return Dual1(a.val - b, a.der); }
+    friend Dual1 operator-(complex<double> a, const Dual1& b) { return Dual1(a - b.val, -b.der); }
+    friend Dual1 operator*(const Dual1& a, complex<double> b) { return Dual1(a.val * b, a.der * b); }
+    friend Dual1 operator*(complex<double> a, const Dual1& b) { return Dual1(a * b.val, a * b.der); }
+    friend Dual1 operator/(const Dual1& a, complex<double> b) { return Dual1(a.val / b, a.der / b); }
+    friend Dual1 operator/(complex<double> a, const Dual1& b) { return Dual1(a / b.val, -a * b.der / (b.val * b.val)); }
+};
+
+#endif
+
+#ifndef STRUCT_DUAL2
+#define STRUCT_DUAL2
+// Second-order Dual number struct to handle automatic differentiation up to O(eps^2)
+// Expressed as: a + b*eps + c*eps^2
+struct Dual2 {
+	Complex a, b, c;
+
+	Dual2(Complex a = 0.0, Complex b = 0.0, Complex c = 0.0) : a(a), b(b), c(c) {}
+
+	Dual2 operator+(const Dual2& o) const { return Dual2(a + o.a, b + o.b, c + o.c); }
+	Dual2 operator-(const Dual2& o) const { return Dual2(a - o.a, b - o.b, c - o.c); }
+    
+	Dual2 operator*(const Dual2& o) const { return Dual2(a * o.a, a * o.b + b * o.a, a * o.c + b * o.b + c * o.a);}
+
+	Dual2 operator/(const Dual2& o) const 
+	{
+		if (std::abs(o.a) > 1e-12) {
+			Complex a_out = a / o.a;
+			Complex b_out = (b - a_out * o.b) / o.a;
+			Complex c_out = (c - a_out * o.c - b_out * o.b) / o.a;
+		return Dual2(a_out, b_out, c_out); } 
+		else 
+		{
+			// L'Hopital's rule for 0/0 forms when denominator's value is zero
+			// when roots differ by an integer(for Frobenius method) calculating a_{N} (r2) leads to a division by zero
+			// due to the indicial function hitting a root at r1
+			Complex a_out = b / o.b;
+			Complex b_out = (c - a_out * o.c) / o.b;
+			return Dual2(a_out, b_out, 0.0); 
+		}
+	}
+
+	Dual2 operator+(Complex o) const { return Dual2(a + o, b, c); }
+	Dual2 operator-(Complex o) const { return Dual2(a - o, b, c); }
+	Dual2 operator*(Complex o) const { return Dual2(a * o, b * o, c * o); }
+	Dual2 operator/(Complex o) const { return Dual2(a / o, b / o, c / o); }
+};
+
+Dual2 operator+(Complex g, const Dual2& d) { return d + g; }
+Dual2 operator-(Complex g, const Dual2& d) { return Dual2(g - d.a, -d.b, -d.c); }
+Dual2 operator*(Complex g, const Dual2& d) { return d * g; }
+
+
+#endif
+*/
 /* 
 
 	Initialize class to compute the series solution for homogeneous second order linear differential equation
@@ -9879,7 +9953,7 @@ complex<double> SecondOrderODE_Homogeneous_Frobenius_PowerSeriesSolver::get_indi
 
 void SecondOrderODE_Homogeneous_Frobenius_PowerSeriesSolver::solve_indicial_equation() 
 {
-	// 1.All arbitrary polynomials already shifted around the point x0
+	// 1. All arbitrary polynomials already shifted around the point x0
 	
 
 	// 2. Identify valuations (lowest non-zero powers)
@@ -10759,7 +10833,7 @@ void SecondOrderODE_Homogeneous_Frobenius_PowerSeriesSolver::printSolution() con
 		}
 	}
 }
-
+ 
 void secondorderlineardiffeq_derivativesvalueatx0(const Symbolic &diffeq, const Symbolic &y, const Symbolic &x, double x0, Symbolic y0, Symbolic dy0)
 {
 	cout << "\nThe differential equation :\n" <<  diffeq << endl;

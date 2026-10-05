@@ -2,7 +2,7 @@
    
 */
 #include "symintegral/symintegrationc++.h"
-
+#include "symintegral/dual.h"
 #ifdef  SYMBOLIC_DEFINE
 #ifndef SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHODS_DEFINE
 #define SYMINTEGRATION_CPLUSPLUS_NUMERICALMETHODS_DEFINE
@@ -1036,5 +1036,1098 @@ vector<double> PreconditionedConjugateGradient(const CRSMatrix& A, const vector<
 	return x;
 }
 
+
+// Newton's Method to solve nonlinear system
+using SystemFunction = function<vector<DualClass>(const vector<DualClass>&)>;
+vector<complex<double>> NonlinearNewtonSolver::solve(SystemFunction func, const vector<complex<double>>& initial_guess) 
+{	
+	size_t n = initial_guess.size();
+	vector<complex<double>> x = initial_guess;
+	cout << std::fixed << std::setprecision(10);
+
+	cout << "\n" ;
+	cout << "========================================================\n";
+	cout << "  Newton' Method Multivariable Complex Root Solver \n";
+	cout << "========================================================\n";
+
+
+	for (int iter = 0; iter < max_iter; ++iter) 
+	{
+		// Seed independent variables into DualClass vector
+		vector<DualClass> x_dual(n);
+		for (size_t i = 0; i < n; ++i) 
+		{
+			x_dual[i] = DualClass(x[i], i, n);
+		}
+
+		// Evaluate system functions & automatically compute gradients (Jacobian matrix)
+		vector<DualClass> f_dual = func(x_dual);
+            
+		vector<complex<double>> F(n);
+		vector<vector<complex<double>>> J(n, vector<complex<double>>(n));
+
+		double residual_norm = 0.0;
+		for (size_t i = 0; i < n; ++i) 
+		{
+			F[i] = f_dual[i].val;
+			residual_norm += norm(F[i]); // magnitude squared
+			for (size_t j = 0; j < n; ++j) 
+			{
+				J[i][j] = f_dual[i].der[j];
+			}
+		}
+		residual_norm = sqrt(residual_norm);
+
+		if (residual_norm < tol) 
+		{
+			cout << "\n[Success] Converged in " << iter << " iterations." << endl;
+			return x;
+		}
+
+		// Solve linear system: J * delta_x = F
+		vector<complex<double>> delta_x = solveLinearSystem(J, F);
+
+		// Update formula: x_{k+1} = x_k - delta_x
+		// Update the state variables
+		double delta_norm = 0.0;
+		for (size_t i = 0; i < n; ++i) 
+		{
+			x[i] -= delta_x[i];
+			delta_norm += std::norm(delta_x[i]);
+		}
+		delta_norm = std::sqrt(delta_norm);
+
+		cout << "Iter " << iter << " | Residual Norm: " << residual_norm << " | Update Norm: " << delta_norm << "\n";
+	}
+	cout << "\n[Warning] Reached max iterations without reaching target tolerance." << endl;
+	return x;
+}
+
+void NonlinearNewtonSolver::solve_printSolution(SystemFunction func, const vector<complex<double>>& initial_guess) 
+{	
+	size_t n = initial_guess.size();
+	roots = initial_guess;
+	cout << std::fixed << std::setprecision(10);
+
+	cout << "\n" ;
+	cout << "========================================================\n";
+	cout << "  Newton' Method Multivariable Complex Root Solver \n";
+	cout << "========================================================\n";
+
+	for (int iter = 0; iter < max_iter; ++iter) 
+	{
+		// Seed independent variables into DualClass vector
+		vector<DualClass> x_dual(n);
+		for (size_t i = 0; i < n; ++i) 
+		{
+			x_dual[i] = DualClass(roots[i], i, n);
+		}
+
+		// Evaluate system functions & automatically compute gradients (Jacobian matrix)
+		vector<DualClass> f_dual = func(x_dual);
+            
+		vector<complex<double>> F(n);
+		vector<vector<complex<double>>> J(n, vector<complex<double>>(n));
+
+		double residual_norm = 0.0;
+		for (size_t i = 0; i < n; ++i) 
+		{
+			F[i] = f_dual[i].val;
+			residual_norm += norm(F[i]); // magnitude squared
+			for (size_t j = 0; j < n; ++j) 
+			{
+				J[i][j] = f_dual[i].der[j];
+			}
+		}
+		residual_norm = sqrt(residual_norm);
+
+		if (residual_norm < tol) 
+		{
+			cout << "\n[Success] Converged in " << iter << " iterations." << endl;
+			break;
+		}
+
+		// Solve linear system: J * delta_x = F
+		vector<complex<double>> delta_x = solveLinearSystem(J, F);
+
+		// Update formula: x_{k+1} = x_k - delta_x
+		// Update the state variables
+		double delta_norm = 0.0;
+		for (size_t i = 0; i < n; ++i) 
+		{
+			roots[i] -= delta_x[i];
+			delta_norm += std::norm(delta_x[i]);
+		}
+		delta_norm = std::sqrt(delta_norm);
+
+		cout << "Iter " << iter << " | Residual Norm: " << residual_norm << " | Update Norm: " << delta_norm << "\n";
+		if (iter == max_iter-1) 
+		{
+			cout << "\n[Warning] Reached max iterations without reaching target tolerance." << endl;
+		}
+	}
+	
+	cout << "\nComputed Roots:" << endl;
+	cout << "---------------------------------------------------------\n";
+	for (size_t i = 0; i < roots.size(); ++i) 
+	{
+		cout << "x" << i + 1 << " = " << roots[i].real() ;
+		if (roots[i].imag() != 0.0) 
+		{
+			cout << (roots[i].imag() >= 0 ? " + " : " - ") << abs(roots[i].imag()) << "i" << endl;
+		}
+		cout << "\n";
+	}
+	cout << "---------------------------------------------------------\n";
+}
+
+vector<complex<double>> NonlinearNewtonSolver::solveLinearSystem(vector<vector<complex<double>>> J, vector<complex<double>> F) 
+{ // Gaussian Elimination with Partial Pivoting optimized for Complex Matrices
+	size_t n = J.size();
+	for (size_t i = 0; i < n; ++i) 
+	{
+		size_t max_row = i;
+		for (size_t k = i + 1; k < n; ++k) 
+		{
+			if (abs(J[k][i]) > abs(J[max_row][i])) 
+			{
+				max_row = k;
+			}
+ 		}
+		swap(J[i], J[max_row]);
+		swap(F[i], F[max_row]);
+
+		if (abs(J[i][i]) < 1e-15) 
+		{
+			cerr << "Error: Matrix is singular or near-singular!" << endl;
+			return vector<complex<double>>(n, 0.0);
+		}
+
+		for (size_t k = i + 1; k < n; ++k) 
+		{
+			complex<double> factor = J[k][i] / J[i][i];
+			for (size_t j = i; j < n; ++j) 
+			{
+				J[k][j] -= factor * J[i][j];
+			}
+			F[k] -= factor * F[i];
+		}
+	}
+
+	// Back substitution
+	vector<complex<double>> delta_x(n);
+	for (int i = n - 1; i >= 0; --i) 
+	{
+		complex<double> sum = 0.0;
+		for (size_t j = i + 1; j < n; ++j) 
+		{
+			sum += J[i][j] * delta_x[j];
+		}
+		delta_x[i] = (F[i] - sum) / J[i][i];
+	}
+	return delta_x;
+}
+
+
+// Quasi-Newton Method to solve nonlinear system
+// Linear system solver (complex Gaussian elimination with partial pivoting)
+bool QuasiNewtonSolver::solveLinearSystem(vector<vector<complex<double>>> A, vector<complex<double>> b, vector<complex<double>>& x) 
+{
+	size_t n = A.size();
+	x.assign(n, 0.0);
+
+	for (size_t i = 0; i < n; ++i) 
+	{
+		// Find pivot element
+		size_t maxRow = i;
+		for (size_t k = i + 1; k < n; ++k) 
+		{
+			if (abs(A[k][i]) > abs(A[maxRow][i])) 
+			{
+				maxRow = k;
+			}
+		}
+		swap(A[i], A[maxRow]);
+		swap(b[i], b[maxRow]);
+
+		if (abs(A[i][i]) < 1e-12) 
+		{
+			return false; // Matrix is singular
+		}
+
+		// Elimination phase
+		for (size_t k = i + 1; k < n; ++k) 
+		{
+			complex<double> factor = A[k][i] / A[i][i];
+			for (size_t j = i; j < n; ++j) 
+			{
+				A[k][j] -= factor * A[i][j];
+			}
+			b[k] -= factor * b[i];
+		}
+	}
+
+	// Back substitution phase
+	for (int i = n - 1; i >= 0; --i) 
+	{
+		complex<double> sum = 0.0;
+		for (size_t j = i + 1; j < n; ++j) 
+		{
+			sum += A[i][j] * x[j];
+		}
+		x[i] = (b[i] - sum) / A[i][i];
+	}
+	return true;
+}
+
+vector<complex<double>> QuasiNewtonSolver::solve_getvector(NonlinearSystem system, const vector<complex<double>>& x0) 
+{
+	size_t n = x0.size();
+	vector<complex<double>> x = x0;
+
+	// Step 1: Compute Initial Function Evaluation and Exact Jacobian via Automatic Differentiation
+	vector<DualClass> x_dual(n);
+	for (size_t i = 0; i < n; ++i) 
+	{
+		vector<complex<double>> d(n, 0.0);
+		d[i] = 1.0; // Seed the derivative vector
+		x_dual[i] = DualClass(x[i], d);
+	}
+
+	vector<DualClass> F_dual = system(x_dual);
+	vector<complex<double>> F(n);
+	vector<vector<complex<double>>> J(n, vector<complex<double>>(n));
+
+	for (size_t i = 0; i < n; ++i) 
+	{
+		F[i] = F_dual[i].val;
+		for (size_t j = 0; j < n; ++j) 
+		{
+			J[i][j] = F_dual[i].der[j]; // Extract exact analytical derivatives
+		}
+	}
+
+	// Iterative Quasi-Newton Updates
+	for (int iter = 0; iter < max_iter; ++iter) 
+	{
+		// Check for early convergence
+		double f_norm = 0.0;
+		for (size_t i = 0; i < n; ++i) 
+		{
+			f_norm += norm(F[i]);
+		}
+		f_norm = sqrt(f_norm);
+		if (f_norm < tol) 
+		{
+			cout << "\nConverged successfully in " << iter << " iterations.\n";
+			return x;
+		}
+
+		// Solve linear system: J * delta_x = -F
+		vector<complex<double>> neg_F(n);
+		for (size_t i = 0; i < n; ++i) 
+		{
+			neg_F[i] = -F[i];
+		}
+
+		vector<complex<double>> delta_x;
+		if (!solveLinearSystem(J, neg_F, delta_x)) 
+		{
+			cerr << "Error: Singular Jacobian matrix met during iterations.\n";
+			return x;
+		}
+
+		// Update Variable Strategy: x_new = x + delta_x
+		vector<complex<double>> x_new(n);
+		for (size_t i = 0; i < n; ++i) 
+		{
+			x_new[i] = x[i] + delta_x[i];
+		}
+
+		// Evaluate system at x_new
+		for (size_t i = 0; i < n; ++i) 
+		{
+			x_dual[i] = DualClass(x_new[i]);
+		}
+		vector<DualClass> F_new_dual = system(x_dual);
+		vector<complex<double>> F_new(n);
+		for (size_t i = 0; i < n; ++i) 
+		{
+			F_new[i] = F_new_dual[i].val;
+		}
+
+		// Broyden Rank-One Update Steps
+		vector<complex<double>> y(n);
+		double delta_x_norm_sq = 0.0;
+		for (size_t i = 0; i < n; ++i) 
+		{
+			y[i] = F_new[i] - F[i];
+			delta_x_norm_sq += norm(delta_x[i]);
+		}
+
+		// Compute rank-one vector update component: (y - J * delta_x) / ||delta_x||^2
+		vector<complex<double>> J_delta_x(n, 0.0);
+		for (size_t i = 0; i < n; ++i) 
+		{
+			for (size_t j = 0; j < n; ++j) 
+			{
+				J_delta_x[i] += J[i][j] * delta_x[j];
+			}
+		}
+
+		for (size_t i = 0; i < n; ++i) 
+		{
+			complex<double> numerator = y[i] - J_delta_x[i];
+			for (size_t j = 0; j < n; ++j) 
+			{
+				J[i][j] += (numerator * conj(delta_x[j])) / delta_x_norm_sq;
+			}
+		}
+
+		// Propagate forward values
+		x = x_new;
+		F = F_new;
+	}
+
+	cout << "\nWarning: Reached maximum allowable iterations.\n";
+	return x;
+}
+
+
+void QuasiNewtonSolver::solve(NonlinearSystem system, const vector<complex<double>>& x0) 
+{
+	size_t n = x0.size();
+	roots.resize(n, 0.0);	
+	roots = x0;
+
+	cout << "\n" ;
+	cout << fixed << setprecision(10);
+	cout << "========================================================\n";
+	cout << "  Quasi-Newton Multivariable Complex Root Solver \n";
+	cout << "========================================================\n";
+
+	// Step 1: Compute Initial Function Evaluation and Exact Jacobian via Automatic Differentiation
+	vector<DualClass> x_dual(n);
+	for (size_t i = 0; i < n; ++i) 
+	{
+		vector<complex<double>> d(n, 0.0);
+		d[i] = 1.0; // Seed the derivative vector
+		x_dual[i] = DualClass(roots[i], d);
+	}
+
+	vector<DualClass> F_dual = system(x_dual);
+	vector<complex<double>> F(n);
+	vector<vector<complex<double>>> J(n, vector<complex<double>>(n));
+
+	for (size_t i = 0; i < n; ++i) 
+	{
+		F[i] = F_dual[i].val;
+		for (size_t j = 0; j < n; ++j) 
+		{
+			J[i][j] = F_dual[i].der[j]; // Extract exact analytical derivatives
+		}
+	}
+
+	// Iterative Quasi-Newton Updates
+	for (int iter = 0; iter < max_iter; ++iter) 
+	{
+		// Check for early convergence
+		double f_norm = 0.0;
+		for (size_t i = 0; i < n; ++i) 
+		{
+			f_norm += norm(F[i]);
+		}
+		f_norm = sqrt(f_norm);
+		if (f_norm < tol) 
+		{
+			cout << "\nConverged successfully in " << iter << " iterations.\n";
+			break;
+		}
+
+		// Solve linear system: J * delta_x = -F
+		vector<complex<double>> neg_F(n);
+		for (size_t i = 0; i < n; ++i) 
+		{
+			neg_F[i] = -F[i];
+		}
+
+		vector<complex<double>> delta_x;
+		if (!solveLinearSystem(J, neg_F, delta_x)) 
+		{
+			cerr << "Error: Singular Jacobian matrix met during iterations.\n";
+			
+		}
+
+		// Update Variable Strategy: x_new = x + delta_x
+		vector<complex<double>> x_new(n);
+		for (size_t i = 0; i < n; ++i) 
+		{
+			x_new[i] = roots[i] + delta_x[i];
+		}
+
+		// Evaluate system at x_new
+		for (size_t i = 0; i < n; ++i) 
+		{
+			x_dual[i] = DualClass(x_new[i]);
+		}
+		vector<DualClass> F_new_dual = system(x_dual);
+		vector<complex<double>> F_new(n);
+		for (size_t i = 0; i < n; ++i) 
+		{
+			F_new[i] = F_new_dual[i].val;
+		}
+
+		// Broyden Rank-One Update Steps
+		vector<complex<double>> y(n);
+		double delta_x_norm_sq = 0.0;
+		for (size_t i = 0; i < n; ++i) 
+		{
+			y[i] = F_new[i] - F[i];
+			delta_x_norm_sq += norm(delta_x[i]);
+		}
+
+		// Compute rank-one vector update component: (y - J * delta_x) / ||delta_x||^2
+		vector<complex<double>> J_delta_x(n, 0.0);
+		for (size_t i = 0; i < n; ++i) 
+		{
+			for (size_t j = 0; j < n; ++j) 
+			{
+				J_delta_x[i] += J[i][j] * delta_x[j];
+			}
+		}
+
+		for (size_t i = 0; i < n; ++i) 
+		{
+			complex<double> numerator = y[i] - J_delta_x[i];
+			for (size_t j = 0; j < n; ++j) 
+			{
+				J[i][j] += (numerator * conj(delta_x[j])) / delta_x_norm_sq;
+			}
+		}
+		cout << "Iter " << iter << " | Residual Norm: " << f_norm << " | Update Norm: " << delta_x_norm_sq << "\n";
+		// Propagate forward values
+		roots = x_new;
+		F = F_new;
+
+		if (iter == max_iter-1) 
+		{
+			cout << "\nWarning: Reached maximum allowable iterations.\n";
+		}
+	}
+
+}
+
+void QuasiNewtonSolver::printSolution() const
+{
+	// Print calculated complex roots
+	cout << setprecision(10) << fixed;
+	cout << "\nComputed Roots:" << endl;
+	cout << "---------------------------------------------------------\n";
+	for (size_t i = 0; i < roots.size(); ++i) 
+	{
+		cout << "x" << i + 1 << " = " << roots[i].real() ;
+		if (roots[i].imag() != 0.0) 
+		{
+			cout << (roots[i].imag() >= 0 ? " + " : " - ") << abs(roots[i].imag()) << "i" << endl;
+		}
+		cout << "\n";
+	}
+	cout << "---------------------------------------------------------\n";
+	
+}
+
+// Steepest Descent to solve nonlinear system
+
+vector<complex<double>> SteepestDescentSolver::solve(SystemFunction system, const vector<complex<double>>& x0) 
+{
+	size_t n = x0.size();
+	vector<complex<double>> x = x0;
+
+	for (int iter = 0; iter < max_iter; ++iter) 
+	{
+		// 1. Evaluate system with DualClass variables to get values and Jacobian
+		vector<DualClass> x_dual(n);
+		for (size_t i = 0; i < n; ++i) 
+		{
+			x_dual[i] = DualClass(x[i], i, n);
+		}
+
+		vector<DualClass> f_dual = system(x_dual);
+
+		// Extract F(x) and Jacobian J(x)
+		vector<complex<double>> F(n);
+		vector<vector<complex<double>>> J(n, vector<complex<double>>(n));
+		double g_val = 0.0;
+
+		for (size_t i = 0; i < n; ++i) 
+		{
+			F[i] = f_dual[i].val;
+			g_val += std::norm(F[i]); // sum of squares of magnitudes
+			for (size_t j = 0; j < n; ++j) 
+			{
+				J[i][j] = f_dual[i].der[j];
+			}
+		}
+		g_val *= 0.5;
+
+		// Check convergence
+		if (std::sqrt(2.0 * g_val) < tol) 
+		{
+			cout << "Converged in " << iter << " iterations.\n";
+			return x;
+		}
+
+		// 2. Compute the Complex Gradient: grad(g) = J^H * F
+		vector<complex<double>> grad(n, 0.0);
+		double grad_norm_sq = 0.0;
+		for (size_t j = 0; j < n; ++j) 
+		{
+			for (size_t i = 0; i < n; ++i) 
+			{
+				grad[j] += std::conj(J[i][j]) * F[i];
+			}
+			grad_norm_sq += std::norm(grad[j]);
+		}
+
+		if (std::sqrt(grad_norm_sq) < 1e-12) 
+		{
+			cout << "Gradient vanished near a local minimum at iteration " << iter << ".\n";
+			return x;
+		}
+
+		// 3. Backtracking Line Search (Armijo Rule)
+		double alpha = 1.0;
+		double c = 1e-4;
+		double beta = 0.5;
+		vector<complex<double>> x_new(n);
+
+		while (alpha > 1e-5) 
+		{
+			for (size_t i = 0; i < n; ++i) 
+			{
+				x_new[i] = x[i] - alpha * grad[i];
+			}
+
+			// Evaluate g(x_new)
+			vector<DualClass> x_new_dual(n);
+			for (size_t i = 0; i < n; ++i) x_new_dual[i] = DualClass(x_new[i], i, n);
+			vector<DualClass> f_new_dual = system(x_new_dual);
+
+			double g_new = 0.0;
+			for (size_t i = 0; i < n; ++i) 
+			{
+				g_new += std::norm(f_new_dual[i].val);
+			}
+			g_new *= 0.5;
+
+			if (g_new <= g_val - c * alpha * grad_norm_sq) 
+			{
+				break;
+			}
+			alpha *= beta;
+		}
+
+		// Update variables
+		x = x_new;
+	} // the for loop
+
+	cout << "Reached maximum iterations without perfect convergence.\n";
+	return x;
+}
+
+void SteepestDescentSolver::solve_printSolution(SystemFunction system, const vector<complex<double>>& x0) 
+{
+	size_t n = x0.size();
+	roots = x0;
+
+	cout << "========================================================\n";
+	cout << "  Steepest Descent Nonlinear Solver \n";
+	cout << "========================================================\n";
+	cout << "\nTolerance required: " << tol << endl;
+	for (int iter = 0; iter < max_iter; ++iter) 
+	{
+		// 1. Evaluate system with DualClass variables to get values and Jacobian
+		vector<DualClass> x_dual(n);
+		for (size_t i = 0; i < n; ++i) 
+		{
+			x_dual[i] = DualClass(roots[i], i, n);
+		}
+
+		vector<DualClass> f_dual = system(x_dual);
+
+		// Extract F(x) and Jacobian J(x)
+		vector<complex<double>> F(n);
+		vector<vector<complex<double>>> J(n, vector<complex<double>>(n));
+		double g_val = 0.0;
+		for (size_t i = 0; i < n; ++i) 
+		{
+			F[i] = f_dual[i].val;
+			g_val += std::norm(F[i]); // sum of squares of magnitudes
+			for (size_t j = 0; j < n; ++j) 
+			{
+				J[i][j] = f_dual[i].der[j];
+			}
+		}
+		g_val *= 0.5;
+
+		// Check convergence
+		//if (std::sqrt(2.0 * g_val) < tol) 
+		if (g_val < tol) 
+		{
+			cout << "Converged in " << iter << " iterations.\n";
+			break;
+		}
+
+		// 2. Compute the Complex Gradient: grad(g) = J^H * F
+		vector<complex<double>> grad(n, 0.0);
+		double grad_norm_sq = 0.0;
+		for (size_t j = 0; j < n; ++j) 
+		{
+			for (size_t i = 0; i < n; ++i) 
+			{
+				grad[j] += std::conj(J[i][j]) * F[i];
+			}
+			grad_norm_sq += std::norm(grad[j]);
+		}
+
+		if (std::sqrt(grad_norm_sq) < 1e-12) 
+		{
+			cout << "Gradient vanished near a local minimum at iteration " << iter << ".\n";
+		}
+
+		// 3. Backtracking Line Search (Armijo Rule)
+		double alpha = 1.0;
+		double c = 1e-4;
+		double beta = 0.5;
+		vector<complex<double>> x_new(n);
+
+		while (alpha > 1e-5) 
+		{
+			for (size_t i = 0; i < n; ++i) 
+			{
+				x_new[i] = roots[i] - alpha * grad[i];
+			}
+
+			// Evaluate g(x_new)
+			vector<DualClass> x_new_dual(n);
+			for (size_t i = 0; i < n; ++i) x_new_dual[i] = DualClass(x_new[i], i, n);
+			vector<DualClass> f_new_dual = system(x_new_dual);
+
+			double g_new = 0.0;
+			for (size_t i = 0; i < n; ++i) 
+			{
+				g_new += std::norm(f_new_dual[i].val);
+			}
+			g_new *= 0.5;
+
+			if (g_new <= g_val - c * alpha * grad_norm_sq) 
+			{
+				break;
+			}
+			alpha *= beta;
+		}
+		
+		// Update variables
+		roots = x_new;
+		
+		cout << "Iter " << iter << " | g(x): " << g_val <<  "\n";
+		if (iter == max_iter-1)
+		{
+			cout << "Reached maximum iterations without perfect convergence.\n";
+		}
+	} // the for loop
+
+	// Output results
+	cout << "\nComputed Roots:\n";
+	cout << std::fixed << std::setprecision(10);
+	for (size_t i = 0; i < roots.size(); ++i) 
+	{
+		cout << "x" << i + 1 << " = " << roots[i].real() 
+		<< (roots[i].imag() >= 0 ? " + " : " - ") 
+		<< std::abs(roots[i].imag()) << "i\n";
+	}
+	
+}
+
+// PSO to solve nonlinear system
+// Converts internal real representation back to std::complex<double>
+ComplexVector PSOMultiRootFinder::toComplexVector(const vector<double>& real_vec) 
+{
+	ComplexVector comp_vec(num_vars);
+	for (int i = 0; i < num_vars; ++i) 
+	{
+		comp_vec[i] = Complex(real_vec[2 * i], real_vec[2 * i + 1]);
+	}
+	return comp_vec;
+}
+// Evaluates system and returns the total residual magnitude squared
+double PSOMultiRootFinder::evaluateFitness(const vector<double>& real_vec, const ComplexVectorFunction& system) 
+{
+	ComplexVector x = toComplexVector(real_vec);
+	ComplexVector residuals = system(x);
+	double total_error = 0.0;
+	for (const auto& res : residuals) 
+	{
+		total_error += norm(res); // norm(z) yields |z|^2
+	}
+	return total_error;
+}
+// Executes a single PSO run to locate a single global minimum root
+ComplexVector PSOMultiRootFinder::findOneRoot(const ComplexVectorFunction& system, mt19937& rng) 
+{
+	int dim = 2 * num_vars; // 2 dimensions per complex number
+        uniform_real_distribution<double> dist_pos(lower_bound, upper_bound);
+        uniform_real_distribution<double> dist_vel((lower_bound - upper_bound) * 0.1, (upper_bound - lower_bound) * 0.1);
+        uniform_real_distribution<double> dist_r(0.0, 1.0);
+
+	vector<Particle> swarm(pop_size);
+	vector<double> gbest_position(dim);
+	double gbest_fitness = numeric_limits<double>::max();
+
+	// Initialization
+	for (int i = 0; i < pop_size; ++i) 
+	{
+		swarm[i].position.resize(dim);
+		swarm[i].velocity.resize(dim);
+		for (int d = 0; d < dim; ++d) 
+		{
+			swarm[i].position[d] = dist_pos(rng);
+			swarm[i].velocity[d] = dist_vel(rng);
+		}
+		swarm[i].best_position = swarm[i].position;
+		swarm[i].best_fitness = evaluateFitness(swarm[i].position, system);
+
+		if (swarm[i].best_fitness < gbest_fitness) 
+		{
+			gbest_fitness = swarm[i].best_fitness;
+			gbest_position = swarm[i].best_position;
+		}
+	}
+	// PSO Optimization Parameters
+	const double w = 0.729;  // Inertia weight
+	const double c1 = 1.494; // Cognitive weight
+	const double c2 = 1.494; // Social weight
+	// Optimization Loop
+	for (int iter = 0; iter < max_iter; ++iter) 
+	{
+		for (int i = 0; i < pop_size; ++i) 
+		{
+			for (int d = 0; d < dim; ++d) 
+			{
+				double r1 = dist_r(rng);
+				double r2 = dist_r(rng);
+
+				swarm[i].velocity[d] = w * swarm[i].velocity[d] +
+					c1 * r1 * (swarm[i].best_position[d] - swarm[i].position[d]) +
+					c2 * r2 * (gbest_position[d] - swarm[i].position[d]);
+                    
+				swarm[i].position[d] += swarm[i].velocity[d];
+			}
+
+			double fitness = evaluateFitness(swarm[i].position, system);
+			if (fitness < swarm[i].best_fitness) 
+			{
+				swarm[i].best_fitness = fitness;
+				swarm[i].best_position = swarm[i].position;
+			}
+
+			if (fitness < gbest_fitness) 
+			{
+				gbest_fitness = fitness;
+				gbest_position = swarm[i].position;
+			}
+		}
+	}
+	return toComplexVector(gbest_position);
+}
+
+// Multiroot manager using multi-start check routine to identify unique roots
+vector<ComplexVector> PSOMultiRootFinder::findMultipleRoots(const ComplexVectorFunction& system, int num_runs) 
+{
+	double fitness_threshold = 1e-6;
+	double uniqueness_threshold = 1e-3;
+	random_device rd;
+	mt19937 rng(rd());
+	vector<ComplexVector> unique_roots;
+
+	for (int run = 0; run < num_runs; ++run) 
+	{
+		ComplexVector root = findOneRoot(system, rng);
+		double fitness = 0.0;
+		for (const auto& res : system(root)) 
+		{
+			fitness += norm(res);
+		}
+
+		// Keep only valid roots converging below our fitness target
+		if (fitness < fitness_threshold) 
+		{
+			bool is_unique = true;
+			for (const auto& existing : unique_roots) 
+			{
+				double distance = 0.0;
+				for (size_t i = 0; i < root.size(); ++i) 
+				{
+					distance += norm(root[i] - existing[i]);
+				}
+				if (sqrt(distance) < uniqueness_threshold) 
+				{
+					is_unique = false;
+					break;
+				}
+			}
+			if (is_unique) 
+			{
+				unique_roots.push_back(root);
+			}
+		}
+	}
+	return unique_roots;
+}
+
+void PSOMultiRootFinder::findMultipleRoots_printSolution(const ComplexVectorFunction& system, int num_runs) 
+{
+	double fitness_threshold = 1e-6;
+	double uniqueness_threshold = 1e-3;
+	random_device rd;
+	mt19937 rng(rd());
+
+	cout << "========================================================\n";
+	cout << "  PSO Multivariable Complex Root Finder  \n";
+	cout << "========================================================\n";
+	
+	cout << "\nSwarm population: " << pop_size << endl;
+	cout << "Maximum iteration: " << max_iter << endl;
+	cout << "Lower bound: " << lower_bound << endl;
+	cout << "Upper bound: " << upper_bound << endl;
+	for (int run = 0; run < num_runs; ++run) 
+	{
+		ComplexVector root = findOneRoot(system, rng);
+		double fitness = 0.0;
+		for (const auto& res : system(root)) 
+		{
+			fitness += norm(res);
+		}
+
+		// Keep only valid roots converging below our fitness target
+		if (fitness < fitness_threshold) 
+		{
+			bool is_unique = true;
+			for (const auto& existing : final_roots) 
+			{
+				double distance = 0.0;
+				for (size_t i = 0; i < root.size(); ++i) 
+				{
+					distance += norm(root[i] - existing[i]);
+				}
+				if (sqrt(distance) < uniqueness_threshold) 
+				{
+					is_unique = false;
+					break;
+				}
+			}
+			if (is_unique) 
+			{
+				final_roots.push_back(root);
+			}
+		}
+	}
+
+	// Output formatting
+	cout << fixed << setprecision(10);
+	cout << "\nFound " << final_roots.size() << " unique root(s):\n";
+	for (size_t i = 0; i < final_roots.size(); ++i) 
+	{
+		cout << "----------------------------------------\n";
+		cout << "Root #" << i + 1 << ":\n";
+		for (size_t j = 0; j < final_roots[0].size(); ++j) 
+		{
+			cout << "x" << j + 1 << " = " << final_roots[i][j].real() ;
+
+			cout << (final_roots[i][j].imag() >= 0 ? " + " : " - ") << abs(final_roots[i][j].imag()) << "i" << endl;
+			
+		}
+
+        
+		// Output verification residuals
+		ComplexVector res = system(final_roots[i]);
+		double f_norm=0;
+		for (size_t j = 0; j < final_roots[0].size(); ++j) 
+		{
+			f_norm += abs(res[j]) ;
+		}		
+		cout << "Residual Norm = " << f_norm << "\n";
+	}
+	cout << "----------------------------------------\n";
+	
+}
+
+// RK4 Multiroot solver
+
+bool RK4MultiRootSolver::solveLinearSystem(vector<vector<complex<double>>>& A, vector<complex<double>>& b, vector<complex<double>>& x) 
+{
+	size_t n = A.size();
+	x.assign(n, 0);
+
+	for (size_t i = 0; i < n; ++i) 
+	{
+	  	// Pivot selection
+		size_t maxRow = i;
+		for (size_t k = i + 1; k < n; ++k) 
+		{
+			if (std::abs(A[k][i]) > std::abs(A[maxRow][i]))
+			{ 
+				maxRow = k;
+			}
+		}
+		std::swap(A[i], A[maxRow]);
+		std::swap(b[i], b[maxRow]);
+
+		if (std::abs(A[i][i]) < 1e-12) 
+		{
+			return false; // Singular matrix
+		}
+
+		for (size_t k = i + 1; k < n; ++k) 
+		{
+			complex<double> c = -A[k][i] / A[i][i];
+			for (size_t j = i; j < n; ++j) 
+			{
+				A[k][j] += c * A[i][j];
+			}
+			b[k] += c * b[i];
+		}
+	}
+
+	// Back substitution
+	for (int i = n - 1; i >= 0; --i) 
+	{
+		x[i] = b[i];
+		for (size_t j = i + 1; j < n; ++j) 
+		{
+			x[i] -= A[i][j] * x[j];
+		}
+		x[i] /= A[i][i];
+	}
+	return true;
+}
+
+
+// Continuous Newton function derivative: dx/dt = -J^-1 * F(x)
+vector<complex<double>> RK4MultiRootSolver::computeDerivatives(const vector<complex<double>>& x, SystemFunc system) 
+{
+        size_t n = x.size();
+	vector<DualClassTemplate<complex<double>>> dual_x(n);
+        
+	// Initialize dual variables for automatic differentiation
+	for (size_t i = 0; i < n; ++i) 
+	{
+		vector<complex<double>> der(n, 0.0);
+		der[i] = 1.0;
+		dual_x[i] = DualClassTemplate<complex<double>>(x[i], der);
+	}
+
+	// Evaluate system equations via DualClassTemplate auto-differentiation
+	auto dual_res = system(dual_x);
+
+	vector<vector<complex<double>>> J(n, vector<complex<double>>(n));
+	vector<complex<double>> neg_F(n);
+
+	for (size_t i = 0; i < n; ++i) 
+	{
+		neg_F[i] = -dual_res[i].val;
+		for (size_t j = 0; j < n; ++j) 
+		{
+			J[i][j] = (j < dual_res[i].der.size()) ? dual_res[i].der[j] : 0.0;
+		}
+	}
+
+	vector<complex<double>> dxdt(n);
+	if (!solveLinearSystem(J, neg_F, dxdt)) 
+	{
+		return vector<complex<double>>(n, 0.0); // Fail-safe
+	}
+	return dxdt;
+}
+
+vector<complex<double>> RK4MultiRootSolver::solve(vector<complex<double>> x0, SystemFunc system) 
+{
+	double dt = 0.1;
+	
+	vector<complex<double>> x = x0;
+	size_t n = x.size();
+
+	for (int step = 0; step < steps; ++step) 
+	{
+		auto k1 = computeDerivatives(x, system);
+            
+		vector<complex<double>> x_k2(n);
+		for (size_t i = 0; i < n; ++i)
+		{ 
+			x_k2[i] = x[i] + 0.5 * dt * k1[i];
+		}
+		auto k2 = computeDerivatives(x_k2, system);
+
+		vector<complex<double>> x_k3(n);
+		for (size_t i = 0; i < n; ++i) 
+		{
+			x_k3[i] = x[i] + 0.5 * dt * k2[i];
+		}
+		auto k3 = computeDerivatives(x_k3, system);
+
+		vector<complex<double>> x_k4(n);
+		for (size_t i = 0; i < n; ++i) 
+		{
+			x_k4[i] = x[i] + dt * k3[i];
+		}
+		auto k4 = computeDerivatives(x_k4, system);
+
+		// Update state
+		for (size_t i = 0; i < n; ++i) 
+		{
+			x[i] += (dt / 6.0) * (k1[i] + 2.0 * k2[i] + 2.0 * k3[i] + k4[i]);
+		}
+	}
+	return x;
+
+}
+
+void RK4MultiRootSolver::printSolution() 
+{
+	cout << "========================================================\n";
+	cout << "  RK4 Multiroot Solver  \n";
+	cout << "========================================================\n";
+	cout << "\nStep size: " << steps << endl;
+	cout << endl;// Output formatting
+	cout << fixed << setprecision(10);
+	int root_count = 1;
+	for (const auto& guess : initial_guesses) 
+	{
+		cout << "Initial Guess " << root_count << ":\n";
+		for (size_t i = 0; i < guess.size(); ++i) 
+		{
+			cout << "  x" << i+1 << " = " << guess[i] << "\n";
+		}
+	
+
+		// Find root using continuous Newton + RK4 Integration
+		auto root = solve(guess, targetSystem);
+
+		cout << "Computed Convergence Root:\n";
+		for (size_t i = 0; i < root.size(); ++i) 
+		{
+			// Clean up extremely small floating values around 0 for clean output
+
+			double real_part = std::abs(root[i].real()) < 1e-9 ? 0.0 : root[i].real();
+			double imag_part = std::abs(root[i].imag()) < 1e-9 ? 0.0 : root[i].imag();
+			cout << "  x" << i+1 << " = (" << real_part << ", " << imag_part << ")\n";
+		}
+
+		cout << "-------------------------------------------\n";
+
+		root_count++;
+	}
+}
 #endif
+
 #endif
