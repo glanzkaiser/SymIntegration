@@ -278,6 +278,56 @@ Symbolic factorial(const Symbolic &s)
 Symbolic gamma(const Symbolic &s)
 { return Gamma(s); }
 
+Symbolic heaviside(const Symbolic &s) 
+{ return Heaviside(s); }
+
+Symbolic dirac(const Symbolic &s) 
+{ return Dirac(s); }
+
+// Universal argument extractor
+Symbolic getargument(const Symbolic &s) 
+{
+	// If it's a structural symbol class object (like sin, cos, dirac, etc.)
+	// they usually inherit from Symbol or contain a structural representation.
+	try 
+	{
+        // Attempt to treat it as a Symbol class to see its parameters
+	CastPtr<const Symbol> sym(s);
+	if ( !sym->parameters.empty()) 
+	{
+		return sym->parameters.front();
+	}
+	} 
+	catch (const SymbolicError &se) {
+        // Handle cases where CastPtr might fail or throw
+	}
+    
+	// Fallback if it's a raw variable or has no inner functional parameters
+	return s;
+}
+
+// Universal power extractor
+Symbolic getpower(const Symbolic &s) 
+{
+	// If it's a structural symbol class object (like sin, cos, dirac, etc.)
+	// they usually inherit from Symbol or contain a structural representation.
+	try 
+	{
+        // Attempt to treat it as a Symbol class to see its parameters
+	CastPtr<const Symbol> sym(s);
+	if ( !sym->parameters.empty()) 
+	{
+		return sym->parameters.back();
+	}
+	} 
+	catch (const SymbolicError &se) {
+        // Handle cases where CastPtr might fail or throw
+	}
+    
+	// Fallback if it's a raw variable or has no inner functional parameters
+	return s;
+}
+
 Symbolic df(const Symbolic &s,const Symbolic &x)
 { return s.df(x); }
 

@@ -553,7 +553,7 @@ public:
 	// Get the degree of the polynomial
 	int maxDegree() const 
 	{
-		return coeffs.size() - 1;
+		return coeffs.empty() ? 0 : coeffs.size() - 1;
 	}
 
 	// Horner's Method to evaluate the polynomial at a given complex point z
@@ -569,33 +569,103 @@ public:
         
 		return result;
 	}
+	
+	// Durand-Kerner method to find all complex roots
+	vector<complex<double>> find_roots_durand_kerner() const 
+	{
+		int max_iterations = 1000; 
+		double tolerance = 1e-12;
+		size_t n = maxDegree();
+		if (n == 0) return {};
+
+		// Normalize leading coefficient (make it monic)
+		complex<double> leading_coeff = coeffs.back();
+		
+		// Initialize roots with distinct complex values (Aberth/Guggenheimer initial values)
+		vector<complex<double>> roots(n);
+		Complex center(0.4, 0.9); // Arbitrary complex starting point shifts
+		for (size_t i = 0; i < n; ++i) 
+		{
+			double angle = 2.0 * M_PI * i / n;
+			roots[i] = center + std::pow(complex<double>(0.9, 0.2), i); // Generates distinct initial guesses
+		}
+
+			bool converged = false;
+		for (int iter = 0; iter < max_iterations && !converged; ++iter) 
+		{
+			converged = true;
+			vector<Complex> old_roots = roots;
+
+			for (size_t i = 0; i < n; ++i) 
+			{
+				// Calculate the denominator: Product(x_i - x_j) for j != i
+				complex<double> denominator = 1.0;
+				for (size_t j = 0; j < n; ++j) 
+				{
+					if (i != j) 
+					{
+						denominator *= (old_roots[i] - old_roots[j]);
+					}
+				}
+
+				// Durand-Kerner formula step: x_i = x_i - P(x_i) / (a_n * denominator)
+				complex<double> numerator = evaluateAt(old_roots[i]);
+				complex<double> correction = numerator / (leading_coeff * denominator);
+		        
+				roots[i] = old_roots[i] - correction;
+
+				// Check if any root is still changing above tolerance limit
+				if (std::abs(correction) > tolerance) 
+				{
+					converged = false;
+				}
+			}
+		}
+		for (size_t i = 0; i < n; ++i) 
+		{
+			if(abs(real(roots[i])) < 1e-6 )
+			{
+				//roots[i] = (0,imag(roots[i]));
+			}
+			if(abs(imag(roots[i])) < 1e-6 )
+			{
+				//roots[i] = (real(roots[i]),0);
+			}
+		}
+		return roots;
+	}
 
 	// Synthetic division: divides polynomial by (x - root)
 	// Returns pair: {quotient, remainder}
 	pair<PolynomialComplex, complex<double>> divide_by_linear(Complex root) const 
 	{
- 	if (coeffs.empty()) 
-	{
-		return {PolynomialComplex({0}), 0};
-	}
-        
-	int n = maxDegree();
-	vector<complex<double>> q_coeffs(n > 0 ? n : 1, 0.0);
-	Complex rem = coeffs.back();
-        
-	if (n > 0) 
-	{
-		q_coeffs[n - 1] = coeffs.back();
-		for (int i = n - 2; i >= 0; --i) 
+	 	if (coeffs.empty()) 
 		{
-			q_coeffs[i] = coeffs[i + 1] + q_coeffs[i + 1] * root;
+			return {PolynomialComplex({0}), 0};
 		}
-		rem = coeffs[0] + q_coeffs[0] * root;
-	}
-        
-	return {PolynomialComplex(q_coeffs), rem};
+		
+		int n = maxDegree();
+		vector<complex<double>> q_coeffs(n > 0 ? n : 1, 0.0);
+		Complex rem = coeffs.back();
+		
+		if (n > 0) 
+		{
+			q_coeffs[n - 1] = coeffs.back();
+			for (int i = n - 2; i >= 0; --i) 
+			{
+				q_coeffs[i] = coeffs[i + 1] + q_coeffs[i + 1] * root;
+			}
+			rem = coeffs[0] + q_coeffs[0] * root;
+		}
+		
+		return {PolynomialComplex(q_coeffs), rem};
 	}
 
+	// A pure polynomial is fundamentally continuous everywhere in C
+	bool isAlwaysContinuous() const 
+	{
+		return true;
+	}
 	// Print utility
 	void print() const 
 	{
@@ -727,7 +797,48 @@ public:
 
 #endif
 
+#ifndef LAPLACE_TRANSFORM
+#define LAPLACE_TRANSFORM
+// Class to calculate both exact (analytical) and numerical Laplace transforms
+class LaplaceTransform {
+private:
+
+
+public:
+	LaplaceTransform();
+	// Helper for numerical integration: Adaptive Simpson's Rule
+	double simpsonStep(const std::function<double(double)>& f, double a, double b, double epsilon, double whole, int limit) const;
+	double integrate(const std::function<double(double)>& f, double a, double b, double epsilon = 1e-6) const ;
+
+	// 1. Constant: f(t) = 1  =>  F(s) = 1 / s
+	double constant(double s) const ;
+	// 2. Exponential: f(t) = e^(at)  =>  F(s) = 1 / (s - a)
+	double exponential(double s, double a) const ;
+	// 3. Polynomial / t-power: f(t) = t^n  =>  F(s) = n! / s^(n+1)
+	double tPower(double s, int n) const ;
+	// 4. Sine: f(t) = sin(wt)  =>  F(s) = w / (s^2 + w^2)
+	double sine(double s, double w) const ;
+	// 5. Cosine: f(t) = cos(wt)  =>  F(s) = s / (s^2 + w^2)
+	double cosine(double s, double w) const ;
+	// 6. Hyperbolic Sine: f(t) = sinh(at)  =>  F(s) = a / (s^2 - a^2)
+	double sinh(double s, double a) const ;
+	// 7. Hyperbolic Cosine: f(t) = cosh(at)  =>  F(s) = s / (s^2 - a^2)
+	double cosh(double s, double a) const ;
+	// 8. General Numerical Laplace Transform (for arbitrary custom functions)
+	// Computes integral from 0 to upper_bound (approximating infinity) of f(t) * e^(-st)
+	double numericalTransform(const std::function<double(double)>& f, double s, double upperBound = 50.0) const;
+};
+
+#endif
+
 int find_L(const PolynomialComplex&, const PolynomialComplex& , const PolynomialComplex& );
+
+bool isInteger_sym(Symbolic);
+bool is_constant(const Symbolic &, const Symbolic &, const Symbolic &);
+Symbolic symbolicfactorial(const Symbolic &);
+Symbolic SymbolicLaplaceTransform(const Symbolic &, const Symbolic &, const Symbolic &);
+Symbolic SymbolicInverseLaplaceTransform(const Symbolic &, const Symbolic &, const Symbolic &); 
+Symbolic ivpsolve_laplacetransform(const Equation &, const Symbolic &, const Symbolic &, const double &, const double &);
 
 Symbolic ivp(const Symbolic &, const Symbolic &, const Symbolic &, const Symbolic &);
 void secondorderlineardiffeq_derivativesvalueatx0(const Symbolic &, const Symbolic &, const Symbolic &, double, Symbolic, Symbolic);

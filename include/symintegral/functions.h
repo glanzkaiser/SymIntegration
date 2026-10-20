@@ -50,6 +50,8 @@ class Tanh;
 class Coth;
 class Sech;
 class Csch;
+class Heaviside;
+class Dirac;
 class Log;
 class Erf;
 class Power;
@@ -317,16 +319,43 @@ class Csch: public Symbol
          Cloning *clone() const { return Cloning::clone(*this); }
 };
 
+
+class Heaviside : public Symbol 
+{
+public: Heaviside(const Heaviside&);
+	Heaviside(const Symbolic&);
+
+	Simplified simplify() const;
+	Symbolic df(const Symbolic&) const;
+	Symbolic integrate(const Symbolic&) const;
+
+	Cloning *clone() const { return Cloning::clone(*this); }
+};
+
+
+class Dirac : public Symbol 
+{
+public: Dirac(const Dirac&);
+	Dirac(const Symbolic&);
+
+	Simplified simplify() const;
+	Symbolic getargument(const Symbolic&) const;
+	Symbolic df(const Symbolic&) const;
+	Symbolic integrate(const Symbolic&) const;
+
+	Cloning *clone() const { return Cloning::clone(*this); }
+};
+
 class Erf: public Symbol
 {
  public: Erf(const Erf&);
          Erf(const Symbolic&);
 
-         Simplified simplify() const;
-         Symbolic df(const Symbolic&) const;
-         Symbolic integrate(const Symbolic&) const;
+	Simplified simplify() const;
+	Symbolic df(const Symbolic&) const;
+	Symbolic integrate(const Symbolic&) const;
 
-         Cloning *clone() const { return Cloning::clone(*this); }
+	Cloning *clone() const { return Cloning::clone(*this); }
 };
 
 class Log: public Symbol
@@ -420,7 +449,7 @@ class Column: public Symbol
  public:  Column(const Column&);
           Column(const Symbolic&,int);
 
-          Simplified simplify() const;
+          Simplified simplify() const; // Override simplify to perform the extraction logic
 
           Cloning *clone() const { return Cloning::clone(*this); }
 };

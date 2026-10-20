@@ -40,13 +40,13 @@ double division(double x, double y)
 
 int main(void)
 {
-	Symbolic t("t"), x("x"), y("y"),yt, C("C");
+	//Symbolic t("t"), x("x"), y("y"),yt, C("C");
 	
-	cout << "f(x,y) = " << ln(e^1) <<endl;	
-	cout << "f(x,y) = " << i*i <<endl;	
-	cout << "f(x,y) = " << i <<endl;	
+	//cout << "f(x,y) = " << ln(e^1) <<endl;	
+	//cout << "f(x,y) = " << i*i <<endl;	
+	//cout << "f(x,y) = " << i <<endl;	
 	// Define a complex number (real part, imaginary part)
-	std::complex<double> c(0.0, -3.0); 
+	std::complex<double> c(7.0, -3.0); 
 
 	complexnumber_analysis(c);
 	return 0; 

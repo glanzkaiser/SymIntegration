@@ -773,6 +773,102 @@ Symbolic Csch::integrate(const Symbolic &s) const
  return (ln(tanh(0.5*(parameters.front()))))  * (1/ parameters.front().df(s)) ;
 }
 
+
+//////////////////////////////////////
+// Implementation of Heaviside      //
+//////////////////////////////////////
+
+Heaviside::Heaviside(const Heaviside &s) : Symbol(s) {}
+
+Heaviside::Heaviside(const Symbolic &s) : Symbol(Symbol("heaviside")[s]) {}
+
+Simplified Heaviside::simplify() const
+{
+	const Symbolic &s = parameters.front().simplify();
+	// If argument is a known number
+	if (s.type() == typeid(Numeric))
+	{
+		double val = CastPtr<const Number<double>>(s)->n;
+		if (val > 0) return Number<int>(1);
+		if (val < 0) return Number<int>(0);
+		// heaviside(0) can be defined as 1/2 or left symbolic; here return 0.5 or 1 if desired
+	}
+	return *this;
+}
+
+// Derivative of H(x) is Dirac(x) * x.df(s)
+Symbolic Heaviside::df(const Symbolic &s) const
+{	
+	//const Symbolic &arg = parameters.front();
+	return dirac(parameters.front()) * parameters.front().df(s);
+}
+
+// Integral of H(x) is x * H(x) [indistinct or ramp-like behavior]
+Symbolic Heaviside::integrate(const Symbolic &s) const
+{
+	const Symbolic &x = parameters.front();
+	if (x == s) return x * heaviside(x); 
+	if (df(s) == 0) return *this * s;
+	return *this * s; // basic placeholder
+}
+
+
+//////////////////////////////////////
+// Implementation of Dirac Delta    //
+//////////////////////////////////////
+
+Dirac::Dirac(const Dirac &s) : Symbol(s) {}
+// Dirac constructor
+Dirac::Dirac(const Symbolic &s) : Symbol(Symbol("dirac")[s]) {}
+
+Simplified Dirac::simplify() const
+{
+	const Symbolic &s = parameters.front().simplify();
+	if (s.type() == typeid(Numeric))
+	{
+		double val = 0.0;
+		bool is_numeric = false;
+		
+		// Try casting to Number<double> first, or fall back to Number<int>
+		if (isInteger_sym(s)) 
+		{
+			val = CastPtr<const Number<int>>(s)->n;
+			is_numeric = true;
+		} 
+		else if (!isInteger_sym(s)) 	
+		{
+			val = CastPtr<const Number<double>>(s)->n;
+			is_numeric = true;
+		}
+
+		if (is_numeric && val != 0.0) 
+		{
+			return Number<int>(0); // Dirac(x) = 0 for x != 0
+		}
+		//double val = CastPtr<const Number<double>>(s)->n;
+		//if (val != 0) return Number<int>(0); // Dirac(x) = 0 for x != 0
+	}
+	return *this;
+}
+
+// Derivative of Dirac(x) is Dirac'(x)
+Symbolic Dirac::df(const Symbolic &s) const
+{
+	const Symbolic &arg = parameters.front();
+	// Assuming a symbolic constructor for derivative DiracPrime or similar
+	//return arg;	
+	return Symbol("DiracPrime")[arg] * arg.df(s);
+}
+
+// Integral of Dirac(x) w.r.t x yields Heaviside(x)
+Symbolic Dirac::integrate(const Symbolic &s) const
+{
+	const Symbolic &x = parameters.front();
+	if (x == s) return heaviside(x);
+	if (df(s) == 0) return *this * s;
+	return *this * s;
+}
+
 //////////////////////////////////////
 // Implementation of Erf           //
 //////////////////////////////////////
@@ -2283,6 +2379,7 @@ Simplified Columns::simplify() const
  return Symbolic(CastPtr<const SymbolicMatrix>(s)->cols());
 }
 
+
 //////////////////////////////////////
 // Implementation of Row            //
 //////////////////////////////////////
@@ -2456,6 +2553,8 @@ Simplified Gamma::simplify() const
  }
  return Gamma(s);
 }
+
+
 
 #endif
 #endif

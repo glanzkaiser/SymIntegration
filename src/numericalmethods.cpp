@@ -1553,7 +1553,7 @@ vector<complex<double>> SteepestDescentSolver::solve(SystemFunction system, cons
 		}
 
 		vector<DualClass> f_dual = system(x_dual);
-
+		
 		// Extract F(x) and Jacobian J(x)
 		vector<complex<double>> F(n);
 		vector<vector<complex<double>>> J(n, vector<complex<double>>(n));
@@ -1639,7 +1639,7 @@ void SteepestDescentSolver::solve_printSolution(SystemFunction system, const vec
 {
 	size_t n = x0.size();
 	roots = x0;
-
+	cout << fixed << setprecision(10);
 	cout << "========================================================\n";
 	cout << "  Steepest Descent Nonlinear Solver \n";
 	cout << "========================================================\n";
@@ -1654,6 +1654,14 @@ void SteepestDescentSolver::solve_printSolution(SystemFunction system, const vec
 		}
 
 		vector<DualClass> f_dual = system(x_dual);
+
+		// Check for early convergence
+		double f_norm = 0.0;
+		for (size_t i = 0; i < n; ++i) 
+		{
+			f_norm += norm(f_dual[i].val);
+		}
+		f_norm = sqrt(f_norm);
 
 		// Extract F(x) and Jacobian J(x)
 		vector<complex<double>> F(n);
@@ -1730,7 +1738,8 @@ void SteepestDescentSolver::solve_printSolution(SystemFunction system, const vec
 		// Update variables
 		roots = x_new;
 		
-		cout << "Iter " << iter << " | g(x): " << g_val <<  "\n";
+		cout << "Iter " << iter << " | 0.5||F(x)||^{2}: " << g_val <<  "\t | \t " << "||F(x)||: " << f_norm << endl; 
+
 		if (iter == max_iter-1)
 		{
 			cout << "Reached maximum iterations without perfect convergence.\n";
@@ -1746,6 +1755,7 @@ void SteepestDescentSolver::solve_printSolution(SystemFunction system, const vec
 		<< (roots[i].imag() >= 0 ? " + " : " - ") 
 		<< std::abs(roots[i].imag()) << "i\n";
 	}
+	
 	
 }
 

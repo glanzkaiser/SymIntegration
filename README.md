@@ -3,6 +3,8 @@
 SymIntegration is a C++ library for scientific computing.
 This project is started on April 9th, 2025.
 It is branching out from SymbolicC++3.35.
+To bridge abstract mathematics and raw computation. 
+This engine proved we can implement high-performance, algorithmic pipelines without relying on high-level wrappers.
 
 It covers differential equations solver, statistics, operations research, linear algebra, genetic algorithms, machine learning, and more will be added in the future.
 
@@ -67,6 +69,10 @@ It is able to compute
 Differential Equations
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/SIDiffEq.gif" width="60%">
+
+Partial Differential Equations
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/3DHeatEquation.gif" width="60%">
 
 Eigenvalues computation
 

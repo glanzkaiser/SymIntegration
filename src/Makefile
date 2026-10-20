@@ -13,6 +13,7 @@ SOURCES += symintegrationc++.cpp symmatrix.cpp vecnorm.cpp
 SOURCES += vector.cpp vectormatrixoperations.cpp verylong.cpp
 SOURCES += asa241.cpp statistics-mle.cpp
 SOURCES += biology-dna.cpp
+SOURCES += sfml-visualizations.cpp
 
 OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 UNAME_S := $(shell uname -s)

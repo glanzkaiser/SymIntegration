@@ -77,6 +77,7 @@
 #include "symintegral/mathematicalfinance.h"
 #include "symintegral/numericalmethods.h"
 #include "symintegral/operationsresearch.h"
+#include "symintegral/sfml-visualizations.h"
 #include "symintegral/simplify.h"
 #include "symintegral/statistics.h"
 #include "symintegral/statistics-mle.h"
@@ -217,6 +218,10 @@ Symbolic tanh(const Symbolic &);
 Symbolic coth(const Symbolic &);
 Symbolic sech(const Symbolic &);
 Symbolic csch(const Symbolic &);
+Symbolic heaviside(const Symbolic &);
+Symbolic dirac(const Symbolic &);
+Symbolic getargument(const Symbolic &);
+Symbolic getpower(const Symbolic &);
 Symbolic ln(const Symbolic &);
 Symbolic log(const Symbolic &,const Symbolic &);
 Symbolic pow(const Symbolic &,const Symbolic &);

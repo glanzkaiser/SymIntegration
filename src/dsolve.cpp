@@ -1,6 +1,7 @@
 /*
    Thank you Freya the Goddess, Sentinel, Berlin, all Nature, and Mother Mary from Catholic Divine
 */
+// NEVER EVER EVER EVER EVER EVER USE SAME NAME FOR CLASS AND FUNCTION. 
 
 #include "symintegral/symintegrationc++.h"
 #include "symintegral/dual.h"
@@ -8748,7 +8749,7 @@ vector<double> HigherOrderODE_Homogeneous_PowerSeriesSolver::coefficientsvector(
 	{
 		if (k > 0) 
 		{
-		factorial *= k;
+			factorial *= k;
 		}
 		coefficients[k] = initial_values[k] / factorial;
 	}
@@ -10834,6 +10835,683 @@ void SecondOrderODE_Homogeneous_Frobenius_PowerSeriesSolver::printSolution() con
 	}
 }
  
+/* 
+
+	To compute Numerical Solution of Laplace Transform
+
+*/
+// Constructor
+LaplaceTransform::LaplaceTransform() {}
+
+// Helper for numerical integration: Adaptive Simpson's Rule
+double LaplaceTransform::simpsonStep(const std::function<double(double)>& f, double a, double b, double epsilon, double whole, int limit) const
+{
+	double c = (a + b) / 2.0;
+	double fa = f(a), fb = f(b), fc = f(c);
+	double d = (a + c) / 2.0, e = (c + b) / 2.0;
+	double fd = f(d), fe = f(e);
+        
+	double left = (c - a) / 6.0 * (fa + 4.0 * fd + fc);
+	double right = (b - c) / 6.0 * (fc + 4.0 * fe + fb);
+	double delta = left + right - whole;
+
+	if (limit <= 0 || std::abs(delta) <= 15.0 * epsilon) 
+	{
+		return left + right + delta / 15.0;
+	}
+	return simpsonStep(f, a, c, epsilon / 2.0, left, limit - 1) + simpsonStep(f, c, b, epsilon / 2.0, right, limit - 1);
+}
+
+double LaplaceTransform::integrate(const std::function<double(double)>& f, double a, double b, double epsilon) const 
+{
+	double c = (a + b) / 2.0;
+	double whole = (b - a) / 6.0 * (f(a) + 4.0 * f(c) + f(b));
+	return simpsonStep(f, a, b, epsilon, whole, 20);
+}
+
+// 1. Constant: f(t) = 1  =>  F(s) = 1 / s
+double LaplaceTransform::constant(double s) const 
+{
+	if (s <= 0) 
+	{
+		return 0.0; // Undefined/divergent for s <= 0
+	}
+	return 1.0 / s;
+}
+
+// 2. Exponential: f(t) = e^(at)  =>  F(s) = 1 / (s - a)
+double LaplaceTransform::exponential(double s, double a) const 
+{
+	if (s <= a) 
+	{
+		return 0.0; 
+	}
+	return 1.0 / (s - a);
+}
+
+// 3. Polynomial / t-power: f(t) = t^n  =>  F(s) = n! / s^(n+1)
+double LaplaceTransform::tPower(double s, int n) const 
+{
+	if (s <= 0 || n < 0) 
+	{
+		return 0.0;
+	}
+	double factorial = 1.0;
+	for (int i = 1; i <= n; ++i) 
+	{
+		factorial *= i;
+	}
+	return factorial / std::pow(s, n + 1);
+}
+
+// 4. Sine: f(t) = sin(wt)  =>  F(s) = w / (s^2 + w^2)
+double LaplaceTransform::sine(double s, double w) const 
+{
+	if (s <= 0) 
+	{
+		return 0.0;
+	}
+	return w / (s * s + w * w);
+}
+
+// 5. Cosine: f(t) = cos(wt)  =>  F(s) = s / (s^2 + w^2)
+double LaplaceTransform::cosine(double s, double w) const 
+{
+	if (s <= 0) 
+	{
+		return 0.0;
+	}
+	return s / (s * s + w * w);
+}
+
+// 6. Hyperbolic Sine: f(t) = sinh(at)  =>  F(s) = a / (s^2 - a^2)
+double LaplaceTransform::sinh(double s, double a) const 
+{
+	if (s <= std::abs(a)) 
+	{
+		return 0.0;
+	}
+	return a / (s * s - a * a);
+}
+
+// 7. Hyperbolic Cosine: f(t) = cosh(at)  =>  F(s) = s / (s^2 - a^2)
+double LaplaceTransform::cosh(double s, double a) const 
+{
+	if (s <= std::abs(a)) 
+	{
+		return 0.0;
+	}
+	return s / (s * s - a * a);
+}
+
+// 8. General Numerical Laplace Transform (for arbitrary custom functions)
+// Computes integral from 0 to upper_bound (approximating infinity) of f(t) * e^(-st)
+double LaplaceTransform::numericalTransform(const std::function<double(double)>& f, double s, double upperBound) const 
+{
+	auto integrand = [f, s](double t) 
+	{
+		return f(t) * std::exp(-s * t);
+	};
+	return LaplaceTransform::integrate(integrand, 0.0, upperBound);
+}
+
+/*
+	End of numerical solution of Laplace Transform
+*/
+
+bool isInteger_sym(Symbolic d) 
+{
+	double num = d;
+	return std::floor(num) == num;
+}
+// Helper function to check if an expression is independent of given variables
+bool is_constant(const Symbolic &expr, const Symbolic &t, const Symbolic &s) 
+{
+	return (df(expr, t) == 0 && df(expr, s) == 0);
+}
+Symbolic symbolicfactorial(const Symbolic &a)
+{
+	if (isInteger_sym(a))
+	{
+		int n = a;
+		Symbolic factorial = 1.0;
+		for (int i = 1; i <= n; ++i) 
+		{
+			factorial *= i;
+		}
+		return factorial;
+	}
+	else 
+	{
+		return 0;
+	}
+}
+
+Symbolic SymbolicLaplaceTransform(const Symbolic &ft, const Symbolic &t, const Symbolic &s)
+{
+	Symbolic LT;
+	
+ 	if (ft == 0) 
+	{
+		return 0;
+	}
+	
+	if(ft != 0)
+ 	{
+		// Pattern matching setup
+		list<Equations> eq;
+		list<Equations>::iterator i;
+		UniqueSymbol a("a"), b("b"), c("c"), d("d"), n("n");
+		// =====================================================================
+		// Case 1: f(t) = c
+		// =====================================================================
+		if(df(ft,t) == 0 && df(ft,s) == 0) // If the function does not depend on t or s, it is a constant.
+		{
+			return (ft)/(s) ;
+		}
+		// =====================================================================
+		// Case 2: f(t) = e^{at}
+		// =====================================================================
+		// Note: To match a simple exp(t), ensure 'a' can be deduced as 1 if needed.
+		eq = (exp(a * t)).match(ft, (a, d));
+		for (i = eq.begin(); i != eq.end(); ++i)
+		{
+			try {
+			Symbolic ap = rhs(*i, a);
+			// Verify 'a' is independent of t and s
+			if (df(ap, t) == 0 && df(ap, s) == 0)
+			{
+				return 1 / (s - ap);
+			}
+			} catch (const SymbolicError &se) {}
+		}
+		// =====================================================================
+		// Case 3: f(t) = t^{c}
+		// =====================================================================
+		// Note: Standard SymbolicC++ pattern matching might fail for f(t) = t (where c=1).
+		// Handle f(t) = t explicitly, then fallback to general t^c.
+		if (ft == t)
+		{
+			return 1 / (s * s);
+		}
+    
+		eq = (pow(t, c)).match(ft, (c, d));
+		for (i = eq.begin(); i != eq.end(); ++i)
+		{
+			try {
+			Symbolic cp = rhs(*i, c);
+			 // Ensure the power 'cp' doesn't contain t or s
+			if (df(cp, t) == 0 && df(cp, s) == 0)
+			{ 
+				// Check if cp is a positive integer constant to use standard factorial
+				if(isInteger_sym(cp) && int(cp) > 0)
+				{
+					return symbolicfactorial(cp) / pow(s, cp + 1);
+				}
+				// For fractional/real powers where cp > -1, use the Gamma function:
+				else if(double(cp) > -1 && !isInteger_sym(cp))
+				{
+					return std::tgamma(double(cp)) / pow(s, cp + 1);
+				}
+			}
+			} catch (const SymbolicError &se) {}
+		}
+		// =====================================================================
+		// Case 4: f(t) = sin(at)
+		// =====================================================================
+		eq = (sin(a * t)).match(ft, (a, d));
+		for (i = eq.begin(); i != eq.end(); ++i)
+		{
+			try {
+			Symbolic ap = rhs(*i, a);
+			if (df(ap, t) == 0 && df(ap, s) == 0)
+			{
+				return ap / (s * s + ap * ap);
+			}
+			} catch (const SymbolicError &se) {}
+		}
+		// =====================================================================
+		// Case 5: f(t) = cos(at)
+		// =====================================================================
+		eq = (cos(a * t)).match(ft, (a, d));
+		for (i = eq.begin(); i != eq.end(); ++i)
+		{
+			try {
+			Symbolic ap = rhs(*i, a);
+			if (df(ap, t) == 0 && df(ap, s) == 0)
+			{
+				return s / (s * s + ap * ap);
+			}
+			} catch (const SymbolicError &se) {}
+		}
+		// =====================================================================
+		// Case 6: f(t) = sinh(at)
+		// =====================================================================
+		eq = (sinh(a * t)).match(ft, (a, d));
+		for (i = eq.begin(); i != eq.end(); ++i)
+		{
+			try {
+			Symbolic ap = rhs(*i, a);
+			if (df(ap, t) == 0 && df(ap, s) == 0)
+			{
+				return ap / (pow(s, Symbolic(2)) - pow(ap, Symbolic(2)));
+			}
+			} catch (const SymbolicError &se) {}
+		}
+		// =====================================================================
+		// Case 7: f(t) = cosh(at)
+		// =====================================================================
+		eq = (cosh(a * t)).match(ft, (a, d));
+		for (i = eq.begin(); i != eq.end(); ++i)
+		{
+			try {
+			Symbolic ap = rhs(*i, a);
+			if (df(ap, t) == 0 && df(ap, s) == 0)
+			{
+				return s / (pow(s, Symbolic(2)) - pow(ap, Symbolic(2)));
+			}
+			} catch (const SymbolicError &se) {}
+		}
+		// =====================================================================
+		// Case 8: f(t) = e^{at} sin(bt)
+		// =====================================================================
+		eq = (exp(a * t) * sin(b * t)).match(ft, (a, b, d));
+		for (i = eq.begin(); i != eq.end(); ++i)
+		{
+			try {
+			Symbolic ap = rhs(*i, a), bp = rhs(*i, b);
+			if (df(ap, s) == 0 && df(ap, t) == 0 && df(bp, s) == 0 && df(bp, t) == 0)
+			{
+				return bp / (pow(s - ap, Symbolic(2)) + pow(bp, Symbolic(2)));
+			}
+			} catch (const SymbolicError &se) {}
+		}
+		// =====================================================================
+		// Case 8a: f(t) =  sin(bt) e^{at} (Commutative match backup)
+		// =====================================================================
+		eq = (sin(b * t) * exp(a * t)).match(ft, (b, a, d));
+		for (i = eq.begin(); i != eq.end(); ++i)
+		{
+			try {
+			Symbolic ap = rhs(*i, a), bp = rhs(*i, b);
+			if (df(ap, s) == 0 && df(ap, t) == 0 && df(bp, s) == 0 && df(bp, t) == 0)
+			{
+				return bp / (pow(s - ap, Symbolic(2)) + pow(bp, Symbolic(2)));
+			}
+			} catch (const SymbolicError &se) {}
+		}
+		// =====================================================================
+		// Case 9: f(t) = e^{at} cos(bt)
+		// =====================================================================
+		eq = (exp(a * t) * cos(b * t)).match(ft, (b, a, d));
+		for (i = eq.begin(); i != eq.end(); ++i)
+		{
+			try {
+			Symbolic ap = rhs(*i, a), bp = rhs(*i, b);
+			if (df(ap, s) == 0 && df(ap, t) == 0 && df(bp, s) == 0 && df(bp, t) == 0)
+			{
+				return (s - ap) / (pow(s - ap, Symbolic(2)) + pow(bp, Symbolic(2)));
+			}
+			} catch (const SymbolicError &se) {}
+		}
+		// =====================================================================
+		// Case 9: f(t) = cos(bt) e^{at} (Commutative match backup)
+		// =====================================================================
+		eq = (cos(b * t) * exp(a * t)).match(ft, (a, b, d));
+		for (i = eq.begin(); i != eq.end(); ++i)
+		{
+			try {
+			Symbolic ap = rhs(*i, a), bp = rhs(*i, b);
+			if (df(ap, s) == 0 && df(ap, t) == 0 && df(bp, s) == 0 && df(bp, t) == 0)
+			{
+				return (s - ap) / (pow(s - ap, Symbolic(2)) + pow(bp, Symbolic(2)));
+			}
+			} catch (const SymbolicError &se) {}
+		}
+		// =====================================================================
+		// Case 10: f(t) = t^{n} * e^{at} [The most general case]
+		// =====================================================================
+		eq = (pow(t, n) * exp(a * t)).match(ft, (n, a));
+		for (i = eq.begin(); i != eq.end(); ++i)
+		{
+			try {
+			Symbolic np = rhs(*i, n), ap = rhs(*i, a);
+			if (df(np, t) == 0 && df(np, s) == 0 && df(ap, t) == 0 && df(ap, s) == 0)
+			{
+				return symbolicfactorial(np) / pow(s - ap, np + Symbolic(1));
+			}
+			} catch (const SymbolicError &se) {}
+		}
+
+		// =====================================================================
+		// Case 11: f(t) = u_{c}(t)  [Heaviside Step Function ] 
+		// =====================================================================
+		
+		std::string dynamic_str = "";
+		std::stringstream ss;
+		ss << ft;
+		dynamic_str = ss.str(); // Holds something like "dirac(t-c)" or "heaviside(t-c)"
+		// Check if string contains "heaviside("
+		if (dynamic_str.find("heaviside(") != std::string::npos) 
+		{
+			Symbolic cp = getargument(ft).coeff(t,0);
+			// Verify that the extracted constant 'c' (cp) is independent of t and s
+			if ((cp[t == 0] == cp[t == 1]) && (cp[s == 0] == cp[s == 1]))
+			{
+				return exp(cp * s) / s;
+			}
+			if (cp == 0) // Match heaviside(t) directly
+			{
+				return  1 / s;
+			}
+		}
+
+		// =====================================================================
+		// Case 12: f(t) = u_{c}(t)  f(t-c)  [Time Shift Property]
+		// =====================================================================
+		/*Symbolic g;
+		eq = (u(t - c) * g).match(ft, list<Symbolic>{c, g});
+		for (i = eq.begin(); i != eq.end(); ++i)
+		{
+			try {
+			Symbolic cp = rhs(*i, c), gp = rhs(*i, g);
+			if (is_constant(cp, t, s))
+			// Reconstruct f(t) from f(t-c) by substituting (t) for (t-c)
+			// Mathematically: f(t) = gp.substitute(t, t + c)			
+			{
+				Symbolic original_ft = gp[t == t + cp];
+				// Recursively find the Laplace transform of the unshifted f(t)
+				Symbolic LT_ft = SymbolicLaplaceTransform(original_ft, t, s);
+				LT = exp(-cp * s) * LT_ft;
+			}
+			} catch (const SymbolicError &se) {}
+		}*/
+		// =====================================================================
+		// Case 13: f(t) = e^{ct} * f(t)  [Shifting Property]
+		// =====================================================================
+		eq = (exp(c * t) * ft).match(ft, (c, d));
+		for (i = eq.begin(); i != eq.end(); ++i)
+		{
+			try {
+			Symbolic cp = rhs(*i, c), fp = rhs(*i, ft);
+			if (df(cp, t) == 0 && df(cp, s) == 0)  // Check that the extracted 'c' does not depend on t or s
+			{
+				// Recursively find L{f(t)} and shift s -> (s - c)
+				Symbolic baseLT = SymbolicLaplaceTransform(fp, t, s);
+				return baseLT.subst(s == s - cp);
+			}
+			} catch (const SymbolicError &se) {}
+		}
+		// =====================================================================
+		// Case 14: f(t) = f(ct)  [Scaling property f(c*t) for an abstract function f]
+		// =====================================================================
+		// Pattern checks if ft is a composite function containing a linear term c*t
+		// E.g., handling generic/unknown forms of f(c*t) -> (1/c) * F(s/c)
+		// WARNING: IF we input dirac(t) it goes to this case and returns SymbolicError
+		/*Symbolic f_generic("f_generic");
+		// eq = (ft(c * t)).match(ft, (c,d));
+		eq = (f_generic(c * t)).match(ft, (f_generic, c));
+		for (i = eq.begin(); i != eq.end(); ++i)
+		{
+			try {
+			Symbolic cp = rhs(*i, c), fp = rhs(*i, f_generic);
+			if (df(cp, t) == 0 && df(cp, s) == 0)  
+			{
+				// Applies the property: L{f(ct)} = (1/c) * F(s/c)
+				// We recursively transform f_generic(t) and substitute s with (s/cp)
+				Symbolic F_s = SymbolicLaplaceTransform(fp(t), t, s);
+				return (1 / cp) * F_s.subst(s == s / cp);
+			}
+			} catch (const SymbolicError &se) {}
+		}*/
+		// =====================================================================
+		// Case 15: f(t) = f^{(n)}(t)  [n-th Derivative ]
+		// =====================================================================
+		// In SymbolicC++, derivatives are structural representations.
+		// We can intercept the derivative using `df(a, t, n)` match-patterns 
+		// or by inspecting if the expression is a derivative of a generic function 'f'.
+		/*Symbolic f_func("f_func"), nd("nd");
+		
+		eq = (df(f_func, t, nd)).match(ft, (f_func, nd, d)); 
+		for (i = eq.begin(); i != eq.end(); ++i)
+		{
+			Symbolic np = rhs(*i, nd), fp = rhs(*i, f_func); // The base function f(t)
+			
+			// Equation: L{f^{(n)}(t)} = s^n F(s) - s^{n-1}f(0) - s^{n-2}f'(0) - ... - f^{(n-1)}(0)
+			// Representing F(s) as a symbolic wrapper: F(s)
+			Symbolic Fs("F"); 
+			LT = pow(s, np) * Fs(s);
+			// Loop to subtract initial conditions: s^{n-1-k} * f^{(k)}(0)
+			// Since 'np' must evaluate to a concrete integer to unroll the loop:
+			int n_val = int(np); 
+			for (int k = 0; k < n_val; ++k) 
+			{
+				Symbolic init_cond;
+				if (k == 0) 
+				{
+					init_cond = fp; // f(t)
+				} 
+				else 
+				{
+					init_cond = df(fp, t, k); // f^{(k)}(t)
+				}
+				// Evaluate at t = 0 symbolically by substitution
+				init_cond = init_cond.subst(t == 0); 
+				LT = LT - pow(s, Symbolic(n_val) - Symbolic(1) - Symbolic(k)) * init_cond;
+			}
+			return LT;
+		}*/
+		// =====================================================================
+		// Case 16: f(t) = dirac(t-c)  [Dirac delta]
+		// =====================================================================
+		// Matches DiracDelta(t - c) -> c is extracted, or DiracDelta(t) where c = 0	
+		// Define the pattern expression
+		// Alternative Case 16 implementation using String parsing
+		
+		// Check if string contains "dirac("
+		if (dynamic_str.find("dirac(") != std::string::npos) 
+		{
+			Symbolic cp = getargument(ft).coeff(t,0);
+			// Verify that the extracted constant 'c' (cp) is independent of t and s
+			if ((cp[t == 0] == cp[t == 1]) && (cp[s == 0] == cp[s == 1]))
+			{
+				return exp(cp * s);
+			}
+			if (cp == 0) // Match dirac(t) directly
+			{
+				return 1;
+			}
+		}
+
+		// Fallback: If no elementary patterns match
+		cerr << "Warning: Laplace transform pattern match failed for: " << ft << endl;
+	}
+	return LT;
+	
+}
+
+// Helper to check if an expression contains a specific variable
+bool depends_on(const Symbolic &expr, const Symbolic &var) 
+{
+	return df(expr,var) != 0; 
+}
+
+bool isFactorialResult(long long target, int& baseOut) 
+{
+	// 0 and negative numbers are not results of standard factorials
+	if (target <= 0) 
+	{
+		return false;
+	}
+
+	// Special case for 1 (since 0! = 1 and 1! = 1)
+	if (target == 1) 
+	{
+		baseOut = 1; // You can also default to 0 depending on preference
+		return true;
+	}
+
+	long long current = target;
+	int divisor = 2;
+
+	while (current % divisor == 0) 
+	{
+		current /= divisor;
+		if (current == 1) 
+		{
+			baseOut = divisor;
+			return true;
+		}
+		divisor++;
+	}
+
+	return false;
+}
+
+
+int getdegree(Symbolic expr, const Symbolic& var) 
+{
+	int deg = 0;
+	// Keep differentiating until the derivative becomes 0
+	while (expr != 0) 
+	{
+		expr = df(expr, var);
+		deg += 1;
+	}
+	return (deg > 0) ? (deg - 1) : 0;
+}
+
+// Inverse Laplace Transform Function using pattern matching
+Symbolic SymbolicInverseLaplaceTransform(const Symbolic &Fs, const Symbolic &s, const Symbolic &t) 
+{
+	Symbolic ft;
+	if (Fs == 0)
+	{
+		return 0;
+	}
+	else
+	{
+		
+		if( Fs.coeff(s,0) == 0 && Fs*s != 1 && df( (1/Fs)*s - (s^2) , s) != 0 && df( ((1/Fs) - s) , s) != 0)
+		{
+			Symbolic Fs_new = 1/Fs;
+			int n = 0;	
+			while ( df( Fs_new , s) != 0) 
+			{
+				Fs_new = df(Fs_new,s);
+				n += 1;
+			}
+			if (Fs * (s^(n)) / (symbolicfactorial(n-1)) == 1)
+			{
+				return (t^(n-1));
+			}
+		}
+
+		if(Fs*s == 1)
+		{
+			return 1; 
+		}
+		
+		if (Fs.coeff(s,0) != 0 )
+		{ 
+			Symbolic a_frac = Fs.coeff(s,0);
+			if (double(a_frac) > 0 && Fs.coeff(((s^2) + (1/(a_frac*a_frac)) )^(-1)) == (1/a_frac) )
+			{
+				Symbolic a = Fs.coeff(((s^2) + (1/(a_frac*a_frac)) )^(-1));
+				return sin(a*t);
+			}
+			else if (double(a_frac) < 0 && Fs.coeff(((s^2) - (1/(a_frac*a_frac)) )^(-1)) == -(1/a_frac) )
+			{
+				Symbolic a = Fs.coeff(((s^2) - (1/(a_frac*a_frac)) )^(-1));
+				return sinh(a*t);
+			}
+		}
+		if (df( (1/Fs)*s - (s^2) , s) == 0 )
+		{ 
+			double a_squared = (1/Fs)*s - (s^2);
+			if (double(a_squared) > 0 )
+			{
+				double a = sqrt(a_squared);
+				return cos(a*t);
+			}
+			else if (double(a_squared) < 0 )
+			{
+				double a = sqrt(-a_squared);
+				return cosh(a*t);
+			}
+		}
+		if (Fs.coeff(s,0) != 0 && (1/Fs).coeff(s,0) != 0 && (1/Fs).coeff(s,1) != 0 && (1/Fs).coeff(s,2) != 0 )
+		{
+			double c1 = (1/Fs).coeff(s,2);
+			double c2 = (1/Fs).coeff(s,1);
+
+			double b = 1/c1;
+			double a = -(c2/2)*b;
+
+			return exp(a*t)*sin(b*t);
+		}
+		if (Fs.coeff(s,0) == 1/( (1/Fs).coeff(s,0) ) && Fs.coeff(s,1) == 0 && Fs.coeff(s,2) == 0 &&  (1/Fs).coeff(s,1) == 0 && (1/Fs).coeff(s,2) == 0 )
+		{
+			double a = 0;	
+			while ( Fs[s==a] != 0 ) 
+			{
+				a += 1;
+			}
+
+			double b_squared = -(1/Fs).coeff(s,0)*a - (a*a);
+			double b = sqrt(b_squared);
+
+			return exp(a*t)*cos(b*t);
+			
+		}
+		if(df( ((1/Fs) - s) , s) == 0)
+		{
+			double a = -((1/Fs) - s);
+			return exp(a*t); 
+		}
+		
+		/*Symbolic Arg_Fs = getargument(Fs) ;
+		Symbolic Pow_Fs= getpower(Fs) ;
+		cout << " Arg(Fs) = "<< Arg_Fs << endl; 
+		cout << " Pow(Fs) = "<< Pow_Fs << endl; 
+		list<Equations> eq;
+		list<Equations>::iterator i;
+		UniqueSymbol a("a"), b("b"), n("n");
+		// Explicitly define pattern variables list
+		list<Symbolic> match_a;
+		match_a.push_back(a);
+
+		list<Symbolic> match_a_n;
+		match_a_n.push_back(n);
+
+		if (Pow_Fs == -1) // Case when the power is -1
+		{
+			// Case 1: L^-1{ 1 / s } = 1
+			if (getargument(Fs) == s) 
+			{
+				return 1; 
+			}
+
+			// Case 2: L^-1{ 1 / (s - a) } = e^{at}
+			else if(getargument(Fs).coeff(s,1) == 1 )
+			{
+				Symbolic ap = Arg_Fs.coeff(s,0);
+				return exp(ap * t);
+			}
+			else if(Fs.coeff(s,0) != 0 && getargument(Fs).coeff(s,0) > 0 )
+			{
+				Symbolic ap = Arg_Fs.coeff(s,0);
+				return sin(ap * t);
+			}
+		}
+		
+		*/
+		// Fallback: If no matches are found, return the symbolic representation
+		cerr << "Warning: Inverse Laplace transform pattern match failed for: " << Fs << endl;
+	}
+	return ft;
+}
+
 void secondorderlineardiffeq_derivativesvalueatx0(const Symbolic &diffeq, const Symbolic &y, const Symbolic &x, double x0, Symbolic y0, Symbolic dy0)
 {
 	cout << "\nThe differential equation :\n" <<  diffeq << endl;

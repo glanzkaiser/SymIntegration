@@ -239,9 +239,11 @@ public:
 		return res;
 	}
 };
-
+// IF I COMMENTED FROM 245 TO 275 THEN COMPUTING NUMERICAL SOLUTIONS FOR NONLINEAR SYSTEMS FOR QUASINEWON STEEPEST DESCENT NEWTONS METHOD WONT WORK
+// WHAT SHOULD I DO?
+// add inline
 // --- ELEMENTARY TRANSCENDENTAL FUNCTIONS FOR DUAL NUMBERS ---
-DualClass cos(const DualClass& d) 
+inline DualClass cos(const DualClass& d) 
 {
 	DualClass res(cos(d.val), d.der.size());
 	complex<double> s = -sin(d.val);
@@ -252,7 +254,7 @@ DualClass cos(const DualClass& d)
 	return res;
 }
 
-DualClass sin(const DualClass& d) {
+inline DualClass sin(const DualClass& d) {
 	DualClass res(sin(d.val), d.der.size());
 	complex<double> c = cos(d.val);
 	for (size_t i = 0; i < d.der.size(); ++i) 
@@ -262,7 +264,7 @@ DualClass sin(const DualClass& d) {
 	return res;
 }
 
-DualClass exp(const DualClass& d) 
+inline DualClass exp(const DualClass& d) 
 {
 	DualClass res(exp(d.val), d.der.size());
 	for (size_t i = 0; i < d.der.size(); ++i) 
@@ -272,14 +274,21 @@ DualClass exp(const DualClass& d)
 	return res;
 }
 
-DualClass pow(const DualClass& a, int p) {
-        if (p == 0) return DualClass(1.0, vector<complex<double>>(a.der.size(), 0.0));
-        complex<double> val = pow(a.val, p);
-        complex<double> der_mult = double(p) * pow(a.val, p - 1);
-        vector<complex<double>> d(a.der.size());
-        for (size_t i = 0; i < a.der.size(); ++i) d[i] = a.der[i] * der_mult;
-        return DualClass(val, d);
-    }
+inline DualClass pow(const DualClass& a, int p) 
+{
+	if (p == 0) 
+	{
+		return DualClass(1.0, vector<complex<double>>(a.der.size(), 0.0));
+	}
+	complex<double> val = pow(a.val, p);
+	complex<double> der_mult = double(p) * pow(a.val, p - 1);
+	vector<complex<double>> d(a.der.size());
+	for (size_t i = 0; i < a.der.size(); ++i) 
+	{
+		d[i] = a.der[i] * der_mult;
+	}
+	return DualClass(val, d);
+}
 
 #endif
 
