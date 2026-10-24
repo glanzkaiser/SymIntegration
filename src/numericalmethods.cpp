@@ -586,6 +586,254 @@ void LUDecomposition(vector<vector<double>> &A, vector<vector<double>> &L, vecto
 
 /*
 
+	Stochastic Optimizers
+
+*/
+
+
+// --- Helper function to keep candidates strictly within bounds ---
+namespace 
+{
+	vector<double> clamp_to_bounds(const vector<double>& x, const vector<double>& low, const vector<double>& high) 
+	{
+		vector<double> clamped = x;
+		for (size_t i = 0; i < x.size(); ++i) 
+		{
+			if (clamped[i] < low[i]) clamped[i] = low[i];
+			if (clamped[i] > high[i]) clamped[i] = high[i];
+		}
+		return clamped;
+	}
+}
+
+// ============================================================================
+// 1. N-DIMENSIONAL DIRECT MONTE CARLO SOLVER
+// ============================================================================
+DMCMetrics run_direct_monte_carlo(int total_samples, const vector<double>& lower_bounds, const vector<double>& upper_bounds, std::function<double(const std::vector<double>&)> obj_func) 
+{
+	size_t dim = lower_bounds.size();
+	random_device rd; mt19937 gen(rd());
+    
+	vector<uniform_real_distribution<double>> distributions;
+	distributions.reserve(dim);
+	for (size_t d = 0; d < dim; ++d) 
+	{
+		distributions.emplace_back(lower_bounds[d], upper_bounds[d]);
+	}
+
+	DMCMetrics metrics;
+	metrics.total_samples = total_samples;
+	metrics.best_energy = numeric_limits<double>::infinity();
+	metrics.best_x.assign(dim, 0.0);
+
+	for (int i = 0; i < total_samples; i++) 
+	{
+		vector<double> current_x(dim);
+		for (size_t d = 0; d < dim; ++d) 
+		{
+			current_x[d] = distributions[d](gen);
+ 		}
+        
+	double current_e = obj_func(current_x);
+		if (current_e < metrics.best_energy) 
+		{
+			metrics.best_energy = current_e;
+			metrics.best_x = current_x;
+		}
+	}
+	return metrics;
+}
+
+// ============================================================================
+// 2. N-DIMENSIONAL STOCHASTIC TUNNELING (STUN) SOLVER
+// ============================================================================
+STUNMetrics run_stochastic_tunneling(int max_steps, double initial_step_size, double gamma, double temperature, const vector<double>& initial_base, std::function<double(const std::vector<double>&)> obj_func) 
+{
+	size_t dim = initial_base.size();
+	random_device rd; mt19937 gen(rd());
+	uniform_real_distribution<double> rand_u(0.0, 1.0);
+	normal_distribution<double> rand_n(0.0, initial_step_size); 
+
+	vector<double> current_x = initial_base;
+	double current_e = obj_func(current_x);
+	double f_0 = current_e;
+
+	STUNMetrics metrics;
+	metrics.best_x = current_x;
+	metrics.best_energy = current_e;
+	metrics.total_steps = max_steps;
+	metrics.accepted_moves = 0;
+
+	for (int step = 0; step < max_steps; step++) 
+	{
+		vector<double> proposal(dim);
+		for (size_t d = 0; d < dim; ++d) 
+		{
+			proposal[d] = current_x[d] + rand_n(gen);
+		}
+        
+		double proposal_e = obj_func(proposal);
+
+		double stun_current = (current_e >= f_0) ? (1.0 - exp(-gamma * (current_e - f_0))) : (current_e - f_0);
+		double stun_proposal = (proposal_e >= f_0) ? (1.0 - exp(-gamma * (proposal_e - f_0))) : (proposal_e - f_0);
+		double delta_stun = stun_proposal - stun_current;
+
+		if (delta_stun <= 0.0 || rand_u(gen) < exp(-delta_stun / temperature)) 
+		{
+			current_x = proposal;
+			current_e = proposal_e;
+			metrics.accepted_moves++;
+
+			if (current_e < f_0) 
+			{
+				f_0 = current_e;
+				metrics.best_energy = current_e;
+				metrics.best_x = current_x;
+			}
+		}
+	}
+	return metrics;
+}
+
+// ============================================================================
+// 3. N-DIMENSIONAL PARALLEL TEMPERING SOLVER
+// ============================================================================
+struct PrivateReplica 
+{
+	vector<double> x;  
+	double energy;     
+	double temperature;
+};
+
+PTMetrics run_parallel_tempering(int total_cycles, int local_steps, const vector<double>& initial_base, const vector<double>& temperatures, std::function<double(const std::vector<double>&)> obj_func) 
+{
+	int num_replicas = temperatures.size();
+	size_t dim = initial_base.size();
+	random_device rd; mt19937 gen(rd());
+	uniform_real_distribution<double> rand_u(0.0, 1.0);
+	normal_distribution<double> rand_n(0.0, 0.1); 
+
+	vector<PrivateReplica> replicas(num_replicas);
+	for (int i = 0; i < num_replicas; i++) 
+	{
+		replicas[i].x = initial_base;
+		for (size_t d = 0; d < dim; ++d) 
+		{
+			replicas[i].x[d] += i * 0.02;
+		}
+		replicas[i].energy = obj_func(replicas[i].x);
+		replicas[i].temperature = temperatures[i];
+	}
+
+	PTMetrics metrics;
+	metrics.best_x = replicas[0].x;
+	metrics.best_energy = replicas[0].energy;
+	metrics.swap_attempts = 0;
+	metrics.swap_successes = 0;
+
+	for (int cycle = 0; cycle < total_cycles; cycle++) 
+	{
+		for (int i = 0; i < num_replicas; i++) 
+		{
+			for (int step = 0; step < local_steps; step++) 
+			{
+				vector<double> proposal(dim);
+				for (size_t d = 0; d < dim; ++d) 
+				{
+					proposal[d] = replicas[i].x[d] + rand_n(gen);
+				}
+					
+				double proposal_energy = obj_func(proposal);
+				double delta_e = proposal_energy - replicas[i].energy;
+					
+				if (delta_e <= 0 || rand_u(gen) < exp(-delta_e / replicas[i].temperature)) 
+				{
+					replicas[i].x = proposal;
+					replicas[i].energy = proposal_energy;
+					    
+					if (replicas[i].energy < metrics.best_energy) 
+					{
+						metrics.best_energy = replicas[i].energy;
+						metrics.best_x = proposal;
+					}
+				}
+			}
+		}
+        
+		for (int i = 0; i < num_replicas - 1; i++) 
+		{
+		 	int r1 = i; int r2 = i + 1;
+			double beta1 = 1.0 / replicas[r1].temperature;
+			double beta2 = 1.0 / replicas[r2].temperature;
+			double swap_delta = (beta1 - beta2) * (replicas[r1].energy - replicas[r2].energy);
+			    
+			metrics.swap_attempts++;
+			if (swap_delta >= 0 || rand_u(gen) < exp(swap_delta)) 
+			{
+				metrics.swap_successes++;
+				swap(replicas[r1].x, replicas[r2].x);
+				swap(replicas[r1].energy, replicas[r2].energy);
+			}
+		}
+	}
+	return metrics;
+}
+
+// ============================================================================
+// UNIFIED CROSS-PLATFORM BENCHMARK SUITE IMPLEMENTATION
+// ============================================================================
+vector<BenchmarkRecord> run_unified_stochastic_benchmark(
+	int dimensions, const vector<double>& lower_bounds, const vector<double>& upper_bounds,
+	const vector<double>& initial_base, int budget_evaluations, std::function<double(const std::vector<double>&)> obj_func) 
+{
+	vector<BenchmarkRecord> records;
+	chrono::high_resolution_clock::time_point start, end;
+
+	// Apply strict axis boundary safety checking for optimization neighborhood generations
+	auto bounded_obj_func = [&](const vector<double>& x) 
+	{
+		return obj_func(clamp_to_bounds(x, lower_bounds, upper_bounds));
+	};
+
+	// 1. Benchmark Direct Monte Carlo
+	start = chrono::high_resolution_clock::now();
+	DMCMetrics dmc_res = run_direct_monte_carlo(budget_evaluations, lower_bounds, upper_bounds, bounded_obj_func);
+	end = chrono::high_resolution_clock::now();
+	records.push_back({
+		"Direct Monte Carlo", dmc_res.best_energy, dmc_res.best_x,
+		chrono::duration<double, milli>(end - start).count()
+	});
+
+	// 2. Benchmark Stochastic Tunneling (STUN)
+	start = chrono::high_resolution_clock::now();
+	STUNMetrics stun_res = run_stochastic_tunneling(budget_evaluations, 0.1, 2.0, 0.05, initial_base, bounded_obj_func);
+	end = chrono::high_resolution_clock::now();
+	records.push_back({
+		"Stochastic Tunneling", stun_res.best_energy, stun_res.best_x,
+		chrono::duration<double, milli>(end - start).count()
+	});
+
+	// 3. Benchmark Parallel Tempering
+	vector<double> pt_temps = {0.05, 0.22, 0.93, 4.0};
+	int num_replicas = pt_temps.size();
+	int local_steps = 10;
+	int pt_cycles = budget_evaluations / (num_replicas * local_steps);
+	if (pt_cycles < 1) pt_cycles = 1;
+
+	start = chrono::high_resolution_clock::now();
+	PTMetrics pt_res = run_parallel_tempering(pt_cycles, local_steps, initial_base, pt_temps, bounded_obj_func);
+	end = chrono::high_resolution_clock::now();
+	records.push_back({
+		"Parallel Tempering", pt_res.best_energy, pt_res.best_x,
+		chrono::duration<double, milli>(end - start).count()
+	});
+
+	return records;
+}
+
+
+/*
+
 	Iterative Techniques in Matrix Algebra
 
 */

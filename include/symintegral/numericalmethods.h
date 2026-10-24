@@ -68,6 +68,80 @@ bool SORIterativeMethod(const vector<vector<double>>&, const vector<double>&, ve
 
 /*
 
+	Stochastic Optimizers
+
+*/
+
+#ifndef STOCHASTIC_OPTIMIZERS_H
+#define STOCHASTIC_OPTIMIZERS_H
+
+#include <vector>
+#include <string>
+#include <functional> // For std::function wrapper
+
+// --- Standardized Structural Return Packages ---
+struct DMCMetrics {
+	std::vector<double> best_x;
+	double best_energy;
+	int total_samples;
+};
+
+struct STUNMetrics {
+	std::vector<double> best_x;
+	double best_energy;
+	int total_steps;
+	int accepted_moves;
+};
+
+struct PTMetrics {
+	std::vector<double> best_x;
+	double best_energy;
+	int swap_attempts;
+	int swap_successes;
+};
+
+// --- Benchmark Core Interface Structure ---
+struct BenchmarkRecord {
+	std::string solver_name;
+	double best_energy;
+	std::vector<double> best_x;
+	double execution_time_ms;
+};
+
+// --- N-Dimensional Core Optimizer Interfaces (Accepting custom function hooks) ---
+DMCMetrics run_direct_monte_carlo(
+	int total_samples, 
+	const std::vector<double>& lower_bounds, 
+	const std::vector<double>& upper_bounds, 
+	std::function<double(const std::vector<double>&)> obj_func);
+STUNMetrics run_stochastic_tunneling(
+	int max_steps, 
+	double initial_step_size, 
+	double gamma, 
+	double temperature, 
+	const std::vector<double>& initial_base, 
+	std::function<double(const std::vector<double>&)> obj_func);
+PTMetrics run_parallel_tempering(
+	int total_cycles, 
+	int local_steps, 
+	const std::vector<double>& initial_base, 
+	const std::vector<double>& temperatures, 
+	std::function<double(const std::vector<double>&)> obj_func);
+
+// --- Unified Cross-Platform Benchmark Suite Function ---
+std::vector<BenchmarkRecord> run_unified_stochastic_benchmark(
+	int dimensions,
+	const std::vector<double>& lower_bounds,
+	const std::vector<double>& upper_bounds,
+	const std::vector<double>& initial_base,
+	int budget_evaluations,
+	std::function<double(const std::vector<double>&)> obj_func
+);
+
+#endif // STOCHASTIC_OPTIMIZERS_H
+
+/*
+
 	Iterative Techniques in Matrix Algebra
 
 */

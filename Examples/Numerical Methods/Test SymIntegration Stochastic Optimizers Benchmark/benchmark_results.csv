@@ -1,0 +1,13 @@
+Benchmark,Solver,Dimensions,EvaluationBudget,BestEnergy,ExecutionTimeMs
+Rosenbrock,Direct Monte Carlo,5,20000,8.84360128e+01,113.7028
+Rosenbrock,Stochastic Tunneling,5,20000,5.13505476e-01,177.5455
+Rosenbrock,Parallel Tempering,5,20000,5.28273110e-01,237.8917
+Rastrigin,Direct Monte Carlo,5,20000,1.72058030e+01,186.6940
+Rastrigin,Stochastic Tunneling,5,20000,1.99950584e+01,181.8309
+Rastrigin,Parallel Tempering,5,20000,1.41775019e+01,179.1143
+Ackley,Direct Monte Carlo,5,20000,9.81261091e+00,139.9945
+Ackley,Stochastic Tunneling,5,20000,6.57124641e+00,185.3916
+Ackley,Parallel Tempering,5,20000,8.95846118e-02,189.5797
+Griewank,Direct Monte Carlo,5,20000,3.52703365e+00,139.3423
+Griewank,Stochastic Tunneling,5,20000,1.10491529e-03,186.1435
+Griewank,Parallel Tempering,5,20000,3.21030391e-03,191.7942

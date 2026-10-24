@@ -86,7 +86,18 @@ Feed-forward neural networks
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/SIFNN.gif" width="60%">
 
+Particle Swarm Optimizations 
+
+Minimization of function of two variables
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/PSO2Variables.gif" width="60%">
+
+Stochastic Optimizations
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/StochasticOptimization.gif" width="60%">
+
 Genetic algorithms and SVD
+
+<img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/GA2Variables.gif" width="60%">
 
 <img src="https://github.com/glanzkaiser/SymIntegration/blob/main/images/SIGASVD.gif" width="60%">
 
